@@ -436,16 +436,26 @@ with tab4:
                 symbol = NBFCS[name]
                 data = fetch_stock_data(symbol, period='1y')
                 if data is not None and not data.empty:
-                    # Filter by date range
-                    data = data.loc[start_date:end_date]
-                    historical_data[name] = data
+                    # Filter by date range - convert dates to pandas datetime
+                    try:
+                        mask = (data.index >= pd.to_datetime(start_date)) & (data.index <= pd.to_datetime(end_date))
+                        data = data[mask]
+                        if not data.empty:
+                            historical_data[name] = data
+                    except Exception as e:
+                        st.warning(f"Could not filter data for {name}: {str(e)}")
             
             # Fetch Bank Nifty if selected
             if show_bank_nifty:
                 bn_data = fetch_stock_data(BANK_NIFTY, period='1y')
-                if bn_data is not None:
-                    bn_data = bn_data.loc[start_date:end_date]
-                    historical_data['Bank Nifty'] = bn_data
+                if bn_data is not None and not bn_data.empty:
+                    try:
+                        mask = (bn_data.index >= pd.to_datetime(start_date)) & (bn_data.index <= pd.to_datetime(end_date))
+                        bn_data = bn_data[mask]
+                        if not bn_data.empty:
+                            historical_data['Bank Nifty'] = bn_data
+                    except Exception as e:
+                        st.warning(f"Could not filter Bank Nifty data: {str(e)}")
             
             if historical_data:
                 # Create the chart
