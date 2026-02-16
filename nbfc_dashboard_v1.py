@@ -54,16 +54,20 @@ st.markdown("""
         margin-bottom: 12px;
         border-left: 4px solid #0284c7;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
     
     .stock-name {
         font-size: 16px;
         font-weight: 600;
         color: #0a2540;
-        margin-bottom: 4px;
+        margin-bottom: 8px;
+    }
+    
+    .stock-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 8px;
     }
     
     .stock-price {
@@ -76,13 +80,19 @@ st.markdown("""
     .stock-change-positive {
         color: #16a34a;
         font-weight: 600;
-        font-size: 16px;
+        font-size: 15px;
     }
     
     .stock-change-negative {
         color: #dc2626;
         font-weight: 600;
-        font-size: 16px;
+        font-size: 15px;
+    }
+    
+    .stock-volume {
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
     }
     
     /* Buttons - small, clean style for time periods */
@@ -182,13 +192,18 @@ def get_current_prices():
                 change = current - prev
                 change_pct = (change / prev) * 100
                 
+                # Get volume (today's volume)
+                volume = hist['Volume'].iloc[-1]
+                
                 # Get sparkline data (last 30 days)
                 spark_data = ticker.history(period='1mo')['Close'].tolist()
                 
                 data.append({
                     'name': name,
                     'price': current,
+                    'change': change,
                     'change_pct': change_pct,
+                    'volume': volume,
                     'sparkline': spark_data
                 })
         except:
@@ -339,17 +354,26 @@ else:
                 stock = stocks[stock_idx]
                 arrow = "↑" if stock['change_pct'] >= 0 else "↓"
                 change_class = "stock-change-positive" if stock['change_pct'] >= 0 else "stock-change-negative"
+                sign = "+" if stock['change'] >= 0 else ""
+                
+                # Format volume (convert to M/K)
+                vol = stock['volume']
+                if vol >= 1_000_000:
+                    vol_str = f"{vol/1_000_000:.2f}M"
+                elif vol >= 1_000:
+                    vol_str = f"{vol/1_000:.2f}K"
+                else:
+                    vol_str = f"{vol:.0f}"
                 
                 with cols[col_idx]:
                     st.markdown(f"""
                         <div class="stock-card">
-                            <div>
-                                <div class="stock-name">{stock['name']}</div>
-                                <div class="stock-price">₹{stock['price']:,.2f}</div>
+                            <div class="stock-name">{stock['name']}</div>
+                            <div class="stock-price-row">
+                                <span class="stock-price">₹{stock['price']:,.2f}</span>
+                                <span class="{change_class}">{arrow} ({sign}₹{abs(stock['change']):.2f}) ({sign}{abs(stock['change_pct']):.2f}%)</span>
                             </div>
-                            <div>
-                                <div class="{change_class}">{arrow} {abs(stock['change_pct']):.2f}%</div>
-                            </div>
+                            <div class="stock-volume">Volume: {vol_str}</div>
                         </div>
                     """, unsafe_allow_html=True)
 
