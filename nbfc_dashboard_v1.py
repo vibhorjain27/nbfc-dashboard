@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
+import pytz
 import yfinance as yf
 
 # Page config
@@ -84,21 +85,28 @@ st.markdown("""
         font-size: 16px;
     }
     
-    /* Buttons - professional style */
+    /* Buttons - small, clean style for time periods */
     .stButton button {
         background: white;
         color: #475569;
-        border: 2px solid #cbd5e1;
+        border: 1.5px solid #cbd5e1;
         border-radius: 6px;
-        padding: 10px 24px;
+        padding: 6px 16px;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 13px;
         transition: all 0.2s;
+        min-height: 32px;
     }
     
     .stButton button:hover {
         border-color: #0284c7;
         color: #0284c7;
+    }
+    
+    .stButton button:active {
+        background: #0284c7;
+        color: white;
+        border-color: #0284c7;
     }
     
     /* Checkbox styling */
@@ -306,11 +314,14 @@ def create_comparison_chart(time_period, selected_stocks):
     return fig
 
 # Main App
+ist = pytz.timezone('Asia/Kolkata')
+current_time = datetime.now(ist)
+
 st.title("NBFC Dashboard")
-st.caption(f"Last updated: {datetime.now().strftime('%d %B %Y, %I:%M %p')}")
+st.caption(f"Last updated: {current_time.strftime('%d %B %Y, %I:%M %p IST')}")
 st.markdown("---")
 
-# Stock List (Cards)
+# Stock List (Cards) - 3x3 Grid
 st.subheader("Current Stock Prices")
 
 with st.spinner("Loading stock data..."):
@@ -319,38 +330,33 @@ with st.spinner("Loading stock data..."):
 if not stocks:
     st.error("Unable to fetch stock data")
 else:
-    for stock in stocks:
-        arrow = "↑" if stock['change_pct'] >= 0 else "↓"
-        change_class = "stock-change-positive" if stock['change_pct'] >= 0 else "stock-change-negative"
-        
-        st.markdown(f"""
-            <div class="stock-card">
-                <div>
-                    <div class="stock-name">{stock['name']}</div>
-                    <div class="stock-price">₹{stock['price']:,.2f}</div>
-                </div>
-                <div>
-                    <div class="{change_class}">{arrow} {abs(stock['change_pct']):.2f}%</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+    # Display in 3x3 grid
+    for row_idx in range(3):
+        cols = st.columns(3)
+        for col_idx in range(3):
+            stock_idx = row_idx * 3 + col_idx
+            if stock_idx < len(stocks):
+                stock = stocks[stock_idx]
+                arrow = "↑" if stock['change_pct'] >= 0 else "↓"
+                change_class = "stock-change-positive" if stock['change_pct'] >= 0 else "stock-change-negative"
+                
+                with cols[col_idx]:
+                    st.markdown(f"""
+                        <div class="stock-card">
+                            <div>
+                                <div class="stock-name">{stock['name']}</div>
+                                <div class="stock-price">₹{stock['price']:,.2f}</div>
+                            </div>
+                            <div>
+                                <div class="{change_class}">{arrow} {abs(stock['change_pct']):.2f}%</div>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
 
 st.markdown("---")
 
-# Time Period Selector
+# Performance Comparison Section
 st.subheader("Performance Comparison")
-st.caption("Select time period for comparison chart")
-
-cols = st.columns(6)
-periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
-
-for i, period in enumerate(periods):
-    with cols[i]:
-        if st.button(period, key=f"btn_{period}", use_container_width=True):
-            st.session_state.time_period = period
-            st.rerun()
-
-st.caption(f"Selected period: **{st.session_state.time_period}** | Indexed to 100 (default)")
 
 # Stock selection for comparison
 st.markdown("#### Select stocks to compare")
@@ -374,7 +380,51 @@ for i, name in enumerate(other_stocks):
 # Final comparison list
 comparison_stocks = ['Poonawalla Fincorp'] + selected_others
 
-st.markdown("---")
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Time Period Selector - Small buttons close to chart
+st.caption("Indexed to 100 (default)")
+
+# Create inline style for small period buttons
+period_buttons_html = f"""
+<div style="margin-bottom: 20px;">
+    <style>
+        .period-btn {{
+            display: inline-block;
+            padding: 6px 16px;
+            margin: 0 4px;
+            background: white;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.2s;
+        }}
+        .period-btn:hover {{
+            border-color: #0284c7;
+            color: #0284c7;
+        }}
+        .period-btn-active {{
+            background: #0284c7;
+            color: white;
+            border-color: #0284c7;
+        }}
+    </style>
+</div>
+"""
+st.markdown(period_buttons_html, unsafe_allow_html=True)
+
+# Use Streamlit buttons in compact layout
+period_cols = st.columns([1, 1, 1, 1, 1, 1, 10])
+periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
+
+for i, period in enumerate(periods):
+    with period_cols[i]:
+        if st.button(period, key=f"btn_{period}", use_container_width=True):
+            st.session_state.time_period = period
+            st.rerun()
 
 # Comparison Chart
 with st.spinner("Loading comparison chart..."):
@@ -383,16 +433,3 @@ with st.spinner("Loading comparison chart..."):
         st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
     except Exception as e:
         st.error(f"Unable to load chart: {str(e)}")
-
-# Sidebar
-with st.sidebar:
-    st.markdown("### Dashboard Info")
-    st.markdown(f"""
-    - **NBFCs Tracked:** 9
-    - **Default Period:** 6M
-    - **Index Base:** 100
-    - **Data Source:** Yahoo Finance
-    """)
-    st.markdown("---")
-    st.caption("Built for Poonawalla Fincorp")
-    st.caption(f"Version 3.0 | {datetime.now().year}")
