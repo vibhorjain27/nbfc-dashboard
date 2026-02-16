@@ -60,18 +60,31 @@ st.markdown("""
         font-size: 16px;
         font-weight: 600;
         color: #0a2540;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
     
-    .stock-price-row {
+    .stock-content {
         display: flex;
-        align-items: baseline;
-        gap: 8px;
-        margin-bottom: 8px;
+        justify-content: space-between;
+        align-items: stretch;
+    }
+    
+    .stock-left {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+    
+    .stock-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: right;
     }
     
     .stock-price {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 700;
         color: #1a3a52;
         font-family: 'Monaco', 'Courier New', monospace;
@@ -80,13 +93,15 @@ st.markdown("""
     .stock-change-positive {
         color: #16a34a;
         font-weight: 600;
-        font-size: 15px;
+        font-size: 16px;
+        margin-bottom: 4px;
     }
     
     .stock-change-negative {
         color: #dc2626;
         font-weight: 600;
-        font-size: 15px;
+        font-size: 16px;
+        margin-bottom: 4px;
     }
     
     .stock-volume {
@@ -369,11 +384,17 @@ else:
                     st.markdown(f"""
                         <div class="stock-card">
                             <div class="stock-name">{stock['name']}</div>
-                            <div class="stock-price-row">
-                                <span class="stock-price">₹{stock['price']:,.2f}</span>
-                                <span class="{change_class}">{arrow} ({sign}₹{abs(stock['change']):.2f}) ({sign}{abs(stock['change_pct']):.2f}%)</span>
+                            <div class="stock-content">
+                                <div class="stock-left">
+                                    <span class="stock-price">₹{stock['price']:,.2f}</span>
+                                </div>
+                                <div class="stock-right">
+                                    <div class="{change_class}">
+                                        {arrow} {sign}₹{abs(stock['change']):.2f} ({sign}{abs(stock['change_pct']):.2f}%)
+                                    </div>
+                                    <div class="stock-volume">Volume: {vol_str}</div>
+                                </div>
                             </div>
-                            <div class="stock-volume">Volume: {vol_str}</div>
                         </div>
                     """, unsafe_allow_html=True)
 
