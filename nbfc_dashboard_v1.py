@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import yfinance as yf
 
-# Page config with LIGHT theme
+# Page config
 st.set_page_config(
     page_title="NBFC Dashboard",
     page_icon="📊",
@@ -12,23 +12,106 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Minimal CSS - only what's necessary
+# Professional Financial Theme - Bloomberg inspired
 st.markdown("""
     <style>
-    /* Force light theme */
-    [data-testid="stAppViewContainer"] {
-        background-color: #ffffff;
+    /* Professional background - subtle blue-grey */
+    .main {
+        background: linear-gradient(135deg, #f8f9fb 0%, #e8edf3 100%);
     }
     
-    /* Headers */
-    h1, h2, h3 {
-        color: #0c4a6e !important;
+    .block-container {
+        padding: 2rem 3rem;
+        max-width: 1400px;
+    }
+    
+    /* Headers - dark blue, professional */
+    h1 {
+        color: #0a2540;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    
+    h2, h3 {
+        color: #1a3a52;
+        font-weight: 600;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     
     /* Remove Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stDeployButton {display: none;}
+    
+    /* Stock cards */
+    .stock-card {
+        background: white;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        border-left: 4px solid #0284c7;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .stock-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0a2540;
+        margin-bottom: 4px;
+    }
+    
+    .stock-price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a3a52;
+        font-family: 'Monaco', 'Courier New', monospace;
+    }
+    
+    .stock-change-positive {
+        color: #16a34a;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    .stock-change-negative {
+        color: #dc2626;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    /* Buttons - professional style */
+    .stButton button {
+        background: white;
+        color: #475569;
+        border: 2px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 10px 24px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .stButton button:hover {
+        border-color: #0284c7;
+        color: #0284c7;
+    }
+    
+    /* Checkbox styling */
+    .stCheckbox {
+        font-size: 14px;
+    }
+    
+    /* Caption text */
+    .caption-text {
+        color: #64748b;
+        font-size: 14px;
+        margin-top: 4px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -45,15 +128,27 @@ NBFCS = {
     'Mahindra Finance': 'M&MFIN.NS'
 }
 
-# Colors
-COLORS = ['#0284c7', '#dc2626', '#16a34a', '#ea580c', '#9333ea', 
-          '#0891b2', '#be123c', '#65a30d', '#7c3aed']
+# Default comparison stocks
+DEFAULT_COMPARISON = ['Poonawalla Fincorp', 'Bajaj Finance', 'L&T Finance', 'Shriram Finance']
+
+# Colors - professional palette
+COLORS = {
+    'Poonawalla Fincorp': '#0284c7',  # Blue
+    'Bajaj Finance': '#dc2626',        # Red
+    'L&T Finance': '#16a34a',          # Green
+    'Shriram Finance': '#ea580c',      # Orange
+    'Cholamandalam Finance': '#9333ea', # Purple
+    'Aditya Birla Capital': '#0891b2',  # Cyan
+    'Piramal Finance': '#be123c',       # Rose
+    'Muthoot Finance': '#65a30d',       # Lime
+    'Mahindra Finance': '#7c3aed'       # Violet
+}
 
 # Session state
 if 'time_period' not in st.session_state:
-    st.session_state.time_period = '1Y'
-if 'index_to_100' not in st.session_state:
-    st.session_state.index_to_100 = False
+    st.session_state.time_period = '6M'
+if 'comparison_stocks' not in st.session_state:
+    st.session_state.comparison_stocks = DEFAULT_COMPARISON.copy()
 
 @st.cache_data(ttl=3600)
 def fetch_stock_data(symbol, period='1y'):
@@ -67,7 +162,7 @@ def fetch_stock_data(symbol, period='1y'):
 
 @st.cache_data(ttl=3600)
 def get_current_prices():
-    """Get current prices"""
+    """Get current prices for stock cards"""
     data = []
     for name, symbol in NBFCS.items():
         try:
@@ -76,205 +171,228 @@ def get_current_prices():
             if len(hist) > 0:
                 current = hist['Close'].iloc[-1]
                 prev = hist['Close'].iloc[-2] if len(hist) > 1 else current
-                change_pct = ((current - prev) / prev) * 100
+                change = current - prev
+                change_pct = (change / prev) * 100
                 
-                # Get market cap
-                try:
-                    info = ticker.info
-                    mcap = info.get('marketCap', 0) / 10000000
-                except:
-                    mcap = 0
+                # Get sparkline data (last 30 days)
+                spark_data = ticker.history(period='1mo')['Close'].tolist()
                 
                 data.append({
-                    'Company': name,
-                    'Symbol': symbol.replace('.NS', ''),
-                    'Price (₹)': f"₹{current:,.2f}",
-                    'Change (%)': f"{'↑' if change_pct >= 0 else '↓'} {abs(change_pct):.2f}%",
-                    'Market Cap (Cr)': f"₹{mcap:,.0f}" if mcap > 0 else 'N/A'
+                    'name': name,
+                    'price': current,
+                    'change_pct': change_pct,
+                    'sparkline': spark_data
                 })
         except:
             continue
-    return pd.DataFrame(data)
+    return data
 
 def get_period_days(period):
     """Convert period to days"""
-    return {'1D': 1, '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365}.get(period, 365)
+    return {'1D': 1, '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365}.get(period, 180)
 
-def create_chart(time_period, chart_type='price', index_to_100=False):
-    """Create price or market cap chart"""
+def create_comparison_chart(time_period, selected_stocks):
+    """Create indexed comparison chart with end labels"""
     fig = go.Figure()
     
     days = get_period_days(time_period)
     yf_period = '5d' if days <= 7 else '1mo' if days <= 30 else '3mo' if days <= 90 else '1y'
     
-    for idx, (name, symbol) in enumerate(NBFCS.items()):
+    # Store performance data for sorting
+    performance_data = []
+    
+    for name in selected_stocks:
+        symbol = NBFCS[name]
         try:
             data = fetch_stock_data(symbol, period=yf_period)
             if data is None or data.empty:
                 continue
-                
+            
             # Filter to period
             end_date = data.index[-1]
             start_date = end_date - timedelta(days=days)
             filtered = data[(data.index >= start_date)]
             
-            if filtered.empty:
+            if filtered.empty or len(filtered) < 2:
                 continue
             
-            if chart_type == 'price':
-                values = filtered['Close']
-                if index_to_100:
-                    values = (values / values.iloc[0]) * 100
-                    pct = values.iloc[-1] - 100
-                    label = f"{name} ({pct:+.1f}%)"
-                    yaxis_title = 'Index (Base=100)'
-                else:
-                    label = name
-                    yaxis_title = 'Price (₹)'
-            else:  # market cap
-                # Simplified market cap - just use price as proxy
-                values = filtered['Close'] / 10  # Simplified
-                label = name
-                yaxis_title = 'Relative Market Cap'
+            # Index to 100
+            prices = filtered['Close']
+            indexed = (prices / prices.iloc[0]) * 100
             
-            fig.add_trace(go.Scatter(
-                x=filtered.index,
-                y=values,
-                name=label,
-                line=dict(color=COLORS[idx % len(COLORS)], width=2.5),
-                mode='lines'
-            ))
+            # Calculate performance
+            performance = indexed.iloc[-1] - 100
+            
+            # Store for sorting
+            performance_data.append({
+                'name': name,
+                'performance': performance,
+                'dates': filtered.index,
+                'values': indexed,
+                'color': COLORS[name]
+            })
         except:
             continue
     
-    # Mobile-optimized layout
+    # Sort by performance (best to worst)
+    performance_data.sort(key=lambda x: x['performance'], reverse=True)
+    
+    # Add traces in performance order
+    for item in performance_data:
+        # Create label with performance
+        label = f"{item['name']} ({item['performance']:+.1f}%)"
+        
+        fig.add_trace(go.Scatter(
+            x=item['dates'],
+            y=item['values'],
+            name=label,
+            line=dict(color=item['color'], width=3),
+            mode='lines',
+            hovertemplate=f"<b>{item['name']}</b><br>Date: %{{x|%d %b %Y}}<br>Index: %{{y:.2f}}<extra></extra>"
+        ))
+        
+        # Add end label
+        fig.add_annotation(
+            x=item['dates'][-1],
+            y=item['values'].iloc[-1],
+            text=f"{item['name']}<br>{item['performance']:+.1f}%",
+            showarrow=False,
+            xanchor='left',
+            xshift=10,
+            font=dict(size=11, color=item['color'], weight='bold'),
+            bgcolor='rgba(255,255,255,0.8)',
+            bordercolor=item['color'],
+            borderwidth=1,
+            borderpad=4
+        )
+    
+    # Layout
     fig.update_layout(
-        title=f'{"Stock Prices" if chart_type == "price" else "Market Cap"} - {time_period}',
-        xaxis_title='Date',
-        yaxis_title=yaxis_title,
-        template='plotly_white',
-        height=400,  # Shorter for mobile
-        hovermode='x unified',
-        showlegend=True,
-        legend=dict(
-            orientation="h",  # Horizontal legend for mobile
-            yanchor="bottom",
-            y=1.02,
-            xanchor="center",
-            x=0.5,
-            font=dict(size=9)
+        title=dict(
+            text=f'<b>Stock Performance Comparison - {time_period}</b>',
+            font=dict(size=20, color='#0a2540'),
+            x=0
         ),
-        margin=dict(l=40, r=20, t=60, b=40),
-        font=dict(size=11)
+        xaxis_title='Date',
+        yaxis_title='Indexed Value (Base = 100)',
+        template='plotly_white',
+        height=500,
+        hovermode='x unified',
+        showlegend=False,  # We have end labels instead
+        plot_bgcolor='white',
+        paper_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=60, r=150, t=60, b=60),
+        font=dict(family='Arial, sans-serif', color='#1a3a52')
     )
     
-    # Simplified axes for mobile
     fig.update_xaxes(
         showgrid=True,
         gridwidth=1,
         gridcolor='#f1f5f9',
-        tickangle=0  # Horizontal tick labels
+        showline=True,
+        linewidth=1,
+        linecolor='#cbd5e1'
     )
+    
     fig.update_yaxes(
         showgrid=True,
         gridwidth=1,
-        gridcolor='#f1f5f9'
+        gridcolor='#f1f5f9',
+        showline=True,
+        linewidth=1,
+        linecolor='#cbd5e1'
     )
     
     return fig
 
 # Main App
-st.title("📊 NBFC Dashboard")
-st.caption(f"*Updated: {datetime.now().strftime('%d %b %Y, %I:%M %p')}*")
+st.title("NBFC Dashboard")
+st.caption(f"Last updated: {datetime.now().strftime('%d %B %Y, %I:%M %p')}")
+st.markdown("---")
 
-# Tabs
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📈 Market",
-    "💼 Financial",
-    "💰 Valuation",
-    "📊 History",
-    "🔍 Deep Dive",
-    "🏆 Rankings"
-])
+# Stock List (Cards)
+st.subheader("Current Stock Prices")
 
-with tab1:
-    # Current Prices
-    st.subheader("💹 Current Prices")
-    
-    with st.spinner("Loading..."):
-        df = get_current_prices()
-    
-    if df.empty:
-        st.error("Unable to fetch data")
-    else:
-        st.dataframe(df, hide_index=True, use_container_width=True, height=350)
-        
-        st.markdown("---")
-        
-        # Time Period Buttons
-        st.subheader("📅 Time Period")
-        cols = st.columns(6)
-        periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
-        
-        for i, period in enumerate(periods):
-            with cols[i]:
-                if st.button(period, key=f"btn_{period}", use_container_width=True):
-                    st.session_state.time_period = period
-                    st.rerun()
-        
-        st.caption(f"*Selected: {st.session_state.time_period}*")
-        
-        # Index to 100
-        st.session_state.index_to_100 = st.checkbox(
-            "📊 Show Relative Performance (Index to 100)",
-            value=st.session_state.index_to_100
-        )
-        
-        st.markdown("---")
-        
-        # Stock Price Chart
-        st.subheader("📈 Stock Prices")
-        with st.spinner("Loading chart..."):
-            try:
-                chart = create_chart(
-                    st.session_state.time_period,
-                    'price',
-                    st.session_state.index_to_100
-                )
-                st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
-            except Exception as e:
-                st.error(f"Chart error: {str(e)}")
-        
-        st.markdown("---")
-        
-        # Market Cap Chart
-        st.subheader("💰 Market Capitalization")
-        with st.spinner("Loading chart..."):
-            try:
-                mcap_chart = create_chart(st.session_state.time_period, 'mcap')
-                st.plotly_chart(mcap_chart, use_container_width=True, config={'displayModeBar': False})
-            except Exception as e:
-                st.error(f"Chart error: {str(e)}")
+with st.spinner("Loading stock data..."):
+    stocks = get_current_prices()
 
-# Other tabs
-with tab2:
-    st.info("Financial Performance - Coming Soon")
-with tab3:
-    st.info("Valuation Metrics - Coming Soon")
-with tab4:
-    st.info("Historical Analysis - Coming Soon")
-with tab5:
-    st.info("Deep Dive - Coming Soon")
-with tab6:
-    st.info("Rankings - Coming Soon")
+if not stocks:
+    st.error("Unable to fetch stock data")
+else:
+    for stock in stocks:
+        arrow = "↑" if stock['change_pct'] >= 0 else "↓"
+        change_class = "stock-change-positive" if stock['change_pct'] >= 0 else "stock-change-negative"
+        
+        st.markdown(f"""
+            <div class="stock-card">
+                <div>
+                    <div class="stock-name">{stock['name']}</div>
+                    <div class="stock-price">₹{stock['price']:,.2f}</div>
+                </div>
+                <div>
+                    <div class="{change_class}">{arrow} {abs(stock['change_pct']):.2f}%</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("---")
+
+# Time Period Selector
+st.subheader("Performance Comparison")
+st.caption("Select time period for comparison chart")
+
+cols = st.columns(6)
+periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
+
+for i, period in enumerate(periods):
+    with cols[i]:
+        if st.button(period, key=f"btn_{period}", use_container_width=True):
+            st.session_state.time_period = period
+            st.rerun()
+
+st.caption(f"Selected period: **{st.session_state.time_period}** | Indexed to 100 (default)")
+
+# Stock selection for comparison
+st.markdown("#### Select stocks to compare")
+col1, col2, col3 = st.columns(3)
+
+# Poonawalla always shown (no checkbox)
+with col1:
+    st.markdown("**Poonawalla Fincorp** (always shown)")
+
+# Other stocks - checkboxes
+other_stocks = [name for name in NBFCS.keys() if name not in ['Poonawalla Fincorp']]
+selected_others = []
+
+for i, name in enumerate(other_stocks):
+    col_idx = i % 3
+    with [col1, col2, col3][col_idx]:
+        is_default = name in DEFAULT_COMPARISON
+        if st.checkbox(name, value=is_default, key=f"check_{name}"):
+            selected_others.append(name)
+
+# Final comparison list
+comparison_stocks = ['Poonawalla Fincorp'] + selected_others
+
+st.markdown("---")
+
+# Comparison Chart
+with st.spinner("Loading comparison chart..."):
+    try:
+        chart = create_comparison_chart(st.session_state.time_period, comparison_stocks)
+        st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
+    except Exception as e:
+        st.error(f"Unable to load chart: {str(e)}")
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 📊 Info")
+    st.markdown("### Dashboard Info")
     st.markdown(f"""
-    - **NBFCs:** 9
-    - **Period:** {st.session_state.time_period}
-    - **Source:** Yahoo Finance
+    - **NBFCs Tracked:** 9
+    - **Default Period:** 6M
+    - **Index Base:** 100
+    - **Data Source:** Yahoo Finance
     """)
     st.markdown("---")
-    st.caption("*Built for Poonawalla Fincorp*")
+    st.caption("Built for Poonawalla Fincorp")
+    st.caption(f"Version 3.0 | {datetime.now().year}")
