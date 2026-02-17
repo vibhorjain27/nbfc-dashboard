@@ -3,732 +3,482 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import yfinance as yf
+import pytz
 
 # Page configuration
 st.set_page_config(
-    page_title="NBFC Dashboard - Poonawalla",
+    page_title="NBFC Dashboard",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Professional Financial Dashboard Theme
+# Professional Bloomberg-inspired theme
 st.markdown("""
     <style>
-    /* Import professional fonts */
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
-    
-    /* Main background */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    /* Background */
     .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #f0f4f8 100%);
+        background: linear-gradient(135deg, #f8f9fb 0%, #e8edf3 100%);
         font-family: 'DM Sans', sans-serif;
     }
-    
+
+    .block-container {
+        padding: 2rem 3rem;
+        max-width: 1400px;
+    }
+
     /* Headers */
-    h1, h2, h3 {
-        font-family: 'DM Sans', sans-serif;
-        color: #0c4a6e;
-        font-weight: 700;
-    }
-    
-    /* Tab styling - Financial platform style */
+    h1 { color: #0a2540; font-weight: 700; font-size: 2rem; }
+    h2, h3 { color: #1a3a52; font-weight: 600; }
+
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 4px;
-        background-color: white;
+        background: white;
         padding: 8px;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .stTabs [data-baseweb="tab"] {
-        background-color: transparent;
+        background: transparent;
         border-radius: 8px;
         color: #64748b;
         font-weight: 600;
         padding: 12px 24px;
         font-size: 14px;
-        transition: all 0.2s ease;
-    }
-    .stTabs [data-baseweb="tab"]:hover {
-        background-color: #f1f5f9;
-        color: #0284c7;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-        color: white;
-        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+        color: white !important;
     }
-    
-    /* Data table styling */
-    .dataframe {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 13px;
+
+    /* Stock cards */
+    .stock-card {
+        background: white;
+        border-radius: 10px;
+        padding: 18px 20px;
+        border-left: 4px solid #0284c7;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        margin-bottom: 4px;
     }
-    
-    /* Metric values */
-    [data-testid="stMetricValue"] {
-        font-size: 28px;
-        font-weight: 700;
-        font-family: 'JetBrains Mono', monospace;
-    }
-    
-    /* Buttons - Time period selector */
-    .stButton > button {
-        background-color: white;
+    .stock-name { font-size: 14px; font-weight: 600; color: #0a2540; margin-bottom: 6px; }
+    .stock-symbol { font-size: 11px; color: #94a3b8; margin-bottom: 8px; }
+    .stock-price { font-size: 22px; font-weight: 700; color: #1a3a52; font-family: 'JetBrains Mono', monospace; }
+    .stock-change-pos { color: #16a34a; font-weight: 700; font-size: 15px; }
+    .stock-change-neg { color: #dc2626; font-weight: 700; font-size: 15px; }
+
+    /* Period buttons */
+    .stButton button {
+        background: white;
         color: #475569;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 8px 20px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 6px 14px;
         font-weight: 600;
-        font-size: 13px;
-        transition: all 0.2s ease;
-        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        transition: all 0.2s;
     }
-    .stButton > button:hover {
+    .stButton button:hover {
         border-color: #0284c7;
         color: #0284c7;
-        background-color: #f0f9ff;
     }
-    
-    /* Cards */
-    div[data-testid="stVerticalBlock"] > div {
-        background-color: white;
-        border-radius: 12px;
-        padding: 0px;
-    }
-    
-    /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-        background: #f1f5f9;
-    }
-    ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
+
+    /* Checkboxes */
+    .stCheckbox { font-size: 13px; }
+
+    /* Hide Streamlit chrome */
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
+    .stDeployButton { display: none; }
+    [data-testid="stSidebar"] { display: none; }
     </style>
 """, unsafe_allow_html=True)
 
-# NBFC Configuration
+# ─── CONFIG ───────────────────────────────────────────────────────────────────
+
 NBFCS = {
     'Poonawalla Fincorp': 'POONAWALLA.NS',
-    'Bajaj Finance': 'BAJFINANCE.NS',
-    'L&T Finance': 'LTF.NS',
-    'Shriram Finance': 'SHRIRAMFIN.NS',
+    'Bajaj Finance':      'BAJFINANCE.NS',
+    'L&T Finance':        'LTF.NS',
+    'Shriram Finance':    'SHRIRAMFIN.NS',
     'Cholamandalam Finance': 'CHOLAFIN.NS',
-    'Aditya Birla Capital': 'ABCAPITAL.NS',
-    'Piramal Finance': 'PIRAMALFIN.NS',
-    'Muthoot Finance': 'MUTHOOTFIN.NS',
-    'Mahindra Finance': 'M&MFIN.NS'
+    'Aditya Birla Capital':  'ABCAPITAL.NS',
+    'Piramal Finance':    'PIRAMALFIN.NS',
+    'Muthoot Finance':    'MUTHOOTFIN.NS',
+    'Mahindra Finance':   'M&MFIN.NS',
 }
 
-BANK_NIFTY = '^NSEBANK'
+DEFAULT_COMPARISON = ['Poonawalla Fincorp', 'Bajaj Finance', 'L&T Finance', 'Shriram Finance']
 
-# Color palette for NBFCs - Vibrant and distinct
-NBFC_COLORS = {
-    'Poonawalla Fincorp': '#0284c7',  # Blue
-    'Bajaj Finance': '#dc2626',       # Red
-    'L&T Finance': '#16a34a',         # Green
-    'Shriram Finance': '#ea580c',     # Orange
-    'Cholamandalam Finance': '#9333ea', # Purple
-    'Aditya Birla Capital': '#0891b2', # Cyan
-    'Piramal Finance': '#be123c',     # Rose
-    'Muthoot Finance': '#65a30d',     # Lime
-    'Mahindra Finance': '#7c3aed'     # Violet
+COLORS = {
+    'Poonawalla Fincorp':    '#0284c7',
+    'Bajaj Finance':         '#f97316',
+    'L&T Finance':           '#8b5cf6',
+    'Shriram Finance':       '#10b981',
+    'Cholamandalam Finance': '#ef4444',
+    'Aditya Birla Capital':  '#0891b2',
+    'Piramal Finance':       '#be123c',
+    'Muthoot Finance':       '#65a30d',
+    'Mahindra Finance':      '#7c3aed',
 }
 
-# Session state initialization
+# Tab 2 financial data (4 quarters, 4 NBFCs)
+QUARTERS = ['Q4 FY25', 'Q1 FY26', 'Q2 FY26', 'Q3 FY26']
+
+AUM = {
+    'Poonawalla Fincorp': [31900, 36636, 47709, 55017],
+    'Bajaj Finance':      [341001, 363000, 412000, 485883],
+    'Shriram Finance':    [249005, 262000, 281309, 291709],
+    'L&T Finance':        [96000, 103000, 108000, 114285],
+}
+NIM = {
+    'Poonawalla Fincorp': [7.80, 8.10, 8.40, 8.62],
+    'Bajaj Finance':      [9.90, 10.10, 10.10, 10.20],
+    'Shriram Finance':    [8.20, 8.25, 8.29, 8.40],
+    'L&T Finance':        [9.80, 10.00, 10.20, 10.41],
+}
+GNPA = {
+    'Poonawalla Fincorp': [1.84, 1.72, 1.59, 1.51],
+    'Bajaj Finance':      [0.96, 1.11, 1.24, 1.21],
+    'Shriram Finance':    [4.55, 4.80, 4.57, 5.01],
+    'L&T Finance':        [3.29, 3.10, 2.90, 2.70],
+}
+NNPA = {
+    'Poonawalla Fincorp': [0.85, 0.83, 0.81, 0.80],
+    'Bajaj Finance':      [0.44, 0.54, 0.60, 0.47],
+    'Shriram Finance':    [2.64, 2.55, 2.49, 2.60],
+    'L&T Finance':        [0.97, 0.90, 0.82, 0.75],
+}
+ROA = {
+    'Poonawalla Fincorp': [0.60, 0.80, 1.00, 1.20],
+    'Bajaj Finance':      [4.40, 4.50, 4.55, 4.60],
+    'Shriram Finance':    [2.70, 2.85, 2.95, 3.09],
+    'L&T Finance':        [2.40, 2.50, 2.60, 2.70],
+}
+
+FIN_COLORS = {
+    'Poonawalla Fincorp': '#0284c7',
+    'Bajaj Finance':      '#f97316',
+    'Shriram Finance':    '#10b981',
+    'L&T Finance':        '#8b5cf6',
+}
+
+# ─── SESSION STATE ─────────────────────────────────────────────────────────────
+
 if 'time_period' not in st.session_state:
-    st.session_state.time_period = '1Y'
-if 'index_to_100' not in st.session_state:
-    st.session_state.index_to_100 = False
-if 'selected_nbfcs' not in st.session_state:
-    st.session_state.selected_nbfcs = list(NBFCS.keys())
+    st.session_state.time_period = '6M'
+
+# ─── DATA FUNCTIONS ────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600)
 def fetch_stock_data(symbol, period='1y'):
-    """Fetch stock data using yfinance with error handling"""
     try:
-        ticker = yf.Ticker(symbol)
-        data = ticker.history(period=period)
-        return data
-    except Exception as e:
+        return yf.Ticker(symbol).history(period=period)
+    except:
         return None
 
 @st.cache_data(ttl=3600)
 def get_current_prices():
-    """Get current price data for all NBFCs"""
     data = []
-    
     for name, symbol in NBFCS.items():
         try:
             ticker = yf.Ticker(symbol)
             hist = ticker.history(period='5d')
-            
             if len(hist) > 0:
-                current_price = hist['Close'].iloc[-1]
-                prev_close = hist['Close'].iloc[-2] if len(hist) > 1 else current_price
-                change = current_price - prev_close
-                change_pct = (change / prev_close) * 100
-                
-                # Get market cap
-                try:
-                    info = ticker.info
-                    market_cap = info.get('marketCap', 0) / 10000000
-                except:
-                    market_cap = 0
-                
+                current = hist['Close'].iloc[-1]
+                prev = hist['Close'].iloc[-2] if len(hist) > 1 else current
+                change_pct = ((current - prev) / prev) * 100
                 data.append({
-                    'Company': name,
-                    'Symbol': symbol.replace('.NS', ''),
-                    'Price': current_price,
-                    'Change': change,
-                    'Change %': change_pct,
-                    'Market Cap': market_cap,
-                    'Color': NBFC_COLORS[name]
+                    'name': name,
+                    'symbol': symbol.replace('.NS', ''),
+                    'price': current,
+                    'change_pct': change_pct,
                 })
-        except Exception as e:
+        except:
             continue
-            
-    return pd.DataFrame(data)
+    return data
 
 def get_period_days(period):
-    """Convert period string to days"""
-    period_map = {
-        '1D': 1,
-        '1W': 7,
-        '1M': 30,
-        '3M': 90,
-        '6M': 180,
-        '1Y': 365
-    }
-    return period_map.get(period, 365)
+    return {'1D': 1, '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365}.get(period, 180)
 
-def create_stock_price_chart(time_period, index_to_100=False, selected_nbfcs=None):
-    """Create interactive multi-line stock price chart"""
-    if selected_nbfcs is None:
-        selected_nbfcs = list(NBFCS.keys())
-    
+def create_comparison_chart(time_period, selected_stocks):
     fig = go.Figure()
-    
-    # Determine yfinance period
     days = get_period_days(time_period)
-    if days <= 7:
-        yf_period = '5d'
-        interval = '15m' if days == 1 else '1h'
-    elif days <= 30:
-        yf_period = '1mo'
-        interval = '1d'
-    elif days <= 90:
-        yf_period = '3mo'
-        interval = '1d'
-    else:
-        yf_period = '1y'
-        interval = '1d'
-    
-    # Fetch data for each NBFC
-    for name in selected_nbfcs:
+    yf_period = '5d' if days <= 7 else '1mo' if days <= 30 else '3mo' if days <= 90 else '1y'
+
+    performance_data = []
+    for name in selected_stocks:
         symbol = NBFCS[name]
         try:
             data = fetch_stock_data(symbol, period=yf_period)
-            if data is not None and not data.empty:
-                # Filter to exact period
-                end_date = data.index[-1]
-                start_date = end_date - timedelta(days=days)
-                mask = (data.index >= start_date)
-                filtered_data = data[mask]
-                
-                if not filtered_data.empty:
-                    prices = filtered_data['Close']
-                    
-                    if index_to_100:
-                        # Normalize to 100
-                        prices = (prices / prices.iloc[0]) * 100
-                        yaxis_title = 'Indexed Value (Base = 100)'
-                        
-                        # Calculate percentage change for label
-                        pct_change = prices.iloc[-1] - 100
-                        line_name = f"{name} ({pct_change:+.1f}%)"
-                    else:
-                        yaxis_title = 'Price (₹)'
-                        line_name = name
-                    
-                    fig.add_trace(go.Scatter(
-                        x=filtered_data.index,
-                        y=prices,
-                        name=line_name,
-                        line=dict(color=NBFC_COLORS[name], width=2.5),
-                        mode='lines',
-                        hovertemplate=f'<b>{name}</b><br>' +
-                                    'Date: %{x|%d %b %Y}<br>' +
-                                    'Value: ₹%{y:,.2f}<br>' +
-                                    '<extra></extra>'
-                    ))
-        except Exception as e:
-            continue
-    
-    # Update layout
-    fig.update_layout(
-        title=dict(
-            text=f'<b>Stock Price Performance - {time_period}</b>',
-            font=dict(size=20, family='DM Sans', color='#0c4a6e')
-        ),
-        xaxis_title='Date',
-        yaxis_title=yaxis_title,
-        template='plotly_white',
-        height=500,
-        hovermode='x unified',
-        legend=dict(
-            orientation="v",
-            yanchor="top",
-            y=1,
-            xanchor="left",
-            x=1.02,
-            font=dict(size=11, family='DM Sans')
-        ),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(family='DM Sans', color='#334155'),
-        margin=dict(l=60, r=180, t=60, b=60)
-    )
-    
-    fig.update_xaxes(
-        showgrid=True,
-        gridwidth=1,
-        gridcolor='#f1f5f9',
-        showline=True,
-        linewidth=1,
-        linecolor='#e2e8f0'
-    )
-    
-    fig.update_yaxes(
-        showgrid=True,
-        gridwidth=1,
-        gridcolor='#f1f5f9',
-        showline=True,
-        linewidth=1,
-        linecolor='#e2e8f0'
-    )
-    
-    return fig
-
-def create_market_cap_chart(time_period, selected_nbfcs=None):
-    """Create market cap trend chart"""
-    if selected_nbfcs is None:
-        selected_nbfcs = list(NBFCS.keys())
-    
-    fig = go.Figure()
-    
-    days = get_period_days(time_period)
-    if days <= 7:
-        yf_period = '5d'
-    elif days <= 30:
-        yf_period = '1mo'
-    elif days <= 90:
-        yf_period = '3mo'
-    else:
-        yf_period = '1y'
-    
-    for name in selected_nbfcs:
-        symbol = NBFCS[name]
-        try:
-            ticker = yf.Ticker(symbol)
-            hist = ticker.history(period=yf_period)
-            
-            if not hist.empty:
-                # Filter to period
-                end_date = hist.index[-1]
-                start_date = end_date - timedelta(days=days)
-                mask = (hist.index >= start_date)
-                filtered_hist = hist[mask]
-                
-                if not filtered_hist.empty:
-                    # Get shares outstanding
-                    try:
-                        info = ticker.info
-                        shares = info.get('sharesOutstanding', 0)
-                        if shares > 0:
-                            market_cap = (filtered_hist['Close'] * shares) / 10000000  # In Crores
-                            
-                            fig.add_trace(go.Scatter(
-                                x=filtered_hist.index,
-                                y=market_cap,
-                                name=name,
-                                line=dict(color=NBFC_COLORS[name], width=2.5),
-                                mode='lines',
-                                hovertemplate=f'<b>{name}</b><br>' +
-                                            'Date: %{x|%d %b %Y}<br>' +
-                                            'Market Cap: ₹%{y:,.0f} Cr<br>' +
-                                            '<extra></extra>'
-                            ))
-                    except:
-                        continue
+            if data is None or data.empty:
+                continue
+            end_date = data.index[-1]
+            start_date = end_date - timedelta(days=days)
+            filtered = data[data.index >= start_date]
+            if filtered.empty or len(filtered) < 2:
+                continue
+            prices = filtered['Close']
+            indexed = (prices / prices.iloc[0]) * 100
+            performance_data.append({
+                'name': name,
+                'performance': indexed.iloc[-1] - 100,
+                'dates': filtered.index,
+                'values': indexed,
+                'color': COLORS[name],
+            })
         except:
             continue
-    
+
+    performance_data.sort(key=lambda x: x['performance'], reverse=True)
+
+    for item in performance_data:
+        fig.add_trace(go.Scatter(
+            x=item['dates'],
+            y=item['values'],
+            name=item['name'],
+            line=dict(color=item['color'], width=2.5),
+            mode='lines',
+            hovertemplate=f"<b>{item['name']}</b><br>%{{x|%d %b %Y}}<br>%{{y:.1f}}<extra></extra>"
+        ))
+        fig.add_annotation(
+            x=item['dates'][-1],
+            y=item['values'].iloc[-1],
+            text=f"<b>{item['name']}</b><br>{item['performance']:+.1f}%",
+            showarrow=False,
+            xanchor='left',
+            xshift=8,
+            font=dict(size=11, color=item['color']),
+            bgcolor='rgba(255,255,255,0.85)',
+            bordercolor=item['color'],
+            borderwidth=1,
+            borderpad=4,
+        )
+
     fig.update_layout(
-        title=dict(
-            text=f'<b>Market Capitalization Trends - {time_period}</b>',
-            font=dict(size=20, family='DM Sans', color='#0c4a6e')
-        ),
+        title=dict(text=f'<b>Performance Comparison — {time_period} (Indexed to 100)</b>',
+                   font=dict(size=17, color='#0a2540'), x=0),
         xaxis_title='Date',
-        yaxis_title='Market Cap (₹ Crores)',
+        yaxis_title='Indexed Value (Base = 100)',
         template='plotly_white',
         height=500,
         hovermode='x unified',
-        legend=dict(
-            orientation="v",
-            yanchor="top",
-            y=1,
-            xanchor="left",
-            x=1.02,
-            font=dict(size=11, family='DM Sans')
-        ),
-        plot_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(family='DM Sans', color='#334155'),
-        margin=dict(l=60, r=180, t=60, b=60)
+        margin=dict(l=60, r=180, t=60, b=50),
+        font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
     )
-    
-    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#f1f5f9')
-    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#f1f5f9')
-    
+    fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
+    fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
     return fig
 
-# Main App
-st.title("📊 NBFC Dashboard")
-st.caption(f"*Live market data • Last updated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}*")
+def make_fin_chart(metric_data, title, ylabel, fmt='pct'):
+    fig = go.Figure()
+    for name, values in metric_data.items():
+        hover = '%{y:.2f}%' if fmt == 'pct' else '₹%{y:,.0f} Cr'
+        fig.add_trace(go.Scatter(
+            x=QUARTERS,
+            y=values,
+            name=name,
+            mode='lines+markers',
+            line=dict(color=FIN_COLORS[name], width=2.5),
+            marker=dict(size=8, color=FIN_COLORS[name]),
+            hovertemplate=f'<b>{name}</b><br>%{{x}}<br>{hover}<extra></extra>'
+        ))
+    fig.update_layout(
+        title=dict(text=f'<b>{title}</b>', font=dict(size=16, color='#0a2540'), x=0),
+        yaxis_title=ylabel,
+        template='plotly_white',
+        height=380,
+        hovermode='x unified',
+        legend=dict(orientation='h', yanchor='bottom', y=-0.25, xanchor='center', x=0.5,
+                    font=dict(size=11)),
+        plot_bgcolor='white',
+        paper_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=60, r=30, t=50, b=80),
+        font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
+    )
+    fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9')
+    fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9')
+    return fig
 
-# Create tabs
+# ─── HEADER ────────────────────────────────────────────────────────────────────
+
+ist = pytz.timezone('Asia/Kolkata')
+current_time = datetime.now(ist)
+
+st.title("NBFC Dashboard")
+st.caption(f"Live market data  •  Last updated: {current_time.strftime('%B %d, %Y at %I:%M %p IST')}")
+
+# ─── TABS ──────────────────────────────────────────────────────────────────────
+
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📈 Market Overview",
-    "💼 Financial Performance", 
+    "💼 Financial Performance",
     "💰 Valuation Metrics",
     "📊 Historical Analysis",
     "🔍 Deep Dive",
-    "🏆 Rankings"
+    "🏆 Rankings",
 ])
 
-# TAB 1: Market Overview
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 1 — MARKET OVERVIEW
+# ══════════════════════════════════════════════════════════════════════════════
+
 with tab1:
-    # Fetch current prices
-    with st.spinner("🔄 Fetching latest market data..."):
-        price_df = get_current_prices()
-    
-    if price_df.empty:
-        st.error("❌ Unable to fetch stock data. Please try again later.")
+    st.markdown("### Current Stock Prices")
+
+    with st.spinner("Fetching live prices..."):
+        stocks = get_current_prices()
+
+    if not stocks:
+        st.error("Unable to fetch stock data. Please try again.")
     else:
-        # CURRENT PRICES TABLE (TOP)
-        st.markdown("### 💹 Current Stock Prices")
-        
-        # Format the dataframe with colors
-        styled_data = []
-        for _, row in price_df.iterrows():
-            change_color = '#16a34a' if row['Change %'] >= 0 else '#dc2626'
-            arrow = '↑' if row['Change %'] >= 0 else '↓'
-            
-            styled_data.append({
-                'Company': row['Company'],
-                'Symbol': row['Symbol'],
-                'Price (₹)': f"₹{row['Price']:,.2f}",
-                'Change (₹)': f"{arrow} ₹{abs(row['Change']):,.2f}",
-                'Change (%)': f"{arrow} {abs(row['Change %']):.2f}%",
-                'Market Cap (Cr)': f"₹{row['Market Cap']:,.0f}" if row['Market Cap'] > 0 else 'N/A'
-            })
-        
-        display_df = pd.DataFrame(styled_data)
-        
-        # Display table with custom CSS for colors
-        st.dataframe(
-            display_df,
-            hide_index=True,
-            use_container_width=True,
-            height=400,
-            column_config={
-                "Company": st.column_config.TextColumn("Company", width="medium"),
-                "Symbol": st.column_config.TextColumn("Symbol", width="small"),
-                "Price (₹)": st.column_config.TextColumn("Price", width="small"),
-                "Change (₹)": st.column_config.TextColumn("Change", width="small"),
-                "Change (%)": st.column_config.TextColumn("Change %", width="small"),
-                "Market Cap (Cr)": st.column_config.TextColumn("Market Cap", width="medium"),
-            }
-        )
-        
-        st.markdown("---")
-        
-        # TIME PERIOD SELECTOR
-        st.markdown("### 📅 Select Time Period")
-        col1, col2, col3, col4, col5, col6, col7 = st.columns([1, 1, 1, 1, 1, 1, 2])
-        
-        with col1:
-            if st.button("1D", use_container_width=True):
-                st.session_state.time_period = '1D'
-        with col2:
-            if st.button("1W", use_container_width=True):
-                st.session_state.time_period = '1W'
-        with col3:
-            if st.button("1M", use_container_width=True):
-                st.session_state.time_period = '1M'
-        with col4:
-            if st.button("3M", use_container_width=True):
-                st.session_state.time_period = '3M'
-        with col5:
-            if st.button("6M", use_container_width=True):
-                st.session_state.time_period = '6M'
-        with col6:
-            if st.button("1Y", use_container_width=True):
-                st.session_state.time_period = '1Y'
-        
-        # Index to 100 toggle
-        st.session_state.index_to_100 = st.checkbox(
-            "📊 Show Relative Performance (Index to 100)",
-            value=st.session_state.index_to_100,
-            help="Normalize all stocks to start at 100 for easy comparison"
-        )
-        
-        st.markdown("---")
-        
-        # STOCK PRICE CHART
-        with st.spinner(f"📈 Loading {st.session_state.time_period} stock price data..."):
-            price_chart = create_stock_price_chart(
-                st.session_state.time_period,
-                st.session_state.index_to_100,
-                st.session_state.selected_nbfcs
-            )
-            st.plotly_chart(price_chart, use_container_width=True)
-        
-        st.markdown("---")
-        
-        # MARKET CAP CHART
-        with st.spinner(f"💰 Loading {st.session_state.time_period} market cap data..."):
-            mcap_chart = create_market_cap_chart(
-                st.session_state.time_period,
-                st.session_state.selected_nbfcs
-            )
-            st.plotly_chart(mcap_chart, use_container_width=True)
+        # 3×3 grid
+        for row_start in range(0, len(stocks), 3):
+            cols = st.columns(3)
+            for col_idx, stock in enumerate(stocks[row_start:row_start + 3]):
+                arrow = "▲" if stock['change_pct'] >= 0 else "▼"
+                chg_class = "stock-change-pos" if stock['change_pct'] >= 0 else "stock-change-neg"
+                border_color = "#16a34a" if stock['change_pct'] >= 0 else "#dc2626"
+                with cols[col_idx]:
+                    st.markdown(f"""
+                        <div class="stock-card" style="border-left-color: {border_color}">
+                            <div class="stock-name">{stock['name']}</div>
+                            <div class="stock-symbol">{stock['symbol']}</div>
+                            <div class="stock-price">₹{stock['price']:,.2f}</div>
+                            <div class="{chg_class}">{arrow} {abs(stock['change_pct']):.2f}%</div>
+                        </div>
+                    """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 2: FINANCIAL PERFORMANCE
-# 4 NBFCs × 4 Quarters × 5 Metrics (AUM, NIM, GNPA, NNPA, ROA)
-# Data sourced from official investor presentations & BSE/NSE filings (consolidated)
-# ─────────────────────────────────────────────────────────────────────────────
+    st.markdown("---")
 
-# ── Quarterly Data ───────────────────────────────────────────────────────────
-FIN_QUARTERS = ['Q4 FY25', 'Q1 FY26', 'Q2 FY26', 'Q3 FY26']
+    # ── Comparison Chart Section ──
+    st.markdown("### Performance Comparison")
 
-FIN_AUM = {   # ₹ Crore — consolidated AUM
-    'Poonawalla':    [31900,   36636,   47709,   55017],
-    'Bajaj Finance': [341001,  363000,  412000,  485883],
-    'Shriram':       [249005,  262000,  281309,  291709],
-    'L&T Finance':   [96000,   103000,  108000,  114285],
-}
-FIN_NIM = {   # % — Net Interest Margin
-    'Poonawalla':    [7.80,  8.32,  8.40,  8.62],
-    'Bajaj Finance': [9.90, 10.20, 10.10, 10.20],
-    'Shriram':       [8.20,  8.20,  8.29,  8.40],
-    'L&T Finance':   [9.80, 10.10, 10.20, 10.41],
-}
-FIN_GNPA = {  # % — Gross NPA
-    'Poonawalla':    [1.84, 1.84, 1.59, 1.51],
-    'Bajaj Finance': [0.96, 1.06, 1.24, 1.21],
-    'Shriram':       [4.55, 4.53, 4.57, 5.01],
-    'L&T Finance':   [3.29, 3.10, 2.90, 2.70],
-}
-FIN_NNPA = {  # % — Net NPA
-    'Poonawalla':    [0.85, 0.85, 0.81, 0.80],
-    'Bajaj Finance': [0.44, 0.46, 0.60, 0.47],
-    'Shriram':       [2.64, 2.57, 2.49, 2.60],
-    'L&T Finance':   [0.97, 0.90, 0.82, 0.76],
-}
-FIN_ROA = {   # % — Return on Assets (annualised)
-    'Poonawalla':    [3.80, 0.60, 0.69, 1.20],
-    'Bajaj Finance': [4.60, 4.40, 4.40, 4.60],
-    'Shriram':       [2.70, 2.80, 2.90, 3.09],
-    'L&T Finance':   [2.40, 2.50, 2.60, 2.70],
-}
+    # Stock selector checkboxes
+    st.caption("Select stocks to include in comparison chart:")
+    other_stocks = [n for n in NBFCS if n != 'Poonawalla Fincorp']
+    col1, col2, col3 = st.columns(3)
+    cols_map = [col1, col2, col3]
 
-FIN_COLORS = {
-    'Poonawalla':    '#0284c7',
-    'Bajaj Finance': '#f97316',
-    'Shriram':       '#10b981',
-    'L&T Finance':   '#8b5cf6',
-}
-FIN_FULL_NAMES = {
-    'Poonawalla':    'Poonawalla Fincorp',
-    'Bajaj Finance': 'Bajaj Finance',
-    'Shriram':       'Shriram Finance',
-    'L&T Finance':   'L&T Finance',
-}
+    selected_others = []
+    with col1:
+        st.markdown("**Poonawalla Fincorp** *(always shown)*")
+    for i, name in enumerate(other_stocks):
+        with cols_map[i % 3]:
+            is_default = name in DEFAULT_COMPARISON
+            if st.checkbox(name, value=is_default, key=f"chk_{name}"):
+                selected_others.append(name)
 
+    comparison_stocks = ['Poonawalla Fincorp'] + selected_others
 
-def make_fin_chart(data, title, y_label, selected, fmt='pct'):
-    fig = go.Figure()
-    for key in selected:
-        vals = data[key]
-        if fmt == 'pct':
-            hover_tmpl = [f'{v:.2f}%' for v in vals]
-        else:
-            hover_tmpl = [f'₹{v:,.0f} Cr' for v in vals]
-        fig.add_trace(go.Scatter(
-            x=FIN_QUARTERS,
-            y=vals,
-            name=FIN_FULL_NAMES[key],
-            mode='lines+markers',
-            line=dict(color=FIN_COLORS[key], width=3),
-            marker=dict(size=9, color=FIN_COLORS[key],
-                        line=dict(width=2, color='white')),
-            text=hover_tmpl,
-            hovertemplate='%{text}<extra></extra>',
-        ))
-    fig.update_layout(
-        title=dict(text=f'<b>{title}</b>', font=dict(size=17, color='#0a2540'), x=0),
-        plot_bgcolor='#ffffff',
-        paper_bgcolor='#ffffff',
-        font=dict(family='DM Sans, Arial, sans-serif', color='#374151'),
-        hovermode='x unified',
-        height=390,
-        margin=dict(l=60, r=40, t=50, b=100),
-        legend=dict(orientation='h', yanchor='bottom', y=-0.38,
-                    xanchor='center', x=0.5, font=dict(size=12)),
-        xaxis=dict(showgrid=True, gridcolor='#e5e7eb', tickfont=dict(size=12)),
-        yaxis=dict(showgrid=True, gridcolor='#e5e7eb', tickfont=dict(size=12),
-                   title=y_label,
-                   ticksuffix='%' if fmt == 'pct' else ''),
-    )
-    return fig
+    # Compact period buttons + chart
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    period_cols = st.columns([1, 1, 1, 1, 1, 1, 10])
+    periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
+    for i, p in enumerate(periods):
+        with period_cols[i]:
+            if st.button(p, key=f"btn_{p}", use_container_width=True):
+                st.session_state.time_period = p
+                st.rerun()
 
+    st.caption(f"Period: **{st.session_state.time_period}**  |  Indexed to 100")
+
+    with st.spinner("Loading chart..."):
+        try:
+            chart = create_comparison_chart(st.session_state.time_period, comparison_stocks)
+            st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
+        except Exception as e:
+            st.error(f"Chart error: {str(e)}")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 2 — FINANCIAL PERFORMANCE
+# ══════════════════════════════════════════════════════════════════════════════
 
 with tab2:
     # Header bar
     st.markdown("""
-        <div style='background:linear-gradient(90deg,#0a2540 0%,#1e3a5f 100%);
-                    color:white;padding:12px 20px;border-radius:10px;
-                    font-size:14px;font-weight:600;letter-spacing:0.4px;
-                    margin-bottom:20px;'>
-        💼 FINANCIAL PERFORMANCE &nbsp;|&nbsp; Consolidated &nbsp;|&nbsp;
-        Q4 FY25 → Q3 FY26 &nbsp;|&nbsp; 4 NBFCs
+        <div style="background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
+                    padding: 20px 28px; border-radius: 12px; margin-bottom: 24px;">
+            <h2 style="color: white; margin: 0; font-size: 1.4rem;">Financial Performance — Quarterly Metrics</h2>
+            <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">
+                Consolidated results  •  Last 4 quarters  •  Q3 FY26 = October–December 2025
+            </p>
         </div>
     """, unsafe_allow_html=True)
 
-    # NBFC toggle checkboxes
-    st.markdown("**Select NBFCs to compare:**")
-    cb_cols = st.columns(4)
-    fin_selected = []
-    defaults = {'Poonawalla': True, 'Bajaj Finance': True,
-                'Shriram': True, 'L&T Finance': True}
-    for col, key in zip(cb_cols, FIN_COLORS.keys()):
-        with col:
-            dot = f"<span style='color:{FIN_COLORS[key]};font-size:18px;'>●</span>"
-            if st.checkbox(FIN_FULL_NAMES[key], value=defaults[key], key=f'fin_{key}'):
-                fin_selected.append(key)
+    # NBFC color legend
+    legend_html = "".join([
+        f'<span style="display:inline-flex;align-items:center;margin-right:20px;">'
+        f'<span style="width:14px;height:14px;border-radius:50%;background:{c};'
+        f'display:inline-block;margin-right:6px;"></span>'
+        f'<span style="font-size:13px;font-weight:600;color:#1a3a52;">{n}</span></span>'
+        for n, c in FIN_COLORS.items()
+    ])
+    st.markdown(f'<div style="background:white;padding:14px 20px;border-radius:10px;'
+                f'margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">'
+                f'{legend_html}</div>', unsafe_allow_html=True)
 
-    if not fin_selected:
-        st.warning("Please select at least one NBFC.")
-    else:
-        st.markdown("---")
+    # Charts — 2 columns × 3 rows (AUM full width)
+    st.plotly_chart(
+        make_fin_chart(AUM, 'Assets Under Management (AUM)', '₹ Crore', fmt='num'),
+        use_container_width=True, config={'displayModeBar': False}
+    )
 
-        # Chart 1 — AUM
+    c1, c2 = st.columns(2)
+    with c1:
         st.plotly_chart(
-            make_fin_chart(FIN_AUM, 'Assets Under Management (AUM)',
-                           'AUM (₹ Crore)', fin_selected, fmt='num'),
-            use_container_width=True, config=dict(displayModeBar=False)
+            make_fin_chart(NIM, 'Net Interest Margin (NIM)', 'NIM (%)', fmt='pct'),
+            use_container_width=True, config={'displayModeBar': False}
         )
-
-        # Chart 2 — NIM
+    with c2:
         st.plotly_chart(
-            make_fin_chart(FIN_NIM, 'Net Interest Margin (NIM)',
-                           'NIM (%)', fin_selected, fmt='pct'),
-            use_container_width=True, config=dict(displayModeBar=False)
+            make_fin_chart(GNPA, 'Gross NPA', 'GNPA (%)', fmt='pct'),
+            use_container_width=True, config={'displayModeBar': False}
         )
 
-        # Chart 3 — Gross NPA
+    c3, c4 = st.columns(2)
+    with c3:
         st.plotly_chart(
-            make_fin_chart(FIN_GNPA, 'Gross NPA',
-                           'Gross NPA (%)', fin_selected, fmt='pct'),
-            use_container_width=True, config=dict(displayModeBar=False)
+            make_fin_chart(NNPA, 'Net NPA', 'NNPA (%)', fmt='pct'),
+            use_container_width=True, config={'displayModeBar': False}
         )
-
-        # Chart 4 — Net NPA
+    with c4:
         st.plotly_chart(
-            make_fin_chart(FIN_NNPA, 'Net NPA',
-                           'Net NPA (%)', fin_selected, fmt='pct'),
-            use_container_width=True, config=dict(displayModeBar=False)
+            make_fin_chart(ROA, 'Return on Assets (ROA)', 'ROA (%)', fmt='pct'),
+            use_container_width=True, config={'displayModeBar': False}
         )
 
-        # Chart 5 — ROA
-        st.plotly_chart(
-            make_fin_chart(FIN_ROA, 'Return on Assets (ROA) — Annualised',
-                           'ROA (%)', fin_selected, fmt='pct'),
-            use_container_width=True, config=dict(displayModeBar=False)
-        )
-
-        st.markdown("---")
-        st.caption(
-            "📌 Data sourced from official investor presentations, BSE/NSE filings & analyst reports. "
-            "All figures consolidated. Q3 FY26 = quarter ended December 31, 2025. "
-            "Poonawalla ROA in Q4 FY25 reflects one-time exceptional provisions in FY25."
-        )
-    
-with tab3:
-    st.header("💰 Valuation Metrics")
-    st.info("💹 Valuation ratios and metrics coming soon")
-    
-with tab4:
-    st.header("📊 Historical Analysis")
-    st.info("📈 Detailed historical analysis tools coming soon")
-    
-with tab5:
-    st.header("🔍 Deep Dive")
-    st.info("🔎 Individual NBFC analysis coming soon")
-    
-with tab6:
-    st.header("🏆 Rankings & Benchmarking")
-    st.info("📊 Comprehensive rankings coming soon")
-
-# Sidebar
-with st.sidebar:
     st.markdown("""
-        <div style='background: linear-gradient(135deg, #0284c7 0%, #0c4a6e 100%); 
-                    padding: 30px; 
-                    border-radius: 12px; 
-                    text-align: center; 
-                    margin-bottom: 20px;'>
-            <h2 style='color: white; margin: 0; font-size: 24px;'>📊</h2>
-            <p style='color: #bae6fd; margin: 5px 0 0 0; font-size: 14px; font-weight: 600;'>NBFC Dashboard</p>
+        <div style="background:#f8fafc;border-radius:8px;padding:12px 18px;
+                    margin-top:8px;border-left:3px solid #0284c7;">
+            <p style="margin:0;font-size:12px;color:#64748b;">
+                <b>Sources:</b> Investor presentations, BSE/NSE filings, ICICI Direct & Axis Direct analyst reports.
+                Bajaj Finance figures consolidated (incl. BHFL). Poonawalla Q1–Q2 FY26 ROA reflects one-time STPL provision impact.
+            </p>
         </div>
     """, unsafe_allow_html=True)
-    
-    st.markdown("### Dashboard Info")
-    st.markdown(f"""
-    - **NBFCs Tracked:** 9
-    - **Benchmark:** Bank Nifty
-    - **Data Source:** Yahoo Finance
-    - **Update Frequency:** Hourly
-    - **Selected Period:** {st.session_state.time_period}
-    """)
-    
-    st.markdown("---")
-    
-    st.markdown("### 📊 Data Status")
-    st.success("✅ Stock Data: Live")
-    st.info("⏳ Financial Data: Quarterly")
-    
-    st.markdown("---")
-    
-    st.markdown("### 🏢 NBFCs")
-    for i, name in enumerate(NBFCS.keys(), 1):
-        color = NBFC_COLORS[name]
-        st.markdown(f"<span style='color: {color}; font-weight: 600;'>●</span> {name}", unsafe_allow_html=True)
-    
-    st.markdown("---")
-    st.caption("*Built for Poonawalla Fincorp*")
-    st.caption(f"*v2.0 Professional | {datetime.now().year}*")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TABS 3–6 — PLACEHOLDERS
+# ══════════════════════════════════════════════════════════════════════════════
+
+with tab3:
+    st.header("Valuation Metrics")
+    st.info("Coming soon — P/B, P/E, ROE comparison across NBFCs.")
+
+with tab4:
+    st.header("Historical Analysis")
+    st.info("Coming soon — multi-year trend analysis.")
+
+with tab5:
+    st.header("Deep Dive")
+    st.info("Coming soon — individual NBFC deep-dive profiles.")
+
+with tab6:
+    st.header("Rankings")
+    st.info("Coming soon — scorecard rankings across all metrics.")
