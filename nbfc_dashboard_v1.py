@@ -221,6 +221,9 @@ def create_comparison_chart(time_period, selected_stocks):
     yf_period = '5d' if days <= 7 else '1mo' if days <= 30 else '3mo' if days <= 90 else '1y'
 
     performance_data = []
+    actual_start_date = None
+    actual_end_date = None
+
     for name in selected_stocks:
         symbol = NBFCS[name]
         try:
@@ -234,6 +237,11 @@ def create_comparison_chart(time_period, selected_stocks):
                 continue
             prices = filtered['Close']
             indexed = (prices / prices.iloc[0]) * 100
+            # Track actual date range across all stocks
+            if actual_start_date is None or filtered.index[0] < actual_start_date:
+                actual_start_date = filtered.index[0]
+            if actual_end_date is None or filtered.index[-1] > actual_end_date:
+                actual_end_date = filtered.index[-1]
             performance_data.append({
                 'name': name,
                 'performance': indexed.iloc[-1] - 100,
@@ -248,20 +256,25 @@ def create_comparison_chart(time_period, selected_stocks):
     # Sort best to worst
     performance_data.sort(key=lambda x: x['performance'], reverse=True)
 
-    # ── Anti-collision: adjust label y-positions ──────────────────────────────
-    # Min gap in index units between adjacent labels (roughly ~3-4 chart units)
-    MIN_GAP = 3.5
-    label_positions = []
+    # ── Anti-collision: DYNAMIC gap based on actual data range ─────────────────
+    # Compute y-range across ALL data points
+    if performance_data:
+        all_vals = [v for item in performance_data for v in item['values']]
+        y_range = max(all_vals) - min(all_vals)
+        # Gap = 15% of data range, floor of 0.5, ceiling of 4.0
+        # This auto-scales: 1D (range ~2) → gap ~0.3; 3M (range ~35) → gap ~5
+        MIN_GAP = max(0.5, min(4.0, y_range * 0.15))
+    else:
+        MIN_GAP = 2.0
 
-    for item in performance_data:
-        label_positions.append(item['end_y'])
+    label_positions = [item['end_y'] for item in performance_data]
 
-    # Pass 1: push labels DOWN if too close to one above (top-to-bottom)
+    # Pass 1: push DOWN if too close to label above
     for i in range(1, len(label_positions)):
         if label_positions[i - 1] - label_positions[i] < MIN_GAP:
             label_positions[i] = label_positions[i - 1] - MIN_GAP
 
-    # Pass 2: push labels UP if too close to one below (bottom-to-top), in case pass 1 overcorrected
+    # Pass 2: push UP from bottom if pass 1 overcorrected
     for i in range(len(label_positions) - 2, -1, -1):
         if label_positions[i] - label_positions[i + 1] < MIN_GAP:
             label_positions[i] = label_positions[i + 1] + MIN_GAP
@@ -318,7 +331,7 @@ def create_comparison_chart(time_period, selected_stocks):
     )
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
     fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
-    return fig
+    return fig, actual_start_date, actual_end_date
 
 def make_fin_chart(metric_data, title, ylabel, fmt='pct'):
     fig = go.Figure()
@@ -441,21 +454,48 @@ with tab1:
 
     comparison_stocks = ['Poonawalla Fincorp'] + selected_others
 
-    # Compact period buttons + chart
+    # Compact period buttons with active highlight
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
-    period_cols = st.columns([1, 1, 1, 1, 1, 1, 10])
+
+    # Inject CSS to style the "active" period button differently
+    # We use a data attribute trick via session state
+    active_period = st.session_state.time_period
+    btn_styles = ""
     periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
+    for p in periods:
+        if p == active_period:
+            btn_styles += f"""
+            div[data-testid="stColumns"] button:has(p:contains("{p}")) {{
+                background: #0284c7 !important;
+                color: white !important;
+                border-color: #0284c7 !important;
+            }}
+            """
+    st.markdown(f"<style>{btn_styles}</style>", unsafe_allow_html=True)
+
+    period_cols = st.columns([1, 1, 1, 1, 1, 1, 10])
     for i, p in enumerate(periods):
         with period_cols[i]:
             if st.button(p, key=f"btn_{p}", use_container_width=True):
                 st.session_state.time_period = p
                 st.rerun()
 
-    st.caption(f"Period: **{st.session_state.time_period}**  |  Indexed to 100")
+    # Compute and display actual date range
+    ist_tz = pytz.timezone('Asia/Kolkata')
+    today = datetime.now(ist_tz)
+    days_map = {'1D': 1, '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365}
+    delta_days = days_map.get(active_period, 180)
+    range_start = today - timedelta(days=delta_days)
+
+    def fmt_date(dt):
+        return dt.strftime("%-d %b'%y")
+
+    date_range_str = f"{fmt_date(range_start)} – {fmt_date(today)}"
+    st.caption(f"**{active_period}** &nbsp;|&nbsp; {date_range_str} &nbsp;|&nbsp; Indexed to 100")
 
     with st.spinner("Loading chart..."):
         try:
-            chart = create_comparison_chart(st.session_state.time_period, comparison_stocks)
+            chart, chart_start, chart_end = create_comparison_chart(st.session_state.time_period, comparison_stocks)
             st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
         except Exception as e:
             st.error(f"Chart error: {str(e)}")
