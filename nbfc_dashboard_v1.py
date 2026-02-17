@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
@@ -455,32 +456,46 @@ with tab1:
 
     comparison_stocks = ['Poonawalla Fincorp'] + selected_others
 
-    # Period selector — real buttons, active one highlighted via scoped CSS
+    # Period selector — real st.buttons + JS to style the active one after render
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
     periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
     active = st.session_state.time_period
-    active_idx = periods.index(active) + 1  # 1-based for CSS nth-child
 
-    # Inject a named marker + CSS that uses :has() to scope only THIS button row
-    st.markdown(f"""
-        <style>
-        div:has(> #period-row-marker) ~ div[data-testid="stHorizontalBlock"]
-            div[data-testid="stColumn"]:nth-child({active_idx}) button {{
-            background: #0284c7 !important;
-            color: white !important;
-            border-color: #0284c7 !important;
-            font-weight: 700 !important;
-        }}
-        </style>
-        <div id="period-row-marker"></div>
-    """, unsafe_allow_html=True)
-
-    cols = st.columns(6)
+    btn_cols = st.columns(6)
     for i, p in enumerate(periods):
-        with cols[i]:
+        with btn_cols[i]:
             if st.button(p, key=f"pb_{p}", use_container_width=True):
                 st.session_state.time_period = p
                 st.rerun()
+
+    # JS: find the button whose text matches the active period and colour it blue.
+    # Runs inside an iframe (st.components) but reaches parent DOM via window.parent.
+    # Three attempts with delays to catch Streamlit's async render.
+    components.html(f"""
+        <script>
+            function applyStyle() {{
+                var active = "{active}";
+                var btns = window.parent.document.querySelectorAll("button");
+                btns.forEach(function(b) {{
+                    var txt = b.innerText.trim();
+                    if (txt === active) {{
+                        b.style.setProperty("background", "#0284c7", "important");
+                        b.style.setProperty("color", "white", "important");
+                        b.style.setProperty("border-color", "#0284c7", "important");
+                        b.style.setProperty("font-weight", "700", "important");
+                    }} else if (["1D","1W","1M","3M","6M","1Y"].indexOf(txt) !== -1) {{
+                        b.style.removeProperty("background");
+                        b.style.removeProperty("color");
+                        b.style.removeProperty("border-color");
+                        b.style.removeProperty("font-weight");
+                    }}
+                }});
+            }}
+            applyStyle();
+            setTimeout(applyStyle, 150);
+            setTimeout(applyStyle, 400);
+        </script>
+    """, height=0)
 
     # Date range label
     ist_tz = pytz.timezone('Asia/Kolkata')
