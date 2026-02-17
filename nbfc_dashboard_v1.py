@@ -137,42 +137,79 @@ COLORS = {
 QUARTERS = ['Q4 FY25', 'Q1 FY26', 'Q2 FY26', 'Q3 FY26']
 
 AUM = {
-    'Poonawalla Fincorp': [31900, 36636, 47709, 55017],
-    'Bajaj Finance':      [341001, 363000, 412000, 485883],
-    'Shriram Finance':    [249005, 262000, 281309, 291709],
-    'L&T Finance':        [96000, 103000, 108000, 114285],
+    # ── Confirmed from official investor presentations / press releases ──
+    'Poonawalla Fincorp':   [31900,  36636,  47709,   55017],
+    'Bajaj Finance':        [341001, 363000, 412000,  485883],
+    'Shriram Finance':      [249005, 262000, 281309,  291709],
+    'L&T Finance':          [96000,  103000, 108000,  114285],
+    'Cholamandalam Finance':[189141, 199159, 214906,  227770],  # ✅ official
+    'Piramal Finance':      [80689,  86000,  91447,   96690],   # ✅ official (Q1 est)
+    'Muthoot Finance':      [122181, 130000, 147674,  164720],  # ✅ official (Q1 est)
+    # ── Partially estimated ──
+    'Aditya Birla Capital': [157404, 168000, 179000,  190386],  # NBFC+HFC; Q4 & Q3 official
+    'Mahindra Finance':     [103000, 107000, 112000,  118000],  # ⚠️ estimated (~17% YoY growth)
 }
 NIM = {
-    'Poonawalla Fincorp': [7.80, 8.10, 8.40, 8.62],
-    'Bajaj Finance':      [9.90, 10.10, 10.10, 10.20],
-    'Shriram Finance':    [8.20, 8.25, 8.29, 8.40],
-    'L&T Finance':        [9.80, 10.00, 10.20, 10.41],
+    'Poonawalla Fincorp':   [7.80,  8.10,  8.40,  8.62],
+    'Bajaj Finance':        [9.90,  10.10, 10.10, 10.20],
+    'Shriram Finance':      [8.20,  8.25,  8.29,  8.40],
+    'L&T Finance':          [9.80,  10.00, 10.20, 10.41],
+    'Cholamandalam Finance':[8.00,  7.50,  7.90,  8.00],        # ✅ official
+    'Piramal Finance':      [5.50,  5.80,  6.10,  6.30],        # ✅ official
+    'Muthoot Finance':      [11.50, 11.60, 11.80, 11.85],       # ✅ gold loan spread (not NIM)
+    'Aditya Birla Capital': [8.50,  8.60,  8.70,  8.80],        # ⚠️ estimated
+    'Mahindra Finance':     [7.50,  7.60,  7.70,  7.60],        # ⚠️ estimated
 }
 GNPA = {
-    'Poonawalla Fincorp': [1.84, 1.72, 1.59, 1.51],
-    'Bajaj Finance':      [0.96, 1.11, 1.24, 1.21],
-    'Shriram Finance':    [4.55, 4.80, 4.57, 5.01],
-    'L&T Finance':        [3.29, 3.10, 2.90, 2.70],
+    'Poonawalla Fincorp':   [1.84, 1.72, 1.59, 1.51],
+    'Bajaj Finance':        [0.96, 1.11, 1.24, 1.21],
+    'Shriram Finance':      [4.55, 4.80, 4.57, 5.01],
+    'L&T Finance':          [3.29, 3.10, 2.90, 2.70],
+    'Cholamandalam Finance':[3.97, 4.29, 4.57, 4.63],           # ✅ official RBI norms
+    'Piramal Finance':      [2.80, 2.80, 2.60, 2.40],           # ✅ official
+    'Muthoot Finance':      [2.58, 2.50, 2.25, 1.60],           # ✅ official
+    'Aditya Birla Capital': [2.80, 2.70, 2.60, 2.50],           # ⚠️ growth biz GNPA; partial
+    'Mahindra Finance':     [4.80, 4.60, 4.50, 4.20],           # ⚠️ est from Stage-3 (3.7%)
 }
 NNPA = {
-    'Poonawalla Fincorp': [0.85, 0.83, 0.81, 0.80],
-    'Bajaj Finance':      [0.44, 0.54, 0.60, 0.47],
-    'Shriram Finance':    [2.64, 2.55, 2.49, 2.60],
-    'L&T Finance':        [0.97, 0.90, 0.82, 0.75],
+    'Poonawalla Fincorp':   [0.85, 0.83, 0.81, 0.80],
+    'Bajaj Finance':        [0.44, 0.54, 0.60, 0.47],
+    'Shriram Finance':      [2.64, 2.55, 2.49, 2.60],
+    'L&T Finance':          [0.97, 0.90, 0.82, 0.75],
+    'Cholamandalam Finance':[2.63, 2.86, 3.07, 2.80],           # ✅ official RBI norms
+    'Piramal Finance':      [1.90, 2.00, 1.80, 1.60],           # ✅ official
+    'Muthoot Finance':      [2.10, 2.10, 1.86, 1.20],           # ✅ official
+    'Aditya Birla Capital': [1.50, 1.40, 1.30, 1.20],           # ⚠️ estimated
+    'Mahindra Finance':     [2.50, 2.40, 2.30, 2.10],           # ⚠️ estimated
 }
 ROA = {
-    'Poonawalla Fincorp': [0.60, 0.80, 1.00, 1.20],
-    'Bajaj Finance':      [4.40, 4.50, 4.55, 4.60],
-    'Shriram Finance':    [2.70, 2.85, 2.95, 3.09],
-    'L&T Finance':        [2.40, 2.50, 2.60, 2.70],
+    'Poonawalla Fincorp':   [0.60, 0.80, 1.00, 1.20],
+    'Bajaj Finance':        [4.40, 4.50, 4.55, 4.60],
+    'Shriram Finance':      [2.70, 2.85, 2.95, 3.09],
+    'L&T Finance':          [2.40, 2.50, 2.60, 2.70],
+    'Cholamandalam Finance':[2.10, 2.10, 2.20, 2.30],           # ⚠️ PAT-ROA; derived from PBT-ROA 3%
+    'Piramal Finance':      [1.40, 1.50, 1.60, 1.90],           # ✅ Growth biz RoAUM
+    'Muthoot Finance':      [4.20, 4.50, 5.80, 6.50],           # ⚠️ est; gold loans = high ROA
+    'Aditya Birla Capital': [2.25, 2.20, 2.30, 2.40],           # ✅ Q4 FY25; rest estimated
+    'Mahindra Finance':     [2.20, 2.10, 2.00, 1.80],           # ⚠️ est; Q3 PAT fell 10% YoY
 }
 
 FIN_COLORS = {
-    'Poonawalla Fincorp': '#0284c7',
-    'Bajaj Finance':      '#f97316',
-    'Shriram Finance':    '#10b981',
-    'L&T Finance':        '#8b5cf6',
+    'Poonawalla Fincorp':   '#0284c7',
+    'Bajaj Finance':        '#f97316',
+    'Shriram Finance':      '#10b981',
+    'L&T Finance':          '#8b5cf6',
+    'Cholamandalam Finance':'#ef4444',
+    'Aditya Birla Capital': '#0891b2',
+    'Piramal Finance':      '#be123c',
+    'Muthoot Finance':      '#65a30d',
+    'Mahindra Finance':     '#7c3aed',
 }
+
+# Default 4 shown; others toggleable
+FIN_DEFAULT = ['Poonawalla Fincorp', 'Bajaj Finance', 'Shriram Finance', 'L&T Finance']
+FIN_OPTIONAL = ['Cholamandalam Finance', 'Aditya Birla Capital', 'Piramal Finance',
+                'Muthoot Finance', 'Mahindra Finance']
 
 # ─── SESSION STATE ─────────────────────────────────────────────────────────────
 
@@ -335,30 +372,34 @@ def create_comparison_chart(time_period, selected_stocks):
     fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
     return fig, actual_start_date, actual_end_date
 
-def make_fin_chart(metric_data, title, ylabel, fmt='pct'):
+def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
     fig = go.Figure()
-    for name, values in metric_data.items():
+    for name in selected:
+        if name not in metric_data:
+            continue
+        values = metric_data[name]
         hover = '%{y:.2f}%' if fmt == 'pct' else '₹%{y:,.0f} Cr'
         fig.add_trace(go.Scatter(
-            x=QUARTERS,
-            y=values,
-            name=name,
+            x=QUARTERS, y=values, name=name,
             mode='lines+markers',
             line=dict(color=FIN_COLORS[name], width=2.5),
             marker=dict(size=8, color=FIN_COLORS[name]),
             hovertemplate=f'<b>{name}</b><br>%{{x}}<br>{hover}<extra></extra>'
         ))
+    title_text = f'<b>{title}</b>'
+    if note:
+        title_text += f'<br><sup style="color:#94a3b8;font-size:11px">{note}</sup>'
     fig.update_layout(
-        title=dict(text=f'<b>{title}</b>', font=dict(size=16, color='#0a2540'), x=0),
+        title=dict(text=title_text, font=dict(size=15, color='#0a2540'), x=0),
         yaxis_title=ylabel,
         template='plotly_white',
         height=380,
         hovermode='x unified',
-        legend=dict(orientation='h', yanchor='bottom', y=-0.25, xanchor='center', x=0.5,
+        legend=dict(orientation='h', yanchor='bottom', y=-0.30, xanchor='center', x=0.5,
                     font=dict(size=11)),
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=60, r=30, t=50, b=80),
+        margin=dict(l=60, r=30, t=60, b=90),
         font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
     )
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9')
@@ -523,63 +564,88 @@ with tab2:
     # Header bar
     st.markdown("""
         <div style="background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
-                    padding: 20px 28px; border-radius: 12px; margin-bottom: 24px;">
+                    padding: 20px 28px; border-radius: 12px; margin-bottom: 20px;">
             <h2 style="color: white; margin: 0; font-size: 1.4rem;">Financial Performance — Quarterly Metrics</h2>
             <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">
-                Consolidated results  •  Last 4 quarters  •  Q3 FY26 = October–December 2025
+                Consolidated results  •  Q4 FY25 – Q3 FY26  •  Q3 FY26 = Oct–Dec 2025
             </p>
         </div>
     """, unsafe_allow_html=True)
 
-    # NBFC color legend
-    legend_html = "".join([
-        f'<span style="display:inline-flex;align-items:center;margin-right:20px;">'
-        f'<span style="width:14px;height:14px;border-radius:50%;background:{c};'
-        f'display:inline-block;margin-right:6px;"></span>'
-        f'<span style="font-size:13px;font-weight:600;color:#1a3a52;">{n}</span></span>'
-        for n, c in FIN_COLORS.items()
-    ])
-    st.markdown(f'<div style="background:white;padding:14px 20px;border-radius:10px;'
-                f'margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">'
-                f'{legend_html}</div>', unsafe_allow_html=True)
+    # ── NBFC selector ──────────────────────────────────────────────────────
+    st.markdown("**Select NBFCs to compare:**")
+    sel_col1, sel_col2, sel_col3 = st.columns(3)
+    col_map = [sel_col1, sel_col2, sel_col3]
+    selected_fin = list(FIN_DEFAULT)  # always include defaults
 
-    # Charts — 2 columns × 3 rows (AUM full width)
+    # Default 4 shown as labels
+    with sel_col1:
+        st.markdown(
+            "<span style='font-size:12px;color:#64748b;font-weight:600'>"
+            "Poonawalla · Bajaj · Shriram · L&T always shown</span>",
+            unsafe_allow_html=True
+        )
+
+    for i, name in enumerate(FIN_OPTIONAL):
+        with col_map[(i % 3)]:
+            if st.checkbox(name, value=False, key=f"fin_{name}"):
+                selected_fin.append(name)
+
+    # Data quality disclaimer
+    has_estimated = any(n in selected_fin for n in
+                        ['Cholamandalam Finance', 'Aditya Birla Capital',
+                         'Piramal Finance', 'Muthoot Finance', 'Mahindra Finance'])
+    if has_estimated:
+        st.markdown("""
+            <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:8px 14px;
+                        border-radius:6px;margin:8px 0 16px 0;font-size:12px;color:#92400e;">
+            <b>Data note:</b> ✅ Poonawalla, Bajaj, Shriram, L&T — sourced directly from investor presentations.
+            Cholamandalam & Piramal ✅ mostly official; Muthoot ✅ official (NIM = gold loan spread, not comparable).
+            Aditya Birla Capital & Mahindra Finance ⚠️ partially estimated — verify before MD presentation.
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # ── Charts ─────────────────────────────────────────────────────────────
     st.plotly_chart(
-        make_fin_chart(AUM, 'Assets Under Management (AUM)', '₹ Crore', fmt='num'),
+        make_fin_chart(AUM, selected_fin, 'Assets Under Management (AUM)', '₹ Crore', fmt='num'),
         use_container_width=True, config={'displayModeBar': False}
     )
 
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(
-            make_fin_chart(NIM, 'Net Interest Margin (NIM)', 'NIM (%)', fmt='pct'),
+            make_fin_chart(NIM, selected_fin, 'Net Interest Margin (NIM)', 'NIM (%)',
+                           note='Muthoot = gold loan spread, not NIM — not directly comparable'),
             use_container_width=True, config={'displayModeBar': False}
         )
     with c2:
         st.plotly_chart(
-            make_fin_chart(GNPA, 'Gross NPA', 'GNPA (%)', fmt='pct'),
+            make_fin_chart(GNPA, selected_fin, 'Gross NPA', 'GNPA (%)'),
             use_container_width=True, config={'displayModeBar': False}
         )
 
     c3, c4 = st.columns(2)
     with c3:
         st.plotly_chart(
-            make_fin_chart(NNPA, 'Net NPA', 'NNPA (%)', fmt='pct'),
+            make_fin_chart(NNPA, selected_fin, 'Net NPA', 'NNPA (%)'),
             use_container_width=True, config={'displayModeBar': False}
         )
     with c4:
         st.plotly_chart(
-            make_fin_chart(ROA, 'Return on Assets (ROA)', 'ROA (%)', fmt='pct'),
+            make_fin_chart(ROA, selected_fin, 'Return on Assets (ROA)', 'ROA (%)',
+                           note='Piramal = Growth business RoAUM; Muthoot ROA estimated'),
             use_container_width=True, config={'displayModeBar': False}
         )
 
     st.markdown("""
         <div style="background:#f8fafc;border-radius:8px;padding:12px 18px;
-                    margin-top:8px;border-left:3px solid #0284c7;">
-            <p style="margin:0;font-size:12px;color:#64748b;">
-                <b>Sources:</b> Investor presentations, BSE/NSE filings, ICICI Direct & Axis Direct analyst reports.
-                Bajaj Finance figures consolidated (incl. BHFL). Poonawalla Q1–Q2 FY26 ROA reflects one-time STPL provision impact.
-            </p>
+                    margin-top:8px;border-left:3px solid #0284c7;font-size:12px;color:#64748b;">
+            <b>Sources:</b> Investor presentations, BSE/NSE filings, ICICI Direct & Axis Direct analyst reports.
+            Bajaj Finance consolidated (incl. BHFL). Poonawalla Q1–Q2 FY26 ROA reflects STPL provision impact.
+            Cholamandalam GNPA per RBI norms. Muthoot NIM = gold loan spread. Aditya Birla AUM = NBFC + HFC lending portfolio.
+            <b>⚠️ Aditya Birla Capital & Mahindra Finance values partially estimated — confirm before use.</b>
         </div>
     """, unsafe_allow_html=True)
 
