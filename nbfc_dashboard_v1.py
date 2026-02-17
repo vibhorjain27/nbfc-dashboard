@@ -34,6 +34,24 @@ st.markdown("""
     h1 { color: #0a2540; font-weight: 700; font-size: 2rem; }
     h2, h3 { color: #1a3a52; font-weight: 600; }
 
+    /* Section title — dark blue pill used across tabs */
+    .section-title {
+        background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
+        color: white;
+        padding: 14px 22px;
+        border-radius: 10px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        display: block;
+    }
+    .section-subtitle {
+        color: #94a3b8;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+    }
+
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 4px;
@@ -355,8 +373,10 @@ def create_comparison_chart(time_period, selected_stocks):
         )
 
     fig.update_layout(
-        title=dict(text=f'<b>Performance Comparison — {time_period} (Indexed to 100)</b>',
-                   font=dict(size=17, color='#0a2540'), x=0),
+        title=dict(
+            text=f'<span style="color:#0a2540;font-weight:700;font-size:17px">'
+                 f'Performance Comparison — {time_period} (Indexed to 100)</span>',
+            font=dict(family='DM Sans, sans-serif'), x=0),
         xaxis_title='Date',
         yaxis_title='Indexed Value (Base = 100)',
         template='plotly_white',
@@ -373,37 +393,102 @@ def create_comparison_chart(time_period, selected_stocks):
     return fig, actual_start_date, actual_end_date
 
 def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
+    """
+    Full-width chart with:
+    • Traces sorted by average value → hover tooltip order matches chart top-to-bottom order
+      across all quarters (Plotly shows hover items in trace-addition order)
+    • End-of-line labels with anti-collision spacing
+    • Dark blue bold chart title, note in muted grey below
+    """
     fig = go.Figure()
+
+    # ── Sort series by mean value descending so hover order ≈ visual order ──
+    series = []
     for name in selected:
         if name not in metric_data:
             continue
-        values = metric_data[name]
-        hover = '%{y:.2f}%' if fmt == 'pct' else '₹%{y:,.0f} Cr'
+        vals = metric_data[name]
+        series.append({'name': name, 'values': vals,
+                       'avg': sum(vals) / len(vals), 'last': vals[-1],
+                       'color': FIN_COLORS[name]})
+    series.sort(key=lambda x: x['avg'], reverse=True)
+
+    # ── Add traces in sorted order (determines hover tooltip order) ──────────
+    for s in series:
+        val_fmt = '%{y:.2f}%' if fmt == 'pct' else '₹%{y:,.0f} Cr'
         fig.add_trace(go.Scatter(
-            x=QUARTERS, y=values, name=name,
+            x=QUARTERS,
+            y=s['values'],
+            name=s['name'],
             mode='lines+markers',
-            line=dict(color=FIN_COLORS[name], width=2.5),
-            marker=dict(size=8, color=FIN_COLORS[name]),
-            hovertemplate=f'<b>{name}</b><br>%{{x}}<br>{hover}<extra></extra>'
+            line=dict(color=s['color'], width=2.5),
+            marker=dict(size=8, color=s['color']),
+            hovertemplate=f"<b>{s['name']}</b>  {val_fmt}<extra></extra>",
         ))
-    title_text = f'<b>{title}</b>'
+
+    # ── Anti-collision end-of-line labels ────────────────────────────────────
+    label_y = [s['last'] for s in series]
+    all_vals = [v for s in series for v in s['values']]
+    y_range  = max(all_vals) - min(all_vals) if all_vals else 1
+    MIN_GAP  = max(y_range * 0.12, 0.25)
+
+    # Push down pass
+    for i in range(1, len(label_y)):
+        if label_y[i - 1] - label_y[i] < MIN_GAP:
+            label_y[i] = label_y[i - 1] - MIN_GAP
+    # Push up pass
+    for i in range(len(label_y) - 2, -1, -1):
+        if label_y[i] - label_y[i + 1] < MIN_GAP:
+            label_y[i] = label_y[i + 1] + MIN_GAP
+
+    for i, s in enumerate(series):
+        val_str = f"{s['last']:.2f}%" if fmt == 'pct' else f"₹{s['last']:,.0f} Cr"
+        # Connector line from actual value to label
+        if abs(s['last'] - label_y[i]) > MIN_GAP * 0.3:
+            fig.add_shape(type='line',
+                x0=QUARTERS[-1], x1=QUARTERS[-1],
+                y0=s['last'], y1=label_y[i],
+                line=dict(color=s['color'], width=1, dash='dot'),
+                xref='x', yref='y')
+        fig.add_annotation(
+            x=QUARTERS[-1], y=label_y[i],
+            text=f"<b style='color:{s['color']}'>{s['name']}</b>  {val_str}",
+            showarrow=False,
+            xanchor='left', xshift=14,
+            font=dict(size=11, color=s['color']),
+            bgcolor='rgba(255,255,255,0.95)',
+            bordercolor=s['color'],
+            borderwidth=1,
+            borderpad=4,
+        )
+
+    # ── Title: dark blue bold + muted note line ──────────────────────────────
+    title_html = (
+        f'<span style="color:#0a2540;font-weight:700;font-size:16px">{title}</span>'
+    )
     if note:
-        title_text += f'<br><sup style="color:#94a3b8;font-size:11px">{note}</sup>'
+        title_html += (
+            f'<br><span style="color:#94a3b8;font-size:11px;font-weight:400">{note}</span>'
+        )
+
     fig.update_layout(
-        title=dict(text=title_text, font=dict(size=15, color='#0a2540'), x=0),
+        title=dict(text=title_html, font=dict(family='DM Sans, sans-serif'), x=0, xref='paper'),
         yaxis_title=ylabel,
         template='plotly_white',
-        height=380,
+        height=420,
         hovermode='x unified',
-        legend=dict(orientation='h', yanchor='bottom', y=-0.30, xanchor='center', x=0.5,
-                    font=dict(size=11)),
+        showlegend=False,
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=60, r=30, t=60, b=90),
+        margin=dict(l=60, r=240, t=70, b=50),
         font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
+        hoverlabel=dict(bgcolor='white', bordercolor='#cbd5e1',
+                        font=dict(family='DM Sans, sans-serif', size=12)),
     )
-    fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9')
-    fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9')
+    fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1',
+                     tickfont=dict(size=12, color='#475569'))
+    fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1',
+                     tickfont=dict(size=12, color='#475569'))
     return fig
 
 # ─── HEADER ────────────────────────────────────────────────────────────────────
@@ -430,7 +515,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 # ══════════════════════════════════════════════════════════════════════════════
 
 with tab1:
-    st.markdown("### Current Stock Prices")
+    st.markdown('<div class="section-title">Current Stock Prices<span class="section-subtitle">Live NSE prices • Updates every 5 minutes</span></div>', unsafe_allow_html=True)
 
     with st.spinner("Fetching live prices..."):
         stocks = get_current_prices()
@@ -478,7 +563,7 @@ with tab1:
     st.markdown("---")
 
     # ── Comparison Chart Section ──
-    st.markdown("### Performance Comparison")
+    st.markdown('<div class="section-title">Performance Comparison<span class="section-subtitle">Indexed to 100 • Select stocks and time period below</span></div>', unsafe_allow_html=True)
 
     # Stock selector checkboxes
     st.caption("Select stocks to include in comparison chart:")
@@ -561,7 +646,6 @@ with tab1:
 # ══════════════════════════════════════════════════════════════════════════════
 
 with tab2:
-    # Header bar
     st.markdown("""
         <div style="background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
                     padding: 20px 28px; border-radius: 12px; margin-bottom: 20px;">
@@ -574,80 +658,83 @@ with tab2:
 
     # ── NBFC selector ──────────────────────────────────────────────────────
     st.markdown("**Select NBFCs to compare:**")
-    sel_col1, sel_col2, sel_col3 = st.columns(3)
-    col_map = [sel_col1, sel_col2, sel_col3]
-    selected_fin = list(FIN_DEFAULT)  # always include defaults
 
-    # Default 4 shown as labels
-    with sel_col1:
-        st.markdown(
-            "<span style='font-size:12px;color:#64748b;font-weight:600'>"
-            "Poonawalla · Bajaj · Shriram · L&T always shown</span>",
-            unsafe_allow_html=True
-        )
+    # Poonawalla — greyed out disabled checkbox, always shown
+    st.markdown("""
+        <div style="display:inline-flex;align-items:center;gap:8px;
+                    margin-bottom:10px;opacity:0.4;cursor:not-allowed;">
+            <input type="checkbox" checked disabled
+                   style="width:16px;height:16px;accent-color:#0284c7;">
+            <span style="font-size:14px;font-weight:600;color:#0a2540;">
+                Poonawalla Fincorp
+                <span style="font-size:11px;font-weight:400;color:#64748b;"> — always shown</span>
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
 
-    for i, name in enumerate(FIN_OPTIONAL):
-        with col_map[(i % 3)]:
-            if st.checkbox(name, value=False, key=f"fin_{name}"):
+    # Remaining 8 NBFCs — Bajaj/Shriram/L&T on by default
+    TOGGLEABLE = {
+        "Bajaj Finance":         True,
+        "Shriram Finance":       True,
+        "L&T Finance":           True,
+        "Cholamandalam Finance": False,
+        "Aditya Birla Capital":  False,
+        "Piramal Finance":       False,
+        "Muthoot Finance":       False,
+        "Mahindra Finance":      False,
+    }
+    tcols = st.columns(4)
+    selected_fin = ["Poonawalla Fincorp"]
+    for i, (name, default) in enumerate(TOGGLEABLE.items()):
+        with tcols[i % 4]:
+            if st.checkbox(name, value=default, key=f"fin_{name}"):
                 selected_fin.append(name)
 
-    # Data quality disclaimer
-    has_estimated = any(n in selected_fin for n in
-                        ['Cholamandalam Finance', 'Aditya Birla Capital',
-                         'Piramal Finance', 'Muthoot Finance', 'Mahindra Finance'])
-    if has_estimated:
-        st.markdown("""
-            <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:8px 14px;
-                        border-radius:6px;margin:8px 0 16px 0;font-size:12px;color:#92400e;">
-            <b>Data note:</b> ✅ Poonawalla, Bajaj, Shriram, L&T — sourced directly from investor presentations.
-            Cholamandalam & Piramal ✅ mostly official; Muthoot ✅ official (NIM = gold loan spread, not comparable).
-            Aditya Birla Capital & Mahindra Finance ⚠️ partially estimated — verify before MD presentation.
-            </div>
-        """, unsafe_allow_html=True)
+    # Quality warnings
+    _estimated = {"Aditya Birla Capital", "Mahindra Finance"}
+    _partial   = {"Cholamandalam Finance", "Piramal Finance", "Muthoot Finance"}
+    _show_est  = [n for n in selected_fin if n in _estimated]
+    _show_par  = [n for n in selected_fin if n in _partial]
+    if _show_est:
+        st.markdown(
+            f'<div style="background:#fef2f2;border-left:3px solid #dc2626;padding:8px 14px;'
+            f'border-radius:6px;margin:10px 0 4px 0;font-size:12px;color:#7f1d1d;">'
+            f'⚠️ <b>Partially estimated:</b> {", ".join(_show_est)} — confirm before MD presentation.</div>',
+            unsafe_allow_html=True)
+    if _show_par:
+        st.markdown(
+            f'<div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:8px 14px;'
+            f'border-radius:6px;margin:4px 0 4px 0;font-size:12px;color:#92400e;">'
+            f'📋 <b>Note:</b> {", ".join(_show_par)} — mostly official; see source footnote below.</div>',
+            unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-    # ── Charts ─────────────────────────────────────────────────────────────
-    st.plotly_chart(
-        make_fin_chart(AUM, selected_fin, 'Assets Under Management (AUM)', '₹ Crore', fmt='num'),
-        use_container_width=True, config={'displayModeBar': False}
-    )
-
-    c1, c2 = st.columns(2)
-    with c1:
+    # ── All charts full-width stacked ──────────────────────────────────────
+    for _data, _title, _ylabel, _fmt, _note in [
+        (AUM,  "Assets Under Management (AUM)", "₹ Crore", "num", None),
+        (NIM,  "Net Interest Margin (NIM)",      "NIM (%)", "pct",
+         "⚠️ Muthoot = gold loan spread — not directly comparable to other NBFCs"),
+        (GNPA, "Gross NPA",                      "GNPA (%)", "pct", None),
+        (NNPA, "Net NPA",                        "NNPA (%)", "pct", None),
+        (ROA,  "Return on Assets (ROA)",         "ROA (%)",  "pct",
+         "⚠️ Piramal = Growth business RoAUM • Muthoot ROA estimated"),
+    ]:
         st.plotly_chart(
-            make_fin_chart(NIM, selected_fin, 'Net Interest Margin (NIM)', 'NIM (%)',
-                           note='Muthoot = gold loan spread, not NIM — not directly comparable'),
-            use_container_width=True, config={'displayModeBar': False}
-        )
-    with c2:
-        st.plotly_chart(
-            make_fin_chart(GNPA, selected_fin, 'Gross NPA', 'GNPA (%)'),
-            use_container_width=True, config={'displayModeBar': False}
-        )
-
-    c3, c4 = st.columns(2)
-    with c3:
-        st.plotly_chart(
-            make_fin_chart(NNPA, selected_fin, 'Net NPA', 'NNPA (%)'),
-            use_container_width=True, config={'displayModeBar': False}
-        )
-    with c4:
-        st.plotly_chart(
-            make_fin_chart(ROA, selected_fin, 'Return on Assets (ROA)', 'ROA (%)',
-                           note='Piramal = Growth business RoAUM; Muthoot ROA estimated'),
-            use_container_width=True, config={'displayModeBar': False}
+            make_fin_chart(_data, selected_fin, _title, _ylabel, fmt=_fmt, note=_note),
+            use_container_width=True, config={"displayModeBar": False}
         )
 
     st.markdown("""
         <div style="background:#f8fafc;border-radius:8px;padding:12px 18px;
                     margin-top:8px;border-left:3px solid #0284c7;font-size:12px;color:#64748b;">
             <b>Sources:</b> Investor presentations, BSE/NSE filings, ICICI Direct & Axis Direct analyst reports.
-            Bajaj Finance consolidated (incl. BHFL). Poonawalla Q1–Q2 FY26 ROA reflects STPL provision impact.
-            Cholamandalam GNPA per RBI norms. Muthoot NIM = gold loan spread. Aditya Birla AUM = NBFC + HFC lending portfolio.
+            Bajaj Finance consolidated (incl. BHFL). Cholamandalam GNPA per RBI norms.
+            Muthoot NIM = gold loan spread. Aditya Birla AUM = NBFC + HFC lending portfolio.
             <b>⚠️ Aditya Birla Capital & Mahindra Finance values partially estimated — confirm before use.</b>
         </div>
     """, unsafe_allow_html=True)
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TABS 3–6 — PLACEHOLDERS
