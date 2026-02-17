@@ -76,21 +76,43 @@ st.markdown("""
     .stock-change-pos { color: #16a34a; font-weight: 700; font-size: 14px; }
     .stock-change-neg { color: #dc2626; font-weight: 700; font-size: 14px; }
 
-    /* Period buttons */
-    .stButton button {
-        background: white;
-        color: #475569;
-        border: 1.5px solid #cbd5e1;
-        border-radius: 6px;
-        padding: 6px 14px;
-        font-weight: 600;
-        font-size: 12px;
-        transition: all 0.2s;
+    /* Period selector — radio styled as pill buttons */
+    div[data-testid="stHorizontalBlock"] div[role="radiogroup"] {
+        display: flex;
+        gap: 6px;
+        flex-direction: row;
     }
-    .stButton button:hover {
-        border-color: #0284c7;
-        color: #0284c7;
+    div[role="radiogroup"] label {
+        background: white !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        padding: 5px 14px !important;
+        font-weight: 600 !important;
+        font-size: 12px !important;
+        color: #475569 !important;
+        cursor: pointer !important;
+        transition: all 0.15s !important;
     }
+    div[role="radiogroup"] label:hover {
+        border-color: #0284c7 !important;
+        color: #0284c7 !important;
+    }
+    /* Selected period — blue filled */
+    div[role="radiogroup"] label[data-baseweb="radio"]:has(input:checked),
+    div[role="radiogroup"] label:has(input[type="radio"]:checked) {
+        background: #0284c7 !important;
+        border-color: #0284c7 !important;
+        color: white !important;
+    }
+    /* Hide the actual radio circle dot */
+    div[role="radiogroup"] label span[data-testid="stMarkdownContainer"] p {
+        margin: 0;
+    }
+    div[role="radiogroup"] [data-testid="stRadio"] > div:first-child { display: none; }
+    div[role="radiogroup"] div[data-baseweb="radio"] > div:first-child { display: none !important; }
+    div[role="radiogroup"] span[data-testid] svg { display: none !important; }
+    /* Hide the radio dot circle specifically */
+    div[role="radiogroup"] label > div:first-child { display: none !important; }
 
     /* Checkboxes */
     .stCheckbox { font-size: 13px; }
@@ -454,44 +476,33 @@ with tab1:
 
     comparison_stocks = ['Poonawalla Fincorp'] + selected_others
 
-    # Compact period buttons with active highlight
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
-
-    # Inject CSS to style the "active" period button differently
-    # We use a data attribute trick via session state
-    active_period = st.session_state.time_period
-    btn_styles = ""
+    # Period selector — radio styled as pill buttons (active state reliably highlighted)
+    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
     periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
-    for p in periods:
-        if p == active_period:
-            btn_styles += f"""
-            div[data-testid="stColumns"] button:has(p:contains("{p}")) {{
-                background: #0284c7 !important;
-                color: white !important;
-                border-color: #0284c7 !important;
-            }}
-            """
-    st.markdown(f"<style>{btn_styles}</style>", unsafe_allow_html=True)
-
-    period_cols = st.columns([1, 1, 1, 1, 1, 1, 10])
-    for i, p in enumerate(periods):
-        with period_cols[i]:
-            if st.button(p, key=f"btn_{p}", use_container_width=True):
-                st.session_state.time_period = p
-                st.rerun()
+    selected_period = st.radio(
+        "period_selector",
+        options=periods,
+        index=periods.index(st.session_state.time_period),
+        horizontal=True,
+        label_visibility="collapsed",
+        key="period_radio",
+    )
+    if selected_period != st.session_state.time_period:
+        st.session_state.time_period = selected_period
+        st.rerun()
 
     # Compute and display actual date range
     ist_tz = pytz.timezone('Asia/Kolkata')
     today = datetime.now(ist_tz)
     days_map = {'1D': 1, '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365}
-    delta_days = days_map.get(active_period, 180)
+    delta_days = days_map.get(selected_period, 180)
     range_start = today - timedelta(days=delta_days)
 
     def fmt_date(dt):
         return dt.strftime("%-d %b'%y")
 
     date_range_str = f"{fmt_date(range_start)} – {fmt_date(today)}"
-    st.caption(f"**{active_period}** &nbsp;|&nbsp; {date_range_str} &nbsp;|&nbsp; Indexed to 100")
+    st.caption(f"**{selected_period}** &nbsp;|&nbsp; {date_range_str} &nbsp;|&nbsp; Indexed to 100")
 
     with st.spinner("Loading chart..."):
         try:
