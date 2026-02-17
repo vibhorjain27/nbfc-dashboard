@@ -58,16 +58,23 @@ st.markdown("""
     .stock-card {
         background: white;
         border-radius: 10px;
-        padding: 18px 20px;
+        padding: 16px 20px;
         border-left: 4px solid #0284c7;
         box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 100px;
     }
-    .stock-name { font-size: 14px; font-weight: 600; color: #0a2540; margin-bottom: 6px; }
-    .stock-symbol { font-size: 11px; color: #94a3b8; margin-bottom: 8px; }
-    .stock-price { font-size: 22px; font-weight: 700; color: #1a3a52; font-family: 'JetBrains Mono', monospace; }
-    .stock-change-pos { color: #16a34a; font-weight: 700; font-size: 15px; }
-    .stock-change-neg { color: #dc2626; font-weight: 700; font-size: 15px; }
+    .stock-left { display: flex; flex-direction: column; justify-content: center; }
+    .stock-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+    .stock-name { font-size: 17px; font-weight: 700; color: #0a2540; margin-bottom: 3px; }
+    .stock-symbol { font-size: 11px; color: #94a3b8; letter-spacing: 0.04em; margin-bottom: 6px; }
+    .stock-volume { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .stock-price { font-size: 24px; font-weight: 700; color: #1a3a52; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
+    .stock-change-pos { color: #16a34a; font-weight: 700; font-size: 14px; }
+    .stock-change-neg { color: #dc2626; font-weight: 700; font-size: 14px; }
 
     /* Period buttons */
     .stButton button {
@@ -179,7 +186,7 @@ def fetch_stock_data(symbol, period='1y'):
     except:
         return None
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=300)  # Refresh every 5 min for live volume
 def get_current_prices():
     data = []
     for name, symbol in NBFCS.items():
@@ -189,12 +196,17 @@ def get_current_prices():
             if len(hist) > 0:
                 current = hist['Close'].iloc[-1]
                 prev = hist['Close'].iloc[-2] if len(hist) > 1 else current
-                change_pct = ((current - prev) / prev) * 100
+                change_abs = current - prev
+                change_pct = (change_abs / prev) * 100
+                # Volume: today's traded volume
+                volume = int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else 0
                 data.append({
                     'name': name,
                     'symbol': symbol.replace('.NS', ''),
                     'price': current,
+                    'change_abs': change_abs,
                     'change_pct': change_pct,
+                    'volume': volume,
                 })
         except:
             continue
@@ -228,13 +240,34 @@ def create_comparison_chart(time_period, selected_stocks):
                 'dates': filtered.index,
                 'values': indexed,
                 'color': COLORS[name],
+                'end_y': float(indexed.iloc[-1]),
             })
         except:
             continue
 
+    # Sort best to worst
     performance_data.sort(key=lambda x: x['performance'], reverse=True)
 
+    # ── Anti-collision: adjust label y-positions ──────────────────────────────
+    # Min gap in index units between adjacent labels (roughly ~3-4 chart units)
+    MIN_GAP = 3.5
+    label_positions = []
+
     for item in performance_data:
+        label_positions.append(item['end_y'])
+
+    # Pass 1: push labels DOWN if too close to one above (top-to-bottom)
+    for i in range(1, len(label_positions)):
+        if label_positions[i - 1] - label_positions[i] < MIN_GAP:
+            label_positions[i] = label_positions[i - 1] - MIN_GAP
+
+    # Pass 2: push labels UP if too close to one below (bottom-to-top), in case pass 1 overcorrected
+    for i in range(len(label_positions) - 2, -1, -1):
+        if label_positions[i] - label_positions[i + 1] < MIN_GAP:
+            label_positions[i] = label_positions[i + 1] + MIN_GAP
+
+    # Add traces + annotations with corrected positions
+    for i, item in enumerate(performance_data):
         fig.add_trace(go.Scatter(
             x=item['dates'],
             y=item['values'],
@@ -243,15 +276,27 @@ def create_comparison_chart(time_period, selected_stocks):
             mode='lines',
             hovertemplate=f"<b>{item['name']}</b><br>%{{x|%d %b %Y}}<br>%{{y:.1f}}<extra></extra>"
         ))
+
+        # Small dot at line end to connect label to line
+        fig.add_trace(go.Scatter(
+            x=[item['dates'][-1]],
+            y=[item['end_y']],
+            mode='markers',
+            marker=dict(size=7, color=item['color']),
+            showlegend=False,
+            hoverinfo='skip',
+        ))
+
+        pct_str = f"{item['performance']:+.1f}%"
         fig.add_annotation(
             x=item['dates'][-1],
-            y=item['values'].iloc[-1],
-            text=f"<b>{item['name']}</b><br>{item['performance']:+.1f}%",
+            y=label_positions[i],
+            text=f"<b>{item['name']}</b>  {pct_str}",
             showarrow=False,
             xanchor='left',
-            xshift=8,
+            xshift=12,
             font=dict(size=11, color=item['color']),
-            bgcolor='rgba(255,255,255,0.85)',
+            bgcolor='rgba(255,255,255,0.9)',
             bordercolor=item['color'],
             borderwidth=1,
             borderpad=4,
@@ -263,12 +308,12 @@ def create_comparison_chart(time_period, selected_stocks):
         xaxis_title='Date',
         yaxis_title='Indexed Value (Base = 100)',
         template='plotly_white',
-        height=500,
+        height=520,
         hovermode='x unified',
         showlegend=False,
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=60, r=180, t=60, b=50),
+        margin=dict(l=60, r=200, t=60, b=50),
         font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
     )
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
@@ -344,13 +389,33 @@ with tab1:
                 arrow = "▲" if stock['change_pct'] >= 0 else "▼"
                 chg_class = "stock-change-pos" if stock['change_pct'] >= 0 else "stock-change-neg"
                 border_color = "#16a34a" if stock['change_pct'] >= 0 else "#dc2626"
+                # Format absolute change
+                abs_sign = "+" if stock['change_abs'] >= 0 else ""
+                abs_str = f"{abs_sign}₹{stock['change_abs']:.2f}"
+                pct_str = f"({abs_sign}{stock['change_pct']:.2f}%)"
+                # Format volume
+                vol = stock['volume']
+                if vol >= 10_000_000:
+                    vol_str = f"{vol/10_000_000:.1f}Cr"
+                elif vol >= 100_000:
+                    vol_str = f"{vol/100_000:.1f}L"
+                elif vol >= 1000:
+                    vol_str = f"{vol/1000:.0f}K"
+                else:
+                    vol_str = str(vol) if vol > 0 else "—"
+
                 with cols[col_idx]:
                     st.markdown(f"""
                         <div class="stock-card" style="border-left-color: {border_color}">
-                            <div class="stock-name">{stock['name']}</div>
-                            <div class="stock-symbol">{stock['symbol']}</div>
-                            <div class="stock-price">₹{stock['price']:,.2f}</div>
-                            <div class="{chg_class}">{arrow} {abs(stock['change_pct']):.2f}%</div>
+                            <div class="stock-left">
+                                <div class="stock-name">{stock['name']}</div>
+                                <div class="stock-symbol">{stock['symbol']}</div>
+                                <div class="stock-volume">Vol: {vol_str}</div>
+                            </div>
+                            <div class="stock-right">
+                                <div class="stock-price">₹{stock['price']:,.2f}</div>
+                                <div class="{chg_class}">{arrow} {abs_str} {pct_str}</div>
+                            </div>
                         </div>
                     """, unsafe_allow_html=True)
 
