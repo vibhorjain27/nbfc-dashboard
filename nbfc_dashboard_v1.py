@@ -455,45 +455,38 @@ with tab1:
 
     comparison_stocks = ['Poonawalla Fincorp'] + selected_others
 
-    # Period selector — buttons with active state highlighted via targeted CSS
+    # Period selector — real buttons, active one highlighted via scoped CSS
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
     periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
     active = st.session_state.time_period
+    active_idx = periods.index(active) + 1  # 1-based for CSS nth-child
 
-    # Render pills as plain HTML — clicking triggers a hidden st.button
-    pills_html = '<div style="display:flex; gap:6px; margin-bottom:10px;">'
-    for p in periods:
-        if p == active:
-            pills_html += (
-                f'<span style="background:#0284c7; color:white; border:1.5px solid #0284c7; '
-                f'border-radius:6px; padding:5px 16px; font-weight:700; font-size:12px; '
-                f'font-family:DM Sans,sans-serif; cursor:default;">{p}</span>'
-            )
-        else:
-            pills_html += (
-                f'<span style="background:white; color:#475569; border:1.5px solid #cbd5e1; '
-                f'border-radius:6px; padding:5px 16px; font-weight:600; font-size:12px; '
-                f'font-family:DM Sans,sans-serif;">{p}</span>'
-            )
-    pills_html += '</div>'
-    st.markdown(pills_html, unsafe_allow_html=True)
+    # Inject a named marker + CSS that uses :has() to scope only THIS button row
+    st.markdown(f"""
+        <style>
+        div:has(> #period-row-marker) ~ div[data-testid="stHorizontalBlock"]
+            div[data-testid="stColumn"]:nth-child({active_idx}) button {{
+            background: #0284c7 !important;
+            color: white !important;
+            border-color: #0284c7 !important;
+            font-weight: 700 !important;
+        }}
+        </style>
+        <div id="period-row-marker"></div>
+    """, unsafe_allow_html=True)
 
-    # Invisible real buttons that change state (hidden behind the HTML pills via zero-height container)
-    st.markdown('<div style="margin-top:-44px; opacity:0; height:34px; overflow:hidden;">', unsafe_allow_html=True)
-    btn_cols = st.columns(len(periods))
+    cols = st.columns(6)
     for i, p in enumerate(periods):
-        with btn_cols[i]:
-            if st.button(p, key=f"pbtn_{p}", use_container_width=True):
+        with cols[i]:
+            if st.button(p, key=f"pb_{p}", use_container_width=True):
                 st.session_state.time_period = p
                 st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Date range display
+    # Date range label
     ist_tz = pytz.timezone('Asia/Kolkata')
     today = datetime.now(ist_tz)
     days_map = {'1D': 1, '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365}
-    delta_days = days_map.get(active, 180)
-    range_start = today - timedelta(days=delta_days)
+    range_start = today - timedelta(days=days_map.get(active, 180))
 
     def fmt_date(dt):
         return dt.strftime("%-d %b'%y")
