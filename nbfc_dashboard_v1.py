@@ -473,9 +473,160 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
 
 # ─── TAB 3: VALUATION FUNCTIONS ───────────────────────────────────────────────
 
+@st.cache_data(ttl=86400)
+def parse_screener_book_values(html_content, company_name):
+    """Extract quarterly book values from Screener.in HTML balance sheet table"""
+    try:
+        from bs4 import BeautifulSoup
+        import re
+        
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Find the Balance Sheet section
+        balance_sheet = soup.find('h2', string=re.compile('Balance Sheet'))
+        if not balance_sheet:
+            print(f"⚠️  Could not find Balance Sheet section for {company_name}")
+            return None
+        
+        # Find the table after Balance Sheet heading
+        table = balance_sheet.find_next('table')
+        if not table:
+            print(f"⚠️  Could not find balance sheet table for {company_name}")
+            return None
+        
+        # Extract headers (quarters)
+        headers = []
+        header_row = table.find('thead').find('tr') if table.find('thead') else table.find('tr')
+        for th in header_row.find_all('th'):
+            text = th.get_text(strip=True)
+            if text and text not in ['', ' ']:
+                headers.append(text)
+        
+        # Find Equity Capital and Reserves rows
+        equity_data = []
+        reserves_data = []
+        
+        rows = table.find('tbody').find_all('tr') if table.find('tbody') else table.find_all('tr')[1:]
+        for row in rows:
+            cells = row.find_all('td')
+            if not cells:
+                continue
+            
+            row_name = cells[0].get_text(strip=True)
+            
+            if 'Equity Capital' in row_name:
+                equity_data = [cell.get_text(strip=True) for cell in cells[1:]]
+            elif 'Reserves' in row_name:
+                reserves_data = [cell.get_text(strip=True) for cell in cells[1:]]
+        
+        if not equity_data or not reserves_data:
+            print(f"⚠️  Could not find Equity Capital or Reserves for {company_name}")
+            return None
+        
+        # Parse quarterly book values
+        quarterly_bv = {}
+        for i, quarter in enumerate(headers[1:]):  # Skip first header (row labels)
+            try:
+                if i >= len(equity_data) or i >= len(reserves_data):
+                    continue
+                
+                equity = float(equity_data[i].replace(',', '')) if equity_data[i] else None
+                reserves = float(reserves_data[i].replace(',', '')) if reserves_data[i] else None
+                
+                if equity and reserves:
+                    # Equity is in Cr, face value is ₹2
+                    shares_cr = equity / 2  # Number of shares in crores
+                    total_equity = equity + reserves
+                    book_value = total_equity / shares_cr
+                    
+                    # Parse quarter name to date
+                    quarter_date = parse_quarter_to_date(quarter)
+                    if quarter_date:
+                        quarterly_bv[quarter_date] = book_value
+            except (ValueError, ZeroDivisionError) as e:
+                continue
+        
+        return quarterly_bv if quarterly_bv else None
+        
+    except Exception as e:
+        print(f"❌ Error parsing Screener data for {company_name}: {e}")
+        return None
+
+def parse_quarter_to_date(quarter_str):
+    """Convert quarter string like 'Sep 2025' to datetime"""
+    try:
+        from datetime import datetime
+        month_map = {
+            'Mar': 3, 'Jun': 6, 'Sep': 9, 'Dec': 12,
+            'March': 3, 'June': 6, 'September': 9, 'December': 12
+        }
+        
+        parts = quarter_str.split()
+        if len(parts) != 2:
+            return None
+        
+        month_name = parts[0]
+        year = int(parts[1])
+        
+        month = month_map.get(month_name)
+        if not month:
+            return None
+        
+        # Use end of quarter month (last day)
+        if month == 3:
+            day = 31
+        elif month == 6:
+            day = 30
+        elif month == 9:
+            day = 30
+        else:  # Dec
+            day = 31
+        
+        return pd.Timestamp(year=year, month=month, day=day)
+    except:
+        return None
+
+@st.cache_data(ttl=86400)
+def get_screener_book_values(company_name):
+    """Fetch quarterly book value from Screener.in"""
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+        
+        screener_map = {
+            'Poonawalla Fincorp': 'POONAWALLA',
+            'Bajaj Finance': 'BAJFINANCE',
+            'Shriram Finance': 'SHRIRAMFIN',
+            'L&T Finance': 'L&TFH',
+            'Cholamandalam Finance': 'CHOLAFIN',
+            'Aditya Birla Capital': 'ABCAPITAL',
+            'Piramal Finance': 'PEL',
+            'Muthoot Finance': 'MUTHOOTFIN',
+            'Mahindra Finance': 'M&MFIN',
+        }
+        
+        screener_symbol = screener_map.get(company_name)
+        if not screener_symbol:
+            return None
+        
+        url = f"https://www.screener.in/company/{screener_symbol}/consolidated/"
+        
+        # Fetch the page
+        response = requests.get(url, timeout=10)
+        if response.status_code != 200:
+            print(f"⚠️  Failed to fetch Screener page for {company_name}: HTTP {response.status_code}")
+            return None
+        
+        # Parse quarterly book values
+        return parse_screener_book_values(response.text, company_name)
+        
+    except Exception as e:
+        print(f"❌ Error fetching Screener data for {company_name}: {e}")
+        return None
+
 @st.cache_data(ttl=3600)
 def get_pb_timeseries(symbol, company_name):
-    """Get P/B ratio time series from Yahoo Finance price and book value data"""
+    """Get P/B ratio time series with quarterly book values from Screener.in"""
     try:
         ticker = yf.Ticker(symbol)
         hist = ticker.history(period='1y')
@@ -483,6 +634,39 @@ def get_pb_timeseries(symbol, company_name):
             print(f"⚠️  No price data for {company_name}")
             return None
         
+        # Try to get quarterly book values from Screener
+        # For now, fall back to Yahoo Finance
+        quarterly_bv = get_screener_book_values(company_name)
+        
+        if quarterly_bv:
+            # Create daily book value series by forward-filling quarterly values
+            book_values = pd.Series(index=hist.index, dtype=float)
+            
+            # Sort quarterly dates
+            sorted_quarters = sorted(quarterly_bv.keys())
+            
+            for i, date in enumerate(hist.index):
+                # Find the most recent quarterly book value
+                applicable_bv = None
+                for q_date in reversed(sorted_quarters):
+                    if date >= q_date:
+                        applicable_bv = quarterly_bv[q_date]
+                        break
+                
+                if applicable_bv:
+                    book_values[date] = applicable_bv
+            
+            # If we have at least some book values, use them
+            if not book_values.isna().all():
+                result = pd.DataFrame()
+                result['Price'] = hist['Close']
+                result['BookValue'] = book_values
+                result = result.dropna()
+                if not result.empty:
+                    result['PB'] = result['Price'] / result['BookValue']
+                    return result
+        
+        # Fallback to Yahoo Finance single book value
         info = ticker.info
         book_value = info.get('bookValue')
         
@@ -490,7 +674,6 @@ def get_pb_timeseries(symbol, company_name):
             print(f"⚠️  No book value data for {company_name}")
             return None
         
-        # Calculate P/B ratio: Price / Book Value
         result = pd.DataFrame()
         result['Price'] = hist['Close']
         result['BookValue'] = book_value
@@ -650,7 +833,7 @@ def create_pb_chart(selected_stocks):
         showlegend=False,
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=60, r=280, t=70, b=50),
+        margin=dict(l=60, r=320, t=70, b=50),
         font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
         hoverlabel=dict(
             bgcolor='white',
