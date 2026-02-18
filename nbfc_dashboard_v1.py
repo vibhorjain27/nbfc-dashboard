@@ -468,206 +468,97 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
 # ─── TAB 3: VALUATION FUNCTIONS ───────────────────────────────────────────────
 
 @st.cache_data(ttl=3600)
-def get_book_value_history(symbol):
-    """Fetch book value per share for the last 1 year"""
-    try:
-        ticker = yf.Ticker(symbol)
-        
-        hist = ticker.history(period='1y')
-        if hist.empty:
-            return None
-            
-        bs = ticker.quarterly_balance_sheet
-        info = ticker.info
-        
-        if bs is None or bs.empty:
-            return None
-        
-        shares = info.get('sharesOutstanding')
-        if not shares or shares == 0:
-            return None
-        
-        book_values = []
-        for col in bs.columns:
-            equity = None
-            for field in ['Total Equity Gross Minority Interest', 'Stockholders Equity', 
-                         'Total Stockholder Equity', 'Common Stock Equity']:
-                if field in bs.index:
-                    equity = bs.loc[field, col]
-                    break
-            
-            if equity and equity > 0:
-                bv_per_share = equity / shares
-                book_values.append({
-                    'date': col,
-                    'book_value': bv_per_share
-                })
-        
-        if not book_values:
-            return None
-        
-        bv_df = pd.DataFrame(book_values).set_index('date').sort_index()
-        
-        result = pd.DataFrame()
-        result['Price'] = hist['Close']
-        
-        result['BookValue'] = None
-        for _, row in bv_df.iterrows():
-            result.loc[result.index >= row.name, 'BookValue'] = row['book_value']
-        
-        result['PB'] = result['Price'] / result['BookValue']
-        result = result.dropna()
-        
-        return result
-        
-    except Exception as e:
-        print(f"Error fetching book value for {symbol}: {e}")
-        return None
-
-def create_pb_chart(selected_stocks):
-    """Create Price-to-Book chart with quarterly snapshots and endpoint labels"""
-    fig = go.Figure()
-    
-    performance_data = []
-    
+def get_current_pb_ratios(selected_stocks):
+    """Get current P/B ratios for selected stocks - more reliable than historical"""
+    data = []
     for name in selected_stocks:
         symbol = NBFCS[name]
         try:
-            data = get_book_value_history(symbol)
-            if data is None or data.empty:
-                continue
+            ticker = yf.Ticker(symbol)
+            info = ticker.info
             
-            performance_data.append({
-                'name': name,
-                'dates': data.index,
-                'pb': data['PB'],
-                'price': data['Price'],
-                'bv': data['BookValue'],
-                'color': COLORS[name],
-                'end_pb': float(data['PB'].iloc[-1]),
-                'end_price': float(data['Price'].iloc[-1]),
-                'end_bv': float(data['BookValue'].iloc[-1]),
-            })
+            # Get current price
+            hist = ticker.history(period='5d')
+            if hist.empty:
+                continue
+            current_price = hist['Close'].iloc[-1]
+            
+            # Get book value - try multiple fields
+            book_value = (
+                info.get('bookValue') or 
+                info.get('priceToBook') and current_price / info.get('priceToBook') or
+                None
+            )
+            
+            if book_value and book_value > 0:
+                pb_ratio = current_price / book_value
+                data.append({
+                    'name': name,
+                    'price': float(current_price),
+                    'book_value': float(book_value),
+                    'pb_ratio': float(pb_ratio),
+                    'color': COLORS[name]
+                })
         except Exception as e:
-            print(f"Error processing {name}: {e}")
+            print(f"Error fetching P/B for {name}: {e}")
             continue
     
-    if not performance_data:
+    return data
+
+def create_pb_chart(selected_stocks):
+    """Create current P/B ratio comparison bar chart"""
+    data = get_current_pb_ratios(selected_stocks)
+    
+    if not data:
         return None
     
-    performance_data.sort(key=lambda x: x['end_pb'], reverse=True)
+    # Sort by P/B ratio descending
+    data.sort(key=lambda x: x['pb_ratio'], reverse=True)
     
-    all_pb_vals = [v for item in performance_data for v in item['pb']]
-    y_range = max(all_pb_vals) - min(all_pb_vals)
-    MIN_GAP = max(0.1, min(0.5, y_range * 0.15))
+    fig = go.Figure()
     
-    label_positions = [item['end_pb'] for item in performance_data]
-    
-    for i in range(1, len(label_positions)):
-        if label_positions[i - 1] - label_positions[i] < MIN_GAP:
-            label_positions[i] = label_positions[i - 1] - MIN_GAP
-    
-    for i in range(len(label_positions) - 2, -1, -1):
-        if label_positions[i] - label_positions[i + 1] < MIN_GAP:
-            label_positions[i] = label_positions[i + 1] + MIN_GAP
-    
-    for i, item in enumerate(performance_data):
-        fig.add_trace(go.Scatter(
-            x=item['dates'],
-            y=item['pb'],
-            name=item['name'],
-            line=dict(color=item['color'], width=2.5),
-            mode='lines',
-            customdata=list(zip(item['price'], item['bv'])),
-            hovertemplate=(
-                f"<b>{item['name']}</b><br>"
-                "%{x|%d %b %Y}<br>"
-                "Price: ₹%{customdata[0]:.2f}<br>"
-                "Book Value: ₹%{customdata[1]:.2f}<br>"
-                "P/B: %{y:.2f}x"
-                "<extra></extra>"
-            )
-        ))
-        
-        # Quarterly snapshots
-        quarter_starts = []
-        quarter_pb = []
-        for date in item['dates']:
-            if date.month in [1, 4, 7, 10] and date.day <= 5:
-                if len(quarter_starts) == 0 or (date - quarter_starts[-1]).days > 80:
-                    quarter_starts.append(date)
-                    idx = item['dates'].get_loc(date)
-                    quarter_pb.append(item['pb'].iloc[idx])
-        
-        if quarter_starts:
-            fig.add_trace(go.Scatter(
-                x=quarter_starts,
-                y=quarter_pb,
-                mode='markers+text',
-                marker=dict(size=9, color=item['color'], symbol='circle',
-                           line=dict(color='white', width=2)),
-                text=[f"{pb:.1f}x" for pb in quarter_pb],
-                textposition='top center',
-                textfont=dict(size=9, color=item['color'], family='JetBrains Mono'),
-                showlegend=False,
-                hoverinfo='skip',
-            ))
-        
-        # Endpoint dot
-        fig.add_trace(go.Scatter(
-            x=[item['dates'][-1]],
-            y=[item['end_pb']],
-            mode='markers',
-            marker=dict(size=8, color=item['color']),
-            showlegend=False,
-            hoverinfo='skip',
-        ))
-        
-        # Connector line
-        if abs(item['end_pb'] - label_positions[i]) > MIN_GAP * 0.3:
-            fig.add_shape(
-                type='line',
-                x0=item['dates'][-1], x1=item['dates'][-1],
-                y0=item['end_pb'], y1=label_positions[i],
-                line=dict(color=item['color'], width=1, dash='dot'),
-                xref='x', yref='y'
-            )
-        
-        # Endpoint label
-        fig.add_annotation(
-            x=item['dates'][-1],
-            y=label_positions[i],
-            text=f"<b>{item['name']}</b>  {item['end_pb']:.2f}x",
-            showarrow=False,
-            xanchor='left',
-            xshift=12,
-            font=dict(size=11, color=item['color']),
-            bgcolor='rgba(255,255,255,0.95)',
-            bordercolor=item['color'],
-            borderwidth=1,
-            borderpad=4,
-        )
+    # Add bars
+    fig.add_trace(go.Bar(
+        y=[item['name'] for item in data],
+        x=[item['pb_ratio'] for item in data],
+        orientation='h',
+        marker=dict(
+            color=[item['color'] for item in data],
+            line=dict(color='white', width=1)
+        ),
+        customdata=[[item['price'], item['book_value']] for item in data],
+        hovertemplate=(
+            "<b>%{y}</b><br>"
+            "P/B Ratio: %{x:.2f}x<br>"
+            "Price: ₹%{customdata[0]:.2f}<br>"
+            "Book Value: ₹%{customdata[1]:.2f}"
+            "<extra></extra>"
+        ),
+        text=[f"{item['pb_ratio']:.2f}x" for item in data],
+        textposition='outside',
+        textfont=dict(size=12, color='#1a3a52', family='JetBrains Mono', weight=600),
+    ))
     
     fig.update_layout(
         title=dict(
             text=(
                 '<span style="color:#0a2540;font-weight:700;font-size:16px">'
-                'Price-to-Book Ratio — Last 1 Year</span><br>'
+                'Current Price-to-Book Ratios</span><br>'
                 '<span style="color:#94a3b8;font-size:11px;font-weight:400">'
-                'Quarterly snapshots marked • Hover for Price, Book Value, P/B details</span>'
+                'Live data from Yahoo Finance • Hover for details</span>'
             ),
-            font=dict(family='DM Sans, sans-serif'), 
-            x=0, 
+            font=dict(family='DM Sans, sans-serif'),
+            x=0,
             xref='paper'
         ),
-        yaxis_title='P/B Ratio (x)',
+        xaxis_title='P/B Ratio (x)',
+        yaxis_title='',
         template='plotly_white',
-        height=520,
-        hovermode='x unified',
+        height=max(400, len(data) * 60),
         showlegend=False,
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=60, r=240, t=70, b=50),
+        margin=dict(l=200, r=100, t=70, b=50),
         font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
         hoverlabel=dict(
             bgcolor='white',
@@ -676,18 +567,17 @@ def create_pb_chart(selected_stocks):
         ),
     )
     fig.update_xaxes(
-        showgrid=True, 
-        gridcolor='#f1f5f9', 
-        showline=True, 
+        showgrid=True,
+        gridcolor='#f1f5f9',
+        showline=True,
         linecolor='#cbd5e1',
         tickfont=dict(size=12, color='#475569')
     )
     fig.update_yaxes(
-        showgrid=True, 
-        gridcolor='#f1f5f9', 
-        showline=True, 
+        showgrid=False,
+        showline=True,
         linecolor='#cbd5e1',
-        tickfont=dict(size=12, color='#475569')
+        tickfont=dict(size=13, color='#1a3a52', family='DM Sans', weight=600)
     )
     
     return fig
@@ -944,13 +834,13 @@ with tab3:
     
     st.markdown("### 📊 Price-to-Book Ratio")
     
-    with st.spinner("Calculating P/B ratios..."):
+    with st.spinner("Fetching current P/B ratios..."):
         pb_chart = create_pb_chart(selected_fin)
     
     if pb_chart:
         st.plotly_chart(pb_chart, use_container_width=True, config={'displayModeBar': False})
     else:
-        st.warning("Unable to fetch book value data. Please try again later.")
+        st.warning("⚠️ Unable to fetch P/B data from Yahoo Finance. This may be due to API limitations. Please try again later or check with fewer stocks selected.")
     
     st.markdown("### 📊 Price-to-Earnings Ratio")
     st.info("⏳ P/E chart coming next...")
