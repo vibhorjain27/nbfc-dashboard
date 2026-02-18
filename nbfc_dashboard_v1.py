@@ -151,65 +151,119 @@ COLORS = {
     'Mahindra Finance':      '#7c3aed',
 }
 
-# Tab 2 financial data (4 quarters, 4 NBFCs)
-QUARTERS = ['Q4 FY25', 'Q1 FY26', 'Q2 FY26', 'Q3 FY26']
+# Tab 2 financial data — 5 quarters for YoY comparison
+# Q3 FY25 = Oct–Dec 2024 | Q4 FY25 = Jan–Mar 2025 | Q1 FY26 = Apr–Jun 2025
+# Q2 FY26 = Jul–Sep 2025 | Q3 FY26 = Oct–Dec 2025
+QUARTERS = ['Q3 FY25', 'Q4 FY25', 'Q1 FY26', 'Q2 FY26', 'Q3 FY26']
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DATA POLICY: Only numbers confirmed from official company investor
+# presentation PDFs or IR pages are entered. All unverified fields = None.
+# None values render as gaps (no line drawn). Data is actively being completed.
+# ─────────────────────────────────────────────────────────────────────────────
 
 AUM = {
-    # ── Confirmed from official investor presentations / press releases ──
-    'Poonawalla Fincorp':   [31900,  36636,  47709,   55017],
-    'Bajaj Finance':        [341001, 363000, 412000,  485883],
-    'Shriram Finance':      [249005, 262000, 281309,  291709],
-    'L&T Finance':          [96000,  103000, 108000,  114285],
-    'Cholamandalam Finance':[189141, 199159, 214906,  227770],  # ✅ official
-    'Piramal Finance':      [80689,  86000,  91447,   96690],   # ✅ official (Q1 est)
-    'Muthoot Finance':      [122181, 130000, 147674,  164720],  # ✅ official (Q1 est)
-    # ── Partially estimated ──
-    'Aditya Birla Capital': [157404, 168000, 179000,  190386],  # NBFC+HFC; Q4 & Q3 official
-    'Mahindra Finance':     [103000, 107000, 112000,  118000],  # ⚠️ estimated (~17% YoY growth)
+    # [Q3 FY25, Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]  — ₹ Crore
+    # Source: poonawallafincorp.com investor PDFs + IR page live data
+    'Poonawalla Fincorp':   [30984,   35631,   41250,   None,    55017  ],
+    # Source: cms-assets.bajajfinserv.in Q1 FY26 investor presentation PDF
+    'Bajaj Finance':        [None,    None,    441450,  None,    None   ],
+    # No PDF fetched yet
+    'Shriram Finance':      [None,    None,    None,    None,    None   ],
+    # No PDF fetched yet
+    'L&T Finance':          [None,    None,    None,    None,    None   ],
+    # No PDF fetched yet
+    'Cholamandalam Finance':[None,    None,    None,    None,    None   ],
+    # Source: piramalfinance.com Q4 FY25 results + Q2 FY26 presentation + Q3 FY26 announcement
+    'Piramal Finance':      [None,    80689,   None,    91447,   96690  ],
+    # No PDF fetched yet
+    'Muthoot Finance':      [None,    None,    None,    None,    None   ],
+    # Source: ABCL Q4 FY25 press release (BSE) + Q3 FY26 announcement (BSE)
+    'Aditya Birla Capital': [None,    157404,  None,    None,    190386 ],
+    # No PDF fetched yet
+    'Mahindra Finance':     [None,    None,    None,    None,    None   ],
 }
+
 NIM = {
-    'Poonawalla Fincorp':   [7.80,  8.10,  8.40,  8.62],
-    'Bajaj Finance':        [9.90,  10.10, 10.10, 10.20],
-    'Shriram Finance':      [8.20,  8.25,  8.29,  8.40],
-    'L&T Finance':          [9.80,  10.00, 10.20, 10.41],
-    'Cholamandalam Finance':[8.00,  7.50,  7.90,  8.00],        # ✅ official
-    'Piramal Finance':      [5.50,  5.80,  6.10,  6.30],        # ✅ official
-    'Muthoot Finance':      [11.50, 11.60, 11.80, 11.85],       # ✅ gold loan spread (not NIM)
-    'Aditya Birla Capital': [8.50,  8.60,  8.70,  8.80],        # ⚠️ estimated
-    'Mahindra Finance':     [7.50,  7.60,  7.70,  7.60],        # ⚠️ estimated
+    # [Q3 FY25, Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]  — %
+    # NOTE: Bajaj Finance does not report NIM as a standalone headline metric.
+    # NOTE: Muthoot Finance "NIM" = gold loan yield spread, not comparable to other NBFCs.
+    # No NIM confirmed from direct investor PDFs for any NBFC yet.
+    'Poonawalla Fincorp':   [None, None, None, None, None],
+    'Bajaj Finance':        [None, None, None, None, None],  # Not reported as headline metric
+    'Shriram Finance':      [None, None, None, None, None],
+    'L&T Finance':          [None, None, None, None, None],
+    'Cholamandalam Finance':[None, None, None, None, None],
+    'Piramal Finance':      [None, None, None, None, None],
+    'Muthoot Finance':      [None, None, None, None, None],  # Metric not comparable
+    'Aditya Birla Capital': [None, None, None, None, None],
+    'Mahindra Finance':     [None, None, None, None, None],
 }
+
 GNPA = {
-    'Poonawalla Fincorp':   [1.84, 1.72, 1.59, 1.51],
-    'Bajaj Finance':        [0.96, 1.11, 1.24, 1.21],
-    'Shriram Finance':      [4.55, 4.80, 4.57, 5.01],
-    'L&T Finance':          [3.29, 3.10, 2.90, 2.70],
-    'Cholamandalam Finance':[3.97, 4.29, 4.57, 4.63],           # ✅ official RBI norms
-    'Piramal Finance':      [2.80, 2.80, 2.60, 2.40],           # ✅ official
-    'Muthoot Finance':      [2.58, 2.50, 2.25, 1.60],           # ✅ official
-    'Aditya Birla Capital': [2.80, 2.70, 2.60, 2.50],           # ⚠️ growth biz GNPA; partial
-    'Mahindra Finance':     [4.80, 4.60, 4.50, 4.20],           # ⚠️ est from Stage-3 (3.7%)
+    # [Q3 FY25, Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]  — % per RBI norms
+    # Source: poonawallafincorp.com Q3 FY25 PDF + Q4 FY25 PDF + IR page live data
+    'Poonawalla Fincorp':   [1.85,  1.84,  None,  None,  1.51 ],
+    # Source: cms-assets.bajajfinserv.in Q1 FY26 PDF; Q2 from BSE filing
+    'Bajaj Finance':        [None,  None,  1.03,  1.24,  None ],
+    # No PDF fetched yet
+    'Shriram Finance':      [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'L&T Finance':          [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'Cholamandalam Finance':[None,  None,  None,  None,  None ],
+    # Source: Piramal Q4 FY25 results + Q1 FY26 results + Q2 FY26 presentation PDF
+    'Piramal Finance':      [None,  2.80,  2.80,  2.60,  None ],
+    # No PDF fetched yet
+    'Muthoot Finance':      [None,  None,  None,  None,  None ],
+    # ABCL does not explicitly report GNPA per RBI norms (reports Stage 2+3)
+    'Aditya Birla Capital': [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'Mahindra Finance':     [None,  None,  None,  None,  None ],
 }
+
 NNPA = {
-    'Poonawalla Fincorp':   [0.85, 0.83, 0.81, 0.80],
-    'Bajaj Finance':        [0.44, 0.54, 0.60, 0.47],
-    'Shriram Finance':      [2.64, 2.55, 2.49, 2.60],
-    'L&T Finance':          [0.97, 0.90, 0.82, 0.75],
-    'Cholamandalam Finance':[2.63, 2.86, 3.07, 2.80],           # ✅ official RBI norms
-    'Piramal Finance':      [1.90, 2.00, 1.80, 1.60],           # ✅ official
-    'Muthoot Finance':      [2.10, 2.10, 1.86, 1.20],           # ✅ official
-    'Aditya Birla Capital': [1.50, 1.40, 1.30, 1.20],           # ⚠️ estimated
-    'Mahindra Finance':     [2.50, 2.40, 2.30, 2.10],           # ⚠️ estimated
+    # [Q3 FY25, Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]  — % per RBI norms
+    # Source: poonawallafincorp.com Q3 FY25 PDF + Q4 FY25 PDF + IR page live data
+    'Poonawalla Fincorp':   [0.81,  0.85,  None,  None,  0.80 ],
+    # Source: cms-assets.bajajfinserv.in Q1 FY26 PDF; Q2 from BSE filing
+    'Bajaj Finance':        [None,  None,  0.50,  0.60,  None ],
+    # No PDF fetched yet
+    'Shriram Finance':      [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'L&T Finance':          [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'Cholamandalam Finance':[None,  None,  None,  None,  None ],
+    # Source: Piramal Q4 FY25 results + Q1 FY26 results + Q2 FY26 presentation PDF
+    'Piramal Finance':      [None,  1.90,  2.00,  1.80,  None ],
+    # No PDF fetched yet
+    'Muthoot Finance':      [None,  None,  None,  None,  None ],
+    # No confirmed data
+    'Aditya Birla Capital': [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'Mahindra Finance':     [None,  None,  None,  None,  None ],
 }
+
 ROA = {
-    'Poonawalla Fincorp':   [0.60, 0.80, 1.00, 1.20],
-    'Bajaj Finance':        [4.40, 4.50, 4.55, 4.60],
-    'Shriram Finance':      [2.70, 2.85, 2.95, 3.09],
-    'L&T Finance':          [2.40, 2.50, 2.60, 2.70],
-    'Cholamandalam Finance':[2.10, 2.10, 2.20, 2.30],           # ⚠️ PAT-ROA; derived from PBT-ROA 3%
-    'Piramal Finance':      [1.40, 1.50, 1.60, 1.90],           # ✅ Growth biz RoAUM
-    'Muthoot Finance':      [4.20, 4.50, 5.80, 6.50],           # ⚠️ est; gold loans = high ROA
-    'Aditya Birla Capital': [2.25, 2.20, 2.30, 2.40],           # ✅ Q4 FY25; rest estimated
-    'Mahindra Finance':     [2.20, 2.10, 2.00, 1.80],           # ⚠️ est; Q3 PAT fell 10% YoY
+    # [Q3 FY25, Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]  — % annualised PAT/avg assets
+    # Source: poonawallafincorp.com IR page live data (Q3 FY26 confirmed)
+    'Poonawalla Fincorp':   [None,  None,  None,  None,  1.20 ],
+    # Source: cms-assets.bajajfinserv.in Q1 FY26 PDF. BFL ROA = annualised PAT / avg AUF.
+    'Bajaj Finance':        [None,  None,  4.5,   None,  None ],
+    # No PDF fetched yet
+    'Shriram Finance':      [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'L&T Finance':          [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'Cholamandalam Finance':[None,  None,  None,  None,  None ],
+    # Piramal reports "Growth business PBT-RoAUM" — not comparable PAT/assets ROA. Kept blank.
+    'Piramal Finance':      [None,  None,  None,  None,  None ],
+    # No PDF fetched yet
+    'Muthoot Finance':      [None,  None,  None,  None,  None ],
+    # Source: ABCL Q4 FY25 press release BSE filing: "Return on assets was 2.25%"
+    'Aditya Birla Capital': [None,  2.25,  None,  None,  None ],
+    # No PDF fetched yet
+    'Mahindra Finance':     [None,  None,  None,  None,  None ],
 }
 
 FIN_COLORS = {
@@ -395,25 +449,36 @@ def create_comparison_chart(time_period, selected_stocks):
 def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
     """
     Full-width chart with:
-    • Traces sorted by average value → hover tooltip order matches chart top-to-bottom order
-      across all quarters (Plotly shows hover items in trace-addition order)
-    • End-of-line labels with anti-collision spacing
+    • None values render as gaps — lines only connect confirmed data points
+    • Traces sorted by mean of non-None values → hover order ≈ visual top-to-bottom
+    • End-of-line labels use the LAST non-None value for placement
     • Dark blue bold chart title, note in muted grey below
     """
     fig = go.Figure()
 
-    # ── Sort series by mean value descending so hover order ≈ visual order ──
+    # ── Build series, skip NBFCs with zero confirmed data ────────────────────
     series = []
     for name in selected:
         if name not in metric_data:
             continue
         vals = metric_data[name]
-        series.append({'name': name, 'values': vals,
-                       'avg': sum(vals) / len(vals), 'last': vals[-1],
-                       'color': FIN_COLORS[name]})
+        confirmed = [v for v in vals if v is not None]
+        if not confirmed:
+            continue   # completely blank — don't draw at all
+        last_confirmed = confirmed[-1]
+        # Find the last non-None value's quarter label for annotation
+        last_idx = max(i for i, v in enumerate(vals) if v is not None)
+        series.append({
+            'name': name,
+            'values': vals,
+            'avg': sum(confirmed) / len(confirmed),
+            'last': last_confirmed,
+            'last_idx': last_idx,
+            'color': FIN_COLORS[name],
+        })
     series.sort(key=lambda x: x['avg'], reverse=True)
 
-    # ── Add traces in sorted order (determines hover tooltip order) ──────────
+    # ── Add traces — connectgaps=False means None values become visible gaps ──
     for s in series:
         val_fmt = '%{y:.2f}%' if fmt == 'pct' else '₹%{y:,.0f} Cr'
         fig.add_trace(go.Scatter(
@@ -421,15 +486,16 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
             y=s['values'],
             name=s['name'],
             mode='lines+markers',
+            connectgaps=False,        # gaps show where data is pending
             line=dict(color=s['color'], width=2.5),
             marker=dict(size=8, color=s['color']),
             hovertemplate=f"<b>{s['name']}</b>  {val_fmt}<extra></extra>",
         ))
 
-    # ── Anti-collision end-of-line labels ────────────────────────────────────
+    # ── Anti-collision end-of-line labels using last confirmed value ─────────
     label_y = [s['last'] for s in series]
-    all_vals = [v for s in series for v in s['values']]
-    y_range  = max(all_vals) - min(all_vals) if all_vals else 1
+    all_vals = [v for s in series for v in s['values'] if v is not None]
+    y_range  = max(all_vals) - min(all_vals) if len(all_vals) > 1 else 1
     MIN_GAP  = max(y_range * 0.12, 0.25)
 
     # Push down pass
@@ -443,15 +509,16 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
 
     for i, s in enumerate(series):
         val_str = f"{s['last']:.2f}%" if fmt == 'pct' else f"₹{s['last']:,.0f} Cr"
-        # Connector line from actual value to label
+        x_anchor = QUARTERS[s['last_idx']]
+        # Connector line from actual value to label if displaced
         if abs(s['last'] - label_y[i]) > MIN_GAP * 0.3:
             fig.add_shape(type='line',
-                x0=QUARTERS[-1], x1=QUARTERS[-1],
+                x0=x_anchor, x1=x_anchor,
                 y0=s['last'], y1=label_y[i],
                 line=dict(color=s['color'], width=1, dash='dot'),
                 xref='x', yref='y')
         fig.add_annotation(
-            x=QUARTERS[-1], y=label_y[i],
+            x=x_anchor, y=label_y[i],
             text=f"<b style='color:{s['color']}'>{s['name']}</b>  {val_str}",
             showarrow=False,
             xanchor='left', xshift=14,
@@ -651,8 +718,19 @@ with tab2:
                     padding: 20px 28px; border-radius: 12px; margin-bottom: 20px;">
             <h2 style="color: white; margin: 0; font-size: 1.4rem;">Financial Performance — Quarterly Metrics</h2>
             <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">
-                Consolidated results  •  Q4 FY25 – Q3 FY26  •  Q3 FY26 = Oct–Dec 2025
+                Consolidated results  •  Q3 FY25 – Q3 FY26  •  5 quarters for YoY comparison
             </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # ── Data status banner ─────────────────────────────────────────────────
+    st.markdown("""
+        <div style="background:#fefce8; border:1px solid #fbbf24; border-radius:8px;
+                    padding:12px 16px; margin-bottom:18px; font-size:13px; color:#92400e;">
+            <b>⚠️ Data collection in progress.</b>
+            Charts show only numbers confirmed directly from official company investor
+            presentation PDFs. Gaps indicate quarters where data has not yet been verified
+            from source. No estimates or analyst-cited numbers are used.
         </div>
     """, unsafe_allow_html=True)
 
@@ -690,35 +768,19 @@ with tab2:
             if st.checkbox(name, value=default, key=f"fin_{name}"):
                 selected_fin.append(name)
 
-    # Quality warnings
-    _estimated = {"Aditya Birla Capital", "Mahindra Finance"}
-    _partial   = {"Cholamandalam Finance", "Piramal Finance", "Muthoot Finance"}
-    _show_est  = [n for n in selected_fin if n in _estimated]
-    _show_par  = [n for n in selected_fin if n in _partial]
-    if _show_est:
-        st.markdown(
-            f'<div style="background:#fef2f2;border-left:3px solid #dc2626;padding:8px 14px;'
-            f'border-radius:6px;margin:10px 0 4px 0;font-size:12px;color:#7f1d1d;">'
-            f'⚠️ <b>Partially estimated:</b> {", ".join(_show_est)} — confirm before MD presentation.</div>',
-            unsafe_allow_html=True)
-    if _show_par:
-        st.markdown(
-            f'<div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:8px 14px;'
-            f'border-radius:6px;margin:4px 0 4px 0;font-size:12px;color:#92400e;">'
-            f'📋 <b>Note:</b> {", ".join(_show_par)} — mostly official; see source footnote below.</div>',
-            unsafe_allow_html=True)
+
 
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
     # ── All charts full-width stacked ──────────────────────────────────────
     for _data, _title, _ylabel, _fmt, _note in [
-        (AUM,  "Assets Under Management (AUM)", "₹ Crore", "num", None),
-        (NIM,  "Net Interest Margin (NIM)",      "NIM (%)", "pct",
-         "⚠️ Muthoot = gold loan spread — not directly comparable to other NBFCs"),
+        (AUM,  "Assets Under Management (AUM)", "₹ Crore",  "num", None),
+        (NIM,  "Net Interest Margin (NIM)",      "NIM (%)",  "pct",
+         "Data collection in progress — NIM pending PDF verification for all NBFCs"),
         (GNPA, "Gross NPA",                      "GNPA (%)", "pct", None),
         (NNPA, "Net NPA",                        "NNPA (%)", "pct", None),
         (ROA,  "Return on Assets (ROA)",         "ROA (%)",  "pct",
-         "⚠️ Piramal = Growth business RoAUM • Muthoot ROA estimated"),
+         "Note: Bajaj Finance ROA = annualised PAT / avg AUF (their standard methodology)"),
     ]:
         st.plotly_chart(
             make_fin_chart(_data, selected_fin, _title, _ylabel, fmt=_fmt, note=_note),
@@ -728,10 +790,13 @@ with tab2:
     st.markdown("""
         <div style="background:#f8fafc;border-radius:8px;padding:12px 18px;
                     margin-top:8px;border-left:3px solid #0284c7;font-size:12px;color:#64748b;">
-            <b>Sources:</b> Investor presentations, BSE/NSE filings, ICICI Direct & Axis Direct analyst reports.
-            Bajaj Finance consolidated (incl. BHFL). Cholamandalam GNPA per RBI norms.
-            Muthoot NIM = gold loan spread. Aditya Birla AUM = NBFC + HFC lending portfolio.
-            <b>⚠️ Aditya Birla Capital & Mahindra Finance values partially estimated — confirm before use.</b>
+            <b>Data sourced directly from:</b> Official company investor presentation PDFs and IR pages.
+            Gaps in charts = data pending PDF verification.
+            Poonawalla: poonawallafincorp.com &nbsp;|&nbsp;
+            Bajaj Finance: cms-assets.bajajfinserv.in &nbsp;|&nbsp;
+            Piramal: piramalfinance.com &nbsp;|&nbsp;
+            Aditya Birla Capital: adityabirlacapital.com &nbsp;|&nbsp;
+            Remaining NBFCs: collection in progress.
         </div>
     """, unsafe_allow_html=True)
 
