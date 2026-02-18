@@ -569,11 +569,12 @@ def get_pb_timeseries(symbol, company_name):
       1. yfinance quarterly_balance_sheet  → quarterly snapshots forward-filled daily
       2. Screener.in current book value    → flat line at latest quarter BV
       3. yfinance info['bookValue']        → last-resort flat line
+      4. hardcoded _FALLBACK_BV           → always available
     """
     try:
-        ticker = yf.Ticker(symbol)
-        hist = ticker.history(period='1y')
-        if hist.empty:
+        # Reuse cached price data to avoid rate-limiting on Streamlit Cloud
+        hist = fetch_stock_data(symbol, period='1y')
+        if hist is None or hist.empty:
             print(f"⚠️  No price data for {company_name} ({symbol})")
             return None
 
@@ -582,6 +583,7 @@ def get_pb_timeseries(symbol, company_name):
         # ── Layer 1: yfinance quarterly balance sheet ─────────────────────────
         quarterly_bv = {}
         try:
+            ticker = yf.Ticker(symbol)
             bs = ticker.quarterly_balance_sheet
             info = ticker.info
             shares = info.get('sharesOutstanding', 0)
@@ -628,7 +630,7 @@ def get_pb_timeseries(symbol, company_name):
         # ── Layer 3: yfinance info['bookValue'] ───────────────────────────────
         if not bv or bv <= 0:
             try:
-                bv = ticker.info.get('bookValue')
+                bv = yf.Ticker(symbol).info.get('bookValue')
             except Exception:
                 pass
 
