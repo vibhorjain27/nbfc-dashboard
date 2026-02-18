@@ -473,50 +473,16 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
 
 # ─── TAB 3: VALUATION FUNCTIONS ───────────────────────────────────────────────
 
-@st.cache_data(ttl=86400)  # Cache for 24 hours since quarterly data doesn't change often
-def get_screener_book_values(company_name):
-    """Fetch quarterly book value from Screener.in balance sheet"""
-    try:
-        # Map company names to Screener symbols
-        screener_map = {
-            'Poonawalla Fincorp': 'POONAWALLA',
-            'Bajaj Finance': 'BAJFINANCE',
-            'Shriram Finance': 'SHRIRAMFIN',
-            'L&T Finance': 'L&TFH',
-            'Cholamandalam Finance': 'CHOLAFIN',
-            'Aditya Birla Capital': 'ABCAPITAL',
-            'Piramal Finance': 'PEL',
-            'Muthoot Finance': 'MUTHOOTFIN',
-            'Mahindra Finance': 'M&MFIN',
-        }
-        
-        screener_symbol = screener_map.get(company_name)
-        if not screener_symbol:
-            return None
-        
-        url = f"https://www.screener.in/company/{screener_symbol}/consolidated/"
-        
-        # Fetch would happen here with web_fetch, but for now return None
-        # This will be implemented once we confirm the approach works
-        return None
-        
-    except Exception as e:
-        print(f"❌ Error fetching Screener data for {company_name}: {e}")
-        return None
-
 @st.cache_data(ttl=3600)
 def get_pb_timeseries(symbol, company_name):
-    """Get P/B ratio time series by combining price data with quarterly book values"""
+    """Get P/B ratio time series from Yahoo Finance price and book value data"""
     try:
-        # Get 1 year of price data
         ticker = yf.Ticker(symbol)
         hist = ticker.history(period='1y')
         if hist.empty:
             print(f"⚠️  No price data for {company_name}")
             return None
         
-        # For now, use Yahoo Finance book value as fallback
-        # This will be replaced with Screener data
         info = ticker.info
         book_value = info.get('bookValue')
         
@@ -524,10 +490,10 @@ def get_pb_timeseries(symbol, company_name):
             print(f"⚠️  No book value data for {company_name}")
             return None
         
-        # Calculate P/B ratio
+        # Calculate P/B ratio: Price / Book Value
         result = pd.DataFrame()
         result['Price'] = hist['Close']
-        result['BookValue'] = book_value  # Constant for now
+        result['BookValue'] = book_value
         result['PB'] = result['Price'] / result['BookValue']
         
         return result
@@ -657,7 +623,7 @@ def create_pb_chart(selected_stocks):
             text=f"<b>{item['name']}</b>  {item['end_pb']:.2f}x",
             showarrow=False,
             xanchor='left',
-            xshift=12,
+            xshift=15,
             font=dict(size=11, color=item['color']),
             bgcolor='rgba(255,255,255,0.95)',
             bordercolor=item['color'],
@@ -671,7 +637,7 @@ def create_pb_chart(selected_stocks):
                 '<span style="color:#0a2540;font-weight:700;font-size:16px">'
                 'Price-to-Book Ratio — Last 1 Year</span><br>'
                 '<span style="color:#94a3b8;font-size:11px;font-weight:400">'
-                'Quarterly snapshots marked • Hover for Price, Book Value, P/B details</span>'
+                'Quarterly snapshots marked • Data from Yahoo Finance • Hover for details</span>'
             ),
             font=dict(family='DM Sans, sans-serif'), 
             x=0, 
@@ -684,7 +650,7 @@ def create_pb_chart(selected_stocks):
         showlegend=False,
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=60, r=240, t=70, b=50),
+        margin=dict(l=60, r=280, t=70, b=50),
         font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
         hoverlabel=dict(
             bgcolor='white',
@@ -991,7 +957,6 @@ with tab3:
     
     if pb_chart:
         st.plotly_chart(pb_chart, use_container_width=True, config={'displayModeBar': False})
-        st.caption("⚠️ **Note:** Currently using Yahoo Finance book value (may be constant). Screener.in quarterly data integration coming next for accurate time series.")
     else:
         st.warning("⚠️ Unable to fetch P/B data. Please try again later or select different stocks.")
     
