@@ -4,3 +4,6 @@ plotly
 pandas
 numpy
 pytz
+beautifulsoup4
+requests
+lxml
