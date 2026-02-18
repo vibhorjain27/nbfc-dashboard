@@ -1106,11 +1106,17 @@ with tab3:
     
     with st.spinner("Calculating P/B time series..."):
         pb_chart = create_pb_chart(selected_valuation)
-    
+
     if pb_chart:
         st.plotly_chart(pb_chart, use_container_width=True, config={'displayModeBar': False})
     else:
         st.warning("⚠️ Unable to fetch P/B data. Please try again later or select different stocks.")
+        with st.expander("🔍 Debug info"):
+            for name in selected_valuation:
+                symbol = NBFCS[name]
+                hist = fetch_stock_data(symbol, period='1y')
+                bv_fallback = _FALLBACK_BV.get(name)
+                st.write(f"**{name}** ({symbol}): price_rows={len(hist) if hist is not None and not hist.empty else 'NO DATA'}, fallback_BV=₹{bv_fallback}")
     
     st.markdown("### 📊 Price-to-Earnings Ratio")
     st.info("⏳ P/E chart coming next...")
