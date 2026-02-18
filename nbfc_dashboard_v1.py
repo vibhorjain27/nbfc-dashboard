@@ -237,21 +237,24 @@ def get_current_prices():
         try:
             ticker = yf.Ticker(symbol)
             hist = ticker.history(period='5d')
-            if len(hist) > 0:
-                current = hist['Close'].iloc[-1]
-                prev = hist['Close'].iloc[-2] if len(hist) > 1 else current
-                change_abs = current - prev
-                change_pct = (change_abs / prev) * 100
-                volume = int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else 0
-                data.append({
-                    'name': name,
-                    'symbol': symbol.replace('.NS', ''),
-                    'price': current,
-                    'change_abs': change_abs,
-                    'change_pct': change_pct,
-                    'volume': volume,
-                })
-        except:
+            if hist.empty:
+                print(f"⚠️  No data for {name} ({symbol})")
+                continue
+            current = hist['Close'].iloc[-1]
+            prev = hist['Close'].iloc[-2] if len(hist) > 1 else current
+            change_abs = current - prev
+            change_pct = (change_abs / prev) * 100
+            volume = int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else 0
+            data.append({
+                'name': name,
+                'symbol': symbol.replace('.NS', ''),
+                'price': current,
+                'change_abs': change_abs,
+                'change_pct': change_pct,
+                'volume': volume,
+            })
+        except Exception as e:
+            print(f"❌ Error fetching {name} ({symbol}): {e}")
             continue
     return data
 
@@ -272,11 +275,13 @@ def create_comparison_chart(time_period, selected_stocks):
         try:
             data = fetch_stock_data(symbol, period=yf_period)
             if data is None or data.empty:
+                print(f"⚠️  No data for {name} in period {yf_period}")
                 continue
             end_date = data.index[-1]
             start_date = end_date - timedelta(days=days)
             filtered = data[data.index >= start_date]
             if filtered.empty or len(filtered) < 2:
+                print(f"⚠️  Insufficient data for {name} in selected period")
                 continue
             prices = filtered['Close']
             indexed = (prices / prices.iloc[0]) * 100
@@ -292,7 +297,8 @@ def create_comparison_chart(time_period, selected_stocks):
                 'color': COLORS[name],
                 'end_y': float(indexed.iloc[-1]),
             })
-        except:
+        except Exception as e:
+            print(f"❌ Error processing {name}: {e}")
             continue
 
     performance_data.sort(key=lambda x: x['performance'], reverse=True)
@@ -467,98 +473,218 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
 
 # ─── TAB 3: VALUATION FUNCTIONS ───────────────────────────────────────────────
 
+@st.cache_data(ttl=86400)  # Cache for 24 hours since quarterly data doesn't change often
+def get_screener_book_values(company_name):
+    """Fetch quarterly book value from Screener.in balance sheet"""
+    try:
+        # Map company names to Screener symbols
+        screener_map = {
+            'Poonawalla Fincorp': 'POONAWALLA',
+            'Bajaj Finance': 'BAJFINANCE',
+            'Shriram Finance': 'SHRIRAMFIN',
+            'L&T Finance': 'L&TFH',
+            'Cholamandalam Finance': 'CHOLAFIN',
+            'Aditya Birla Capital': 'ABCAPITAL',
+            'Piramal Finance': 'PEL',
+            'Muthoot Finance': 'MUTHOOTFIN',
+            'Mahindra Finance': 'M&MFIN',
+        }
+        
+        screener_symbol = screener_map.get(company_name)
+        if not screener_symbol:
+            return None
+        
+        url = f"https://www.screener.in/company/{screener_symbol}/consolidated/"
+        
+        # Fetch would happen here with web_fetch, but for now return None
+        # This will be implemented once we confirm the approach works
+        return None
+        
+    except Exception as e:
+        print(f"❌ Error fetching Screener data for {company_name}: {e}")
+        return None
+
 @st.cache_data(ttl=3600)
-def get_current_pb_ratios(selected_stocks):
-    """Get current P/B ratios for selected stocks - more reliable than historical"""
-    data = []
+def get_pb_timeseries(symbol, company_name):
+    """Get P/B ratio time series by combining price data with quarterly book values"""
+    try:
+        # Get 1 year of price data
+        ticker = yf.Ticker(symbol)
+        hist = ticker.history(period='1y')
+        if hist.empty:
+            print(f"⚠️  No price data for {company_name}")
+            return None
+        
+        # For now, use Yahoo Finance book value as fallback
+        # This will be replaced with Screener data
+        info = ticker.info
+        book_value = info.get('bookValue')
+        
+        if not book_value or book_value <= 0:
+            print(f"⚠️  No book value data for {company_name}")
+            return None
+        
+        # Calculate P/B ratio
+        result = pd.DataFrame()
+        result['Price'] = hist['Close']
+        result['BookValue'] = book_value  # Constant for now
+        result['PB'] = result['Price'] / result['BookValue']
+        
+        return result
+        
+    except Exception as e:
+        print(f"❌ Error calculating P/B for {company_name}: {e}")
+        return None
+
+def create_pb_chart(selected_stocks):
+    """Create Price-to-Book time series chart"""
+    fig = go.Figure()
+    
+    performance_data = []
+    
     for name in selected_stocks:
         symbol = NBFCS[name]
         try:
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
-            
-            # Get current price
-            hist = ticker.history(period='5d')
-            if hist.empty:
+            data = get_pb_timeseries(symbol, name)
+            if data is None or data.empty:
                 continue
-            current_price = hist['Close'].iloc[-1]
             
-            # Get book value - try multiple fields
-            book_value = (
-                info.get('bookValue') or 
-                info.get('priceToBook') and current_price / info.get('priceToBook') or
-                None
-            )
-            
-            if book_value and book_value > 0:
-                pb_ratio = current_price / book_value
-                data.append({
-                    'name': name,
-                    'price': float(current_price),
-                    'book_value': float(book_value),
-                    'pb_ratio': float(pb_ratio),
-                    'color': COLORS[name]
-                })
+            performance_data.append({
+                'name': name,
+                'dates': data.index,
+                'pb': data['PB'],
+                'price': data['Price'],
+                'bv': data['BookValue'],
+                'color': COLORS[name],
+                'end_pb': float(data['PB'].iloc[-1]),
+                'end_price': float(data['Price'].iloc[-1]),
+                'end_bv': float(data['BookValue'].iloc[-1]),
+            })
         except Exception as e:
-            print(f"Error fetching P/B for {name}: {e}")
+            print(f"❌ Error processing P/B for {name}: {e}")
             continue
     
-    return data
-
-def create_pb_chart(selected_stocks):
-    """Create current P/B ratio comparison bar chart"""
-    data = get_current_pb_ratios(selected_stocks)
-    
-    if not data:
+    if not performance_data:
         return None
     
-    # Sort by P/B ratio descending
-    data.sort(key=lambda x: x['pb_ratio'], reverse=True)
+    # Sort by current P/B ratio (descending)
+    performance_data.sort(key=lambda x: x['end_pb'], reverse=True)
     
-    fig = go.Figure()
+    # Calculate label positioning
+    all_pb_vals = [v for item in performance_data for v in item['pb']]
+    y_range = max(all_pb_vals) - min(all_pb_vals)
+    MIN_GAP = max(0.1, min(0.5, y_range * 0.15))
     
-    # Add bars
-    fig.add_trace(go.Bar(
-        y=[item['name'] for item in data],
-        x=[item['pb_ratio'] for item in data],
-        orientation='h',
-        marker=dict(
-            color=[item['color'] for item in data],
-            line=dict(color='white', width=1)
-        ),
-        customdata=[[item['price'], item['book_value']] for item in data],
-        hovertemplate=(
-            "<b>%{y}</b><br>"
-            "P/B Ratio: %{x:.2f}x<br>"
-            "Price: ₹%{customdata[0]:.2f}<br>"
-            "Book Value: ₹%{customdata[1]:.2f}"
-            "<extra></extra>"
-        ),
-        text=[f"{item['pb_ratio']:.2f}x" for item in data],
-        textposition='outside',
-        textfont=dict(size=12, color='#1a3a52', family='JetBrains Mono', weight=600),
-    ))
+    label_positions = [item['end_pb'] for item in performance_data]
+    
+    # Push-down pass
+    for i in range(1, len(label_positions)):
+        if label_positions[i - 1] - label_positions[i] < MIN_GAP:
+            label_positions[i] = label_positions[i - 1] - MIN_GAP
+    
+    # Push-up pass
+    for i in range(len(label_positions) - 2, -1, -1):
+        if label_positions[i] - label_positions[i + 1] < MIN_GAP:
+            label_positions[i] = label_positions[i + 1] + MIN_GAP
+    
+    for i, item in enumerate(performance_data):
+        # Main line trace
+        fig.add_trace(go.Scatter(
+            x=item['dates'],
+            y=item['pb'],
+            name=item['name'],
+            line=dict(color=item['color'], width=2.5),
+            mode='lines',
+            customdata=list(zip(item['price'], item['bv'])),
+            hovertemplate=(
+                f"<b>{item['name']}</b><br>"
+                "%{x|%d %b %Y}<br>"
+                "Price: ₹%{customdata[0]:.2f}<br>"
+                "Book Value: ₹%{customdata[1]:.2f}<br>"
+                "P/B: %{y:.2f}x"
+                "<extra></extra>"
+            )
+        ))
+        
+        # Quarterly snapshots
+        quarter_starts = []
+        quarter_pb = []
+        for date in item['dates']:
+            if date.month in [1, 4, 7, 10] and date.day <= 5:
+                if len(quarter_starts) == 0 or (date - quarter_starts[-1]).days > 80:
+                    quarter_starts.append(date)
+                    idx = item['dates'].get_loc(date)
+                    quarter_pb.append(item['pb'].iloc[idx])
+        
+        if quarter_starts:
+            fig.add_trace(go.Scatter(
+                x=quarter_starts,
+                y=quarter_pb,
+                mode='markers+text',
+                marker=dict(size=9, color=item['color'], symbol='circle',
+                           line=dict(color='white', width=2)),
+                text=[f"{pb:.1f}x" for pb in quarter_pb],
+                textposition='top center',
+                textfont=dict(size=9, color=item['color'], family='JetBrains Mono'),
+                showlegend=False,
+                hoverinfo='skip',
+            ))
+        
+        # Endpoint dot
+        fig.add_trace(go.Scatter(
+            x=[item['dates'][-1]],
+            y=[item['end_pb']],
+            mode='markers',
+            marker=dict(size=8, color=item['color']),
+            showlegend=False,
+            hoverinfo='skip',
+        ))
+        
+        # Connector line if needed
+        if abs(item['end_pb'] - label_positions[i]) > MIN_GAP * 0.3:
+            fig.add_shape(
+                type='line',
+                x0=item['dates'][-1], x1=item['dates'][-1],
+                y0=item['end_pb'], y1=label_positions[i],
+                line=dict(color=item['color'], width=1, dash='dot'),
+                xref='x', yref='y'
+            )
+        
+        # Endpoint label
+        fig.add_annotation(
+            x=item['dates'][-1],
+            y=label_positions[i],
+            text=f"<b>{item['name']}</b>  {item['end_pb']:.2f}x",
+            showarrow=False,
+            xanchor='left',
+            xshift=12,
+            font=dict(size=11, color=item['color']),
+            bgcolor='rgba(255,255,255,0.95)',
+            bordercolor=item['color'],
+            borderwidth=1,
+            borderpad=4,
+        )
     
     fig.update_layout(
         title=dict(
             text=(
                 '<span style="color:#0a2540;font-weight:700;font-size:16px">'
-                'Current Price-to-Book Ratios</span><br>'
+                'Price-to-Book Ratio — Last 1 Year</span><br>'
                 '<span style="color:#94a3b8;font-size:11px;font-weight:400">'
-                'Live data from Yahoo Finance • Hover for details</span>'
+                'Quarterly snapshots marked • Hover for Price, Book Value, P/B details</span>'
             ),
-            font=dict(family='DM Sans, sans-serif'),
-            x=0,
+            font=dict(family='DM Sans, sans-serif'), 
+            x=0, 
             xref='paper'
         ),
-        xaxis_title='P/B Ratio (x)',
-        yaxis_title='',
+        yaxis_title='P/B Ratio (x)',
         template='plotly_white',
-        height=max(400, len(data) * 60),
+        height=520,
+        hovermode='x unified',
         showlegend=False,
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=200, r=100, t=70, b=50),
+        margin=dict(l=60, r=240, t=70, b=50),
         font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
         hoverlabel=dict(
             bgcolor='white',
@@ -567,17 +693,18 @@ def create_pb_chart(selected_stocks):
         ),
     )
     fig.update_xaxes(
-        showgrid=True,
-        gridcolor='#f1f5f9',
-        showline=True,
+        showgrid=True, 
+        gridcolor='#f1f5f9', 
+        showline=True, 
         linecolor='#cbd5e1',
         tickfont=dict(size=12, color='#475569')
     )
     fig.update_yaxes(
-        showgrid=False,
-        showline=True,
+        showgrid=True, 
+        gridcolor='#f1f5f9', 
+        showline=True, 
         linecolor='#cbd5e1',
-        tickfont=dict(size=13, color='#1a3a52', family='DM Sans', weight=600)
+        tickfont=dict(size=12, color='#475569')
     )
     
     return fig
@@ -819,28 +946,54 @@ with tab3:
     )
     
     st.markdown("#### Select NBFCs to Compare")
-    col1, col2 = st.columns([3, 1])
     
+    # Poonawalla is always included (non-removable)
+    selected_valuation = ['Poonawalla Fincorp']
+    
+    # Default selected stocks (togglable)
+    default_togglable = ['Bajaj Finance', 'Shriram Finance', 'L&T Finance']
+    
+    # Other stocks (not selected by default, but togglable)
+    other_togglable = ['Cholamandalam Finance', 'Aditya Birla Capital', 
+                       'Piramal Finance', 'Muthoot Finance', 'Mahindra Finance']
+    
+    # Display stock selectors
+    st.caption("**Poonawalla Fincorp** *(always included)* • Select others to compare:")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    # Column 1: Default togglable
     with col1:
-        selected_fin = FIN_DEFAULT.copy()
-        
-        optional_selected = st.multiselect(
-            "Add more NBFCs:",
-            FIN_OPTIONAL,
-            default=[],
-            key='tab3_selector'
-        )
-        selected_fin.extend(optional_selected)
+        st.markdown("**Default:**")
+        for name in default_togglable:
+            if st.checkbox(name, value=True, key=f"val_{name}"):
+                selected_valuation.append(name)
+    
+    # Columns 2-3: Other togglable
+    with col2:
+        st.markdown("**More NBFCs:**")
+        for name in other_togglable[:3]:
+            if st.checkbox(name, value=False, key=f"val_{name}"):
+                selected_valuation.append(name)
+    
+    with col3:
+        st.markdown("&nbsp;")  # Spacing
+        for name in other_togglable[3:]:
+            if st.checkbox(name, value=False, key=f"val_{name}"):
+                selected_valuation.append(name)
+    
+    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
     
     st.markdown("### 📊 Price-to-Book Ratio")
     
-    with st.spinner("Fetching current P/B ratios..."):
-        pb_chart = create_pb_chart(selected_fin)
+    with st.spinner("Calculating P/B time series..."):
+        pb_chart = create_pb_chart(selected_valuation)
     
     if pb_chart:
         st.plotly_chart(pb_chart, use_container_width=True, config={'displayModeBar': False})
+        st.caption("⚠️ **Note:** Currently using Yahoo Finance book value (may be constant). Screener.in quarterly data integration coming next for accurate time series.")
     else:
-        st.warning("⚠️ Unable to fetch P/B data from Yahoo Finance. This may be due to API limitations. Please try again later or check with fewer stocks selected.")
+        st.warning("⚠️ Unable to fetch P/B data. Please try again later or select different stocks.")
     
     st.markdown("### 📊 Price-to-Earnings Ratio")
     st.info("⏳ P/E chart coming next...")
