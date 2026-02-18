@@ -236,7 +236,7 @@ def get_current_prices():
     for name, symbol in NBFCS.items():
         try:
             ticker = yf.Ticker(symbol)
-            hist = ticker.history(period='5d')
+            hist = ticker.history(period='1mo')
             if hist.empty:
                 print(f"⚠️  No data for {name} ({symbol})")
                 continue
@@ -473,216 +473,183 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
 
 # ─── TAB 3: VALUATION FUNCTIONS ───────────────────────────────────────────────
 
-@st.cache_data(ttl=86400)
-def parse_screener_book_values(html_content, company_name):
-    """Extract quarterly book values from Screener.in HTML balance sheet table"""
-    try:
-        from bs4 import BeautifulSoup
-        import re
-        
-        soup = BeautifulSoup(html_content, 'html.parser')
-        
-        # Find the Balance Sheet section
-        balance_sheet = soup.find('h2', string=re.compile('Balance Sheet'))
-        if not balance_sheet:
-            print(f"⚠️  Could not find Balance Sheet section for {company_name}")
-            return None
-        
-        # Find the table after Balance Sheet heading
-        table = balance_sheet.find_next('table')
-        if not table:
-            print(f"⚠️  Could not find balance sheet table for {company_name}")
-            return None
-        
-        # Extract headers (quarters)
-        headers = []
-        header_row = table.find('thead').find('tr') if table.find('thead') else table.find('tr')
-        for th in header_row.find_all('th'):
-            text = th.get_text(strip=True)
-            if text and text not in ['', ' ']:
-                headers.append(text)
-        
-        # Find Equity Capital and Reserves rows
-        equity_data = []
-        reserves_data = []
-        
-        rows = table.find('tbody').find_all('tr') if table.find('tbody') else table.find_all('tr')[1:]
-        for row in rows:
-            cells = row.find_all('td')
-            if not cells:
-                continue
-            
-            row_name = cells[0].get_text(strip=True)
-            
-            if 'Equity Capital' in row_name:
-                equity_data = [cell.get_text(strip=True) for cell in cells[1:]]
-            elif 'Reserves' in row_name:
-                reserves_data = [cell.get_text(strip=True) for cell in cells[1:]]
-        
-        if not equity_data or not reserves_data:
-            print(f"⚠️  Could not find Equity Capital or Reserves for {company_name}")
-            return None
-        
-        # Parse quarterly book values
-        quarterly_bv = {}
-        for i, quarter in enumerate(headers[1:]):  # Skip first header (row labels)
-            try:
-                if i >= len(equity_data) or i >= len(reserves_data):
-                    continue
-                
-                equity = float(equity_data[i].replace(',', '')) if equity_data[i] else None
-                reserves = float(reserves_data[i].replace(',', '')) if reserves_data[i] else None
-                
-                if equity and reserves:
-                    # Equity is in Cr, face value is ₹2
-                    shares_cr = equity / 2  # Number of shares in crores
-                    total_equity = equity + reserves
-                    book_value = total_equity / shares_cr
-                    
-                    # Parse quarter name to date
-                    quarter_date = parse_quarter_to_date(quarter)
-                    if quarter_date:
-                        quarterly_bv[quarter_date] = book_value
-            except (ValueError, ZeroDivisionError) as e:
-                continue
-        
-        return quarterly_bv if quarterly_bv else None
-        
-    except Exception as e:
-        print(f"❌ Error parsing Screener data for {company_name}: {e}")
-        return None
+SCREENER_MAP = {
+    'Poonawalla Fincorp':   'POONAWALLA',
+    'Bajaj Finance':        'BAJFINANCE',
+    'Shriram Finance':      'SHRIRAMFIN',
+    'L&T Finance':          'LTF',
+    'Cholamandalam Finance':'CHOLAFIN',
+    'Aditya Birla Capital': 'ABCAPITAL',
+    'Piramal Finance':      'PIRAMALFIN',
+    'Muthoot Finance':      'MUTHOOTFIN',
+    'Mahindra Finance':     'M%26MFIN',
+}
 
-def parse_quarter_to_date(quarter_str):
-    """Convert quarter string like 'Sep 2025' to datetime"""
-    try:
-        from datetime import datetime
-        month_map = {
-            'Mar': 3, 'Jun': 6, 'Sep': 9, 'Dec': 12,
-            'March': 3, 'June': 6, 'September': 9, 'December': 12
-        }
-        
-        parts = quarter_str.split()
-        if len(parts) != 2:
-            return None
-        
-        month_name = parts[0]
-        year = int(parts[1])
-        
-        month = month_map.get(month_name)
-        if not month:
-            return None
-        
-        # Use end of quarter month (last day)
-        if month == 3:
-            day = 31
-        elif month == 6:
-            day = 30
-        elif month == 9:
-            day = 30
-        else:  # Dec
-            day = 31
-        
-        return pd.Timestamp(year=year, month=month, day=day)
-    except:
-        return None
+# Hardcoded book values per share (₹) — consolidated, sourced from Screener.in
+# Update quarterly after results season
+_FALLBACK_BV = {
+    'Bajaj Finance':        166.0,   # Screener consolidated Feb-2026
+    'Cholamandalam Finance':307.0,
+    'Shriram Finance':      322.0,
+    'Muthoot Finance':      887.0,
+    'Mahindra Finance':     178.0,
+    'L&T Finance':          105.0,
+    'Aditya Birla Capital': 123.0,
+    'Piramal Finance':     1210.0,
+    'Poonawalla Fincorp':   122.0,
+}
 
-@st.cache_data(ttl=86400)
-def get_screener_book_values(company_name):
-    """Fetch quarterly book value from Screener.in"""
-    try:
-        import requests
-        from bs4 import BeautifulSoup
-        
-        screener_map = {
-            'Poonawalla Fincorp': 'POONAWALLA',
-            'Bajaj Finance': 'BAJFINANCE',
-            'Shriram Finance': 'SHRIRAMFIN',
-            'L&T Finance': 'LTF',
-            'Cholamandalam Finance': 'CHOLAFIN',
-            'Aditya Birla Capital': 'ABCAPITAL',
-            'Piramal Finance': 'PIRAMALFIN',
-            'Muthoot Finance': 'MUTHOOTFIN',
-            'Mahindra Finance': 'M&MFIN',
-        }
-        
-        screener_symbol = screener_map.get(company_name)
-        if not screener_symbol:
-            return None
-        
-        url = f"https://www.screener.in/company/{screener_symbol}/consolidated/"
-        
-        # Fetch the page
-        response = requests.get(url, timeout=10)
-        if response.status_code != 200:
-            print(f"⚠️  Failed to fetch Screener page for {company_name}: HTTP {response.status_code}")
-            return None
-        
-        # Parse quarterly book values
-        return parse_screener_book_values(response.text, company_name)
-        
-    except Exception as e:
-        print(f"❌ Error fetching Screener data for {company_name}: {e}")
-        return None
+_SCREENER_HEADERS = {
+    'User-Agent': (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    ),
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Referer': 'https://www.screener.in/',
+}
 
 @st.cache_data(ttl=3600)
+def get_screener_book_value(company_name):
+    """
+    Fetch current book value per share (₹) from Screener.in key metrics section.
+    Cached for 1 hour — book value changes quarterly, price impact is negligible intra-day.
+    """
+    import requests
+    from bs4 import BeautifulSoup
+    import re
+
+    symbol = SCREENER_MAP.get(company_name)
+    if not symbol:
+        return None
+
+    try:
+        # Try consolidated page first; fall back to standalone
+        for path in [f"https://www.screener.in/company/{symbol}/consolidated/",
+                     f"https://www.screener.in/company/{symbol}/"]:
+            resp = requests.get(path, headers=_SCREENER_HEADERS, timeout=15)
+            if resp.status_code == 200:
+                break
+        if resp.status_code != 200:
+            print(f"⚠️  Screener HTTP {resp.status_code} for {company_name}")
+            return None
+
+        soup = BeautifulSoup(resp.text, 'html.parser')
+
+        # Method 1 — walk every <li>; find the one whose text contains "Book Value"
+        for li in soup.find_all('li'):
+            li_text = li.get_text(separator=' ', strip=True)
+            if 'Book Value' in li_text:
+                # Extract all numbers from the li text
+                nums = re.findall(r'[\d,]+(?:\.\d+)?', li_text)
+                for raw in nums:
+                    val = float(raw.replace(',', ''))
+                    if 5 < val < 100_000:   # plausible ₹/share range
+                        return val
+
+        # Method 2 — regex fallback directly on raw HTML
+        m = re.search(r'Book Value[^>]*>.*?₹\s*([\d,]+(?:\.\d+)?)', resp.text, re.DOTALL)
+        if m:
+            return float(m.group(1).replace(',', ''))
+
+        print(f"⚠️  Could not parse Book Value for {company_name} from Screener")
+        return None
+
+    except Exception as e:
+        print(f"❌ Screener book value error for {company_name}: {e}")
+        return None
+
+
+@st.cache_data(ttl=300)   # ← same 5-min TTL as live prices
 def get_pb_timeseries(symbol, company_name):
-    """Get P/B ratio time series with quarterly book values from Screener.in"""
+    """
+    P/B time series for the last 1 year.
+
+    Book value source priority:
+      1. yfinance quarterly_balance_sheet  → quarterly snapshots forward-filled daily
+      2. Screener.in current book value    → flat line at latest quarter BV
+      3. yfinance info['bookValue']        → last-resort flat line
+    """
     try:
         ticker = yf.Ticker(symbol)
         hist = ticker.history(period='1y')
         if hist.empty:
-            print(f"⚠️  No price data for {company_name}")
+            print(f"⚠️  No price data for {company_name} ({symbol})")
             return None
-        
-        # Try to get quarterly book values from Screener
-        # For now, fall back to Yahoo Finance
-        quarterly_bv = get_screener_book_values(company_name)
-        
-        if quarterly_bv:
-            # Create daily book value series by forward-filling quarterly values
-            book_values = pd.Series(index=hist.index, dtype=float)
-            
-            # Sort quarterly dates
-            sorted_quarters = sorted(quarterly_bv.keys())
-            
-            for i, date in enumerate(hist.index):
-                # Find the most recent quarterly book value
-                applicable_bv = None
-                for q_date in reversed(sorted_quarters):
-                    if date >= q_date:
-                        applicable_bv = quarterly_bv[q_date]
+
+        prices = hist['Close']
+
+        # ── Layer 1: yfinance quarterly balance sheet ─────────────────────────
+        quarterly_bv = {}
+        try:
+            bs = ticker.quarterly_balance_sheet
+            info = ticker.info
+            shares = info.get('sharesOutstanding', 0)
+
+            if bs is not None and not bs.empty and shares > 0:
+                for row_name in [
+                    'Common Stock Equity',
+                    'Stockholders Equity',
+                    'Total Equity Gross Minority Interest',
+                    'Total Stockholders Equity',
+                ]:
+                    if row_name in bs.index:
+                        for date, equity in bs.loc[row_name].items():
+                            if pd.notna(equity) and equity > 0:
+                                quarterly_bv[pd.Timestamp(date).normalize()] = equity / shares
                         break
-                
-                if applicable_bv:
-                    book_values[date] = applicable_bv
-            
-            # If we have at least some book values, use them
-            if not book_values.isna().all():
-                result = pd.DataFrame()
-                result['Price'] = hist['Close']
-                result['BookValue'] = book_values
-                result = result.dropna()
-                if not result.empty:
-                    result['PB'] = result['Price'] / result['BookValue']
-                    return result
-        
-        # Fallback to Yahoo Finance single book value
-        info = ticker.info
-        book_value = info.get('bookValue')
-        
-        if not book_value or book_value <= 0:
-            print(f"⚠️  No book value data for {company_name}")
+        except Exception as e:
+            print(f"⚠️  yfinance balance sheet error for {company_name}: {e}")
+
+        if quarterly_bv:
+            sorted_q = sorted(quarterly_bv.keys())
+            bv_list = []
+            for ts in prices.index:
+                d = pd.Timestamp(ts).normalize()
+                bv = None
+                for q in reversed(sorted_q):
+                    if d >= q:
+                        bv = quarterly_bv[q]
+                        break
+                bv_list.append(bv)
+
+            result = pd.DataFrame(
+                {'Price': prices.values, 'BookValue': bv_list},
+                index=prices.index,
+            ).dropna()
+
+            if not result.empty:
+                result['PB'] = result['Price'] / result['BookValue']
+                return result
+
+        # ── Layer 2: Screener.in current book value ───────────────────────────
+        bv = get_screener_book_value(company_name)
+
+        # ── Layer 3: yfinance info['bookValue'] ───────────────────────────────
+        if not bv or bv <= 0:
+            try:
+                bv = ticker.info.get('bookValue')
+            except Exception:
+                pass
+
+        # ── Layer 4: hardcoded fallback BV ───────────────────────────────────
+        if not bv or bv <= 0:
+            bv = _FALLBACK_BV.get(company_name)
+            if bv:
+                print(f"ℹ️  Using hardcoded fallback BV for {company_name}: ₹{bv}")
+
+        if not bv or bv <= 0:
+            print(f"⚠️  No book value available for {company_name}")
             return None
-        
-        result = pd.DataFrame()
-        result['Price'] = hist['Close']
-        result['BookValue'] = book_value
-        result['PB'] = result['Price'] / result['BookValue']
-        
+
+        bv = float(bv)
+        result = pd.DataFrame(
+            {'Price': prices, 'BookValue': bv, 'PB': prices / bv},
+        )
         return result
-        
+
     except Exception as e:
-        print(f"❌ Error calculating P/B for {company_name}: {e}")
+        print(f"❌ P/B error for {company_name}: {e}")
         return None
 
 def create_pb_chart(selected_stocks):
@@ -820,7 +787,7 @@ def create_pb_chart(selected_stocks):
                 '<span style="color:#0a2540;font-weight:700;font-size:16px">'
                 'Price-to-Book Ratio — Last 1 Year</span><br>'
                 '<span style="color:#94a3b8;font-size:11px;font-weight:400">'
-                'Quarterly snapshots marked • Data from Yahoo Finance • Hover for details</span>'
+                'Book value: yfinance quarterly balance sheet → Screener.in → yfinance info • Updates every 5 min</span>'
             ),
             font=dict(family='DM Sans, sans-serif'), 
             x=0, 
