@@ -485,6 +485,20 @@ SCREENER_MAP = {
     'Mahindra Finance':     'M%26MFIN',
 }
 
+# Hardcoded book values per share (₹) — consolidated, sourced from Screener.in
+# Update quarterly after results season
+_FALLBACK_BV = {
+    'Bajaj Finance':        166.0,   # Screener consolidated Feb-2026
+    'Cholamandalam Finance':307.0,
+    'Shriram Finance':      322.0,
+    'Muthoot Finance':      887.0,
+    'Mahindra Finance':     178.0,
+    'L&T Finance':          105.0,
+    'Aditya Birla Capital': 123.0,
+    'Piramal Finance':     1210.0,
+    'Poonawalla Fincorp':   122.0,
+}
+
 _SCREENER_HEADERS = {
     'User-Agent': (
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
@@ -510,8 +524,12 @@ def get_screener_book_value(company_name):
         return None
 
     try:
-        url = f"https://www.screener.in/company/{symbol}/"
-        resp = requests.get(url, headers=_SCREENER_HEADERS, timeout=15)
+        # Try consolidated page first; fall back to standalone
+        for path in [f"https://www.screener.in/company/{symbol}/consolidated/",
+                     f"https://www.screener.in/company/{symbol}/"]:
+            resp = requests.get(path, headers=_SCREENER_HEADERS, timeout=15)
+            if resp.status_code == 200:
+                break
         if resp.status_code != 200:
             print(f"⚠️  Screener HTTP {resp.status_code} for {company_name}")
             return None
@@ -613,6 +631,12 @@ def get_pb_timeseries(symbol, company_name):
                 bv = ticker.info.get('bookValue')
             except Exception:
                 pass
+
+        # ── Layer 4: hardcoded fallback BV ───────────────────────────────────
+        if not bv or bv <= 0:
+            bv = _FALLBACK_BV.get(company_name)
+            if bv:
+                print(f"ℹ️  Using hardcoded fallback BV for {company_name}: ₹{bv}")
 
         if not bv or bv <= 0:
             print(f"⚠️  No book value available for {company_name}")
