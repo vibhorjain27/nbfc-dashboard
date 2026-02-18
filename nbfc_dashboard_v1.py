@@ -560,10 +560,14 @@ def get_screener_book_value(company_name):
         return None
 
 
-@st.cache_data(ttl=300)   # ← same 5-min TTL as live prices
 def get_pb_timeseries(symbol, company_name):
     """
     P/B time series for the last 1 year.
+
+    NOT cached here — the expensive sub-calls (fetch_stock_data,
+    get_screener_book_value) are individually cached. Caching this
+    function too causes Streamlit to throw internal errors when one
+    @st.cache_data function calls another.
 
     Book value source priority:
       1. yfinance quarterly_balance_sheet  → quarterly snapshots forward-filled daily
@@ -572,13 +576,11 @@ def get_pb_timeseries(symbol, company_name):
       4. hardcoded _FALLBACK_BV           → always available
     """
     try:
-        # Fetch price history directly — calling a cached fn from inside
-        # another cached fn can silently fail in some Streamlit versions
-        try:
-            ticker = yf.Ticker(symbol)
-            hist = ticker.history(period='1y')
-        except Exception:
-            hist = None
+        # Use cached fetch_stock_data — safe to call from uncached context
+        hist = fetch_stock_data(symbol, period='1y')
+        ticker = yf.Ticker(symbol)
+        if hist is None or hist.empty:
+            hist = ticker.history(period='1y')  # fallback direct call
         if hist is None or hist.empty:
             print(f"⚠️  No price data for {company_name} ({symbol})")
             return None
