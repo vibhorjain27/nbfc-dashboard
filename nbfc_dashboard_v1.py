@@ -572,8 +572,13 @@ def get_pb_timeseries(symbol, company_name):
       4. hardcoded _FALLBACK_BV           → always available
     """
     try:
-        # Reuse cached price data to avoid rate-limiting on Streamlit Cloud
-        hist = fetch_stock_data(symbol, period='1y')
+        # Fetch price history directly — calling a cached fn from inside
+        # another cached fn can silently fail in some Streamlit versions
+        try:
+            ticker = yf.Ticker(symbol)
+            hist = ticker.history(period='1y')
+        except Exception:
+            hist = None
         if hist is None or hist.empty:
             print(f"⚠️  No price data for {company_name} ({symbol})")
             return None
@@ -583,7 +588,6 @@ def get_pb_timeseries(symbol, company_name):
         # ── Layer 1: yfinance quarterly balance sheet ─────────────────────────
         quarterly_bv = {}
         try:
-            ticker = yf.Ticker(symbol)
             bs = ticker.quarterly_balance_sheet
             info = ticker.info
             shares = info.get('sharesOutstanding', 0)
