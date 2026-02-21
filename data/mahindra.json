@@ -1,0 +1,43 @@
+{
+  "company": "Mahindra Finance",
+  "bse_code": "532720",
+  "nse_symbol": "M&MFIN",
+  "face_value": 2,
+  "last_updated": "2026-02-21T18:03:42.268291",
+  "quarters": [
+    {
+      "aum_cr": 128965.0,
+      "disbursements_cr": 17612.0,
+      "share_capital_cr": 247.0,
+      "car_pct": 18.3,
+      "gnpa_pct": 3.4,
+      "gnpa_note": "Stage 3 ratio",
+      "filing_date": "2026-01-28"
+    },
+    {
+      "filing_date": "2025-11-20"
+    },
+    {
+      "share_capital_cr": 247.0,
+      "gnpa_pct": 8.65,
+      "gnpa_note": "Stage 3 ratio",
+      "filing_date": "2025-10-28"
+    },
+    {
+      "share_capital_cr": 247.0,
+      "gnpa_pct": 9.03,
+      "gnpa_note": "Stage 3 ratio",
+      "filing_date": "2025-07-22"
+    },
+    {
+      "aum_cr": 119673.0,
+      "nim_pct": 6.8,
+      "disbursements_cr": 57900.0,
+      "share_capital_cr": 247.0,
+      "car_pct": 22.5,
+      "gnpa_pct": 4.49,
+      "gnpa_note": "Stage 3 ratio",
+      "filing_date": "2025-04-22"
+    }
+  ]
+}

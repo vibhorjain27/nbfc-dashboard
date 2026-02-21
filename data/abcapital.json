@@ -1,0 +1,60 @@
+{
+  "company": "Aditya Birla Capital",
+  "bse_code": "540691",
+  "nse_symbol": "ABCAPITAL",
+  "face_value": 2,
+  "last_updated": "2026-02-21T18:03:09.099116",
+  "quarters": [
+    {
+      "pat_cr": 983.0,
+      "roa_pct": 1.96,
+      "car_pct": 17.34,
+      "aum_cr": 42204.0,
+      "disbursements_cr": 1036.0,
+      "gnpa_pct": 1.51,
+      "gnpa_note": "Stage 3 ratio",
+      "roe_pct": 14.94,
+      "filing_date": "2026-02-03"
+    },
+    {
+      "roa_pct": 1.82,
+      "car_pct": 17.98,
+      "aum_cr": 139585.0,
+      "disbursements_cr": 956.0,
+      "gnpa_pct": 1.68,
+      "gnpa_note": "Stage 3 ratio",
+      "roe_pct": 13.95,
+      "filing_date": "2025-10-30"
+    },
+    {
+      "roa_pct": 1.59,
+      "car_pct": 18.11,
+      "aum_cr": 131227.0,
+      "disbursements_cr": 925.0,
+      "gnpa_pct": 2.27,
+      "gnpa_note": "Stage 3 ratio",
+      "roe_pct": 12.27,
+      "filing_date": "2025-08-04"
+    },
+    {
+      "aum_cr": 126351.0,
+      "roa_pct": 2.27,
+      "disbursements_cr": 1330.0,
+      "gnpa_pct": 2.24,
+      "gnpa_note": "Stage 3 ratio",
+      "roe_pct": 11.03,
+      "car_pct": 16.54,
+      "filing_date": "2025-05-13"
+    },
+    {
+      "roe_pct": 10.66,
+      "aum_cr": 119437.0,
+      "roa_pct": 2.1,
+      "disbursements_cr": 966.0,
+      "gnpa_pct": 2.27,
+      "gnpa_note": "Stage 3 ratio",
+      "car_pct": 16.77,
+      "filing_date": "2025-02-03"
+    }
+  ]
+}

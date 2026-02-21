@@ -1,0 +1,44 @@
+{
+  "company": "Cholamandalam Finance",
+  "bse_code": "511243",
+  "nse_symbol": "CHOLAFIN",
+  "face_value": 2,
+  "last_updated": "2026-02-21T18:02:53.198580",
+  "quarters": [
+    {
+      "aum_cr": 210722.0,
+      "nim_pct": 7.6,
+      "gnpa_pct": 4.63,
+      "nnpa_pct": 3.13,
+      "disbursements_cr": 29962.0,
+      "filing_date": "2026-01-30"
+    },
+    {
+      "aum_cr": 199159.0,
+      "nim_pct": 7.6,
+      "gnpa_pct": 4.57,
+      "nnpa_pct": 3.07,
+      "disbursements_cr": 24442.0,
+      "filing_date": "2025-11-06"
+    },
+    {
+      "aum_cr": 192148.0,
+      "nim_pct": 7.6,
+      "gnpa_pct": 4.29,
+      "nnpa_pct": 2.86,
+      "disbursements_cr": 24325.0,
+      "filing_date": "2025-07-31"
+    },
+    {
+      "aum_cr": 199000.0,
+      "nim_pct": 7.5,
+      "gnpa_pct": 3.97,
+      "nnpa_pct": 2.63,
+      "disbursements_cr": 26417.0,
+      "filing_date": "2025-04-25"
+    },
+    {
+      "filing_date": "2025-01-31"
+    }
+  ]
+}

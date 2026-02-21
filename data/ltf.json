@@ -1,0 +1,50 @@
+{
+  "company": "L&T Finance",
+  "bse_code": "533519",
+  "nse_symbol": "LTF",
+  "face_value": 10,
+  "last_updated": "2026-02-21T18:02:43.663203",
+  "quarters": [
+    {
+      "roa_pct": 2.37,
+      "nim_pct": 10.41,
+      "roe_pct": 11.38,
+      "gnpa_pct": 2.83,
+      "gnpa_note": "Stage 3 ratio",
+      "aum_cr": 111990.0,
+      "car_pct": 19.1,
+      "filing_date": "2026-01-16"
+    },
+    {
+      "filing_date": "2025-11-06"
+    },
+    {
+      "nim_pct": 10.22,
+      "roa_pct": 2.41,
+      "aum_cr": 107096.0,
+      "roe_pct": 11.33,
+      "disbursements_cr": 1138.0,
+      "gnpa_pct": 2.92,
+      "gnpa_note": "Stage 3 ratio",
+      "car_pct": 19.99,
+      "filing_date": "2025-10-15"
+    },
+    {
+      "nim_pct": 10.22,
+      "roa_pct": 2.37,
+      "roe_pct": 10.86,
+      "gnpa_pct": 2.93,
+      "gnpa_note": "Stage 3 ratio",
+      "car_pct": 20.68,
+      "filing_date": "2025-07-18"
+    },
+    {
+      "nim_pct": 10.15,
+      "roa_pct": 2.22,
+      "gnpa_pct": 2.9,
+      "gnpa_note": "Stage 3 ratio",
+      "car_pct": 22.27,
+      "filing_date": "2025-04-25"
+    }
+  ]
+}
