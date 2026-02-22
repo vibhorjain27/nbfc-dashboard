@@ -79,14 +79,14 @@ st.markdown("""
     .ticker-card {
         background: white;
         border-radius: 5px;
-        padding: 10px 13px 8px 13px;
+        padding: 12px 14px 10px 14px;
         border-top: 3px solid #0284c7;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        height: 98px;
+        height: 112px;
         box-sizing: border-box;
     }
     .ticker-name-sm {
-        font-size: 14px;
+        font-size: 17px;
         font-weight: 600;
         color: #0a2540;
         white-space: nowrap;
@@ -103,13 +103,13 @@ st.markdown("""
     }
     .ticker-price {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 18px;
+        font-size: 24px;
         font-weight: 700;
         color: #0a2540;
         line-height: 1.1;
     }
-    .ticker-pos { color: #16a34a; font-size: 11px; font-weight: 600; }
-    .ticker-neg { color: #dc2626; font-size: 11px; font-weight: 600; }
+    .ticker-pos { color: #16a34a; font-size: 14px; font-weight: 600; }
+    .ticker-neg { color: #dc2626; font-size: 14px; font-weight: 600; }
     .ticker-meta {
         font-size: 10px;
         color: #94a3b8;
@@ -597,7 +597,7 @@ with tab1:
                             <div class="ticker-meta">{abs_str} &nbsp;·&nbsp; Vol {vol_str}</div>
                         </div>
                     """, unsafe_allow_html=True)
-            st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height:3px'></div>", unsafe_allow_html=True)
 
     st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
     st.markdown('<span class="section-label">Performance Comparison <span class="section-label-sub">Indexed to 100 · select stocks and period below</span></span>', unsafe_allow_html=True)
