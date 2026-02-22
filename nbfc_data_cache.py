@@ -7,7 +7,7 @@
 #   - Muthoot GNPA = Stage-3 proxy; NNPA not separately disclosed
 #   - Bajaj NIM not explicitly disclosed; ROA/ROE are annualized
 #   - Mahindra ROA/ROE = 9M FY26 annualized; D/E = 9M FY26
-#   - Poonawalla ROE = not reported; NIM not disclosed in quarterly press releases
+#   - Poonawalla ROE = not reported; NIM = NII/Avg-AUM annualized (screener.in, full 8Q now available)
 #   - AB Capital CAR = not disclosed separately in investor deck
 #   - Piramal PCR = Stage-3 PCR (27.9%); total provisions/AUM = 2.1%
 
@@ -197,12 +197,12 @@ NBFC_TIMESERIES = {
         "nnpa_pct":              [0.59,   0.32,   0.33,   0.81,   0.85,   0.85,   0.81,   0.80  ],
         "pcr_pct":               [49.39,  52.53,  84.47,  56.79,  54.47,  53.93,  49.65,  47.75 ],
         "pat_cr":                [332,    292,    -471,   19,     62,     63,     74,     150   ],
-        "nim_pct":               [11.06,  None,   None,   None,   None,   None,   None,   None  ],  # only Q4FY24 disclosed; looks like NII/AUM
+        "nim_pct":               [10.90,  10.40,  9.30,   9.00,   8.60,   8.00,   8.10,   8.40  ],  # screener.in NII/Avg-AUM annualized
         "roa_pct":               [5.73,   4.62,   None,   0.26,   0.76,   0.68,   0.69,   1.20  ],
         "roe_pct":               [None,   None,   None,   None,   None,   None,   None,   None  ],  # not reported
         "cost_of_borrowing_pct": [8.17,   8.16,   8.10,   8.06,   8.07,   8.04,   7.69,   7.65  ],
         "d_e_ratio":             [None,   None,   None,   2.65,   3.19,   3.72,   3.64,   4.25  ],
-        "car_pct":               [None,   None,   None,   None,   None,   None,   None,   18.17 ],
+        "car_pct":               [33.80,  31.57,  29.22,  25.89,  22.94,  20.55,  20.85,  18.17 ],  # screener.in
         "bvps_inr":              [105.03, 108.21, 103.74, 103.15, 105.12, 106.12, 121.66, 123.75],
     },
     "Bajaj Finance": {
@@ -325,7 +325,7 @@ NBFC_TIMESERIES = {
 # AB Capital: Q4FY24 entirely absent from screener source
 # Bajaj Finance: BVPS all estimated; NIM not disclosed
 # Muthoot Finance: NNPA and PCR not disclosed at all
-# Poonawalla: ROE not reported; NIM only Q4FY24 (likely NII/AUM, not yield-spread NIM)
+# Poonawalla: ROE not reported; NIM = NII/Avg-AUM annualized, full 8Q from screener.in; CAR full 8Q now available
 # L&T Finance: CAR not disclosed in investor deck
 # Shriram/Chola Q4FY24-Q1FY25: several metrics ~estimated
 
