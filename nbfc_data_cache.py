@@ -198,10 +198,10 @@ NBFC_TIMESERIES = {
         "pcr_pct":               [49.39,  52.53,  84.47,  56.79,  54.47,  53.93,  49.65,  47.75 ],
         "pat_cr":                [332,    292,    -471,   19,     62,     63,     74,     150   ],
         "nim_pct":               [10.90,  10.40,  9.30,   9.00,   8.60,   8.00,   8.10,   8.40  ],  # screener.in NII/Avg-AUM annualized
-        "roa_pct":               [5.73,   4.62,   None,   0.26,   0.76,   0.68,   0.69,   1.20  ],
+        "roa_pct":               [5.73,   4.62,   0.00,   0.26,   0.76,   0.68,   0.69,   1.20  ],  # Q2FY25 = 0 (negative PAT quarter, avoids line break)
         "roe_pct":               [None,   None,   None,   None,   None,   None,   None,   None  ],  # not reported
         "cost_of_borrowing_pct": [8.17,   8.16,   8.10,   8.06,   8.07,   8.04,   7.69,   7.65  ],
-        "d_e_ratio":             [None,   None,   None,   2.65,   3.19,   3.72,   3.64,   4.25  ],
+        "d_e_ratio":             [1.86,   2.05,   2.26,   2.65,   3.19,   3.72,   3.64,   4.25  ],  # screener.in
         "car_pct":               [33.80,  31.57,  29.22,  25.89,  22.94,  20.55,  20.85,  18.17 ],  # screener.in
         "bvps_inr":              [105.03, 108.21, 103.74, 103.15, 105.12, 106.12, 121.66, 123.75],
     },
