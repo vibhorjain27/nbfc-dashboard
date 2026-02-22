@@ -5,9 +5,9 @@
 # Notes:
 #   - Piramal ROA = RoAUM on Growth Business (not consolidated ROA)
 #   - Muthoot GNPA = Stage-3 proxy; NNPA not separately disclosed
-#   - Bajaj NIM not explicitly disclosed; ROA/ROE are annualized
+#   - Bajaj NIM = annualised net total income / avg AUM (screener.in, full 8Q); ROA/ROE are annualized
 #   - Mahindra ROA/ROE = 9M FY26 annualized; D/E = 9M FY26
-#   - Poonawalla ROE = not reported; NIM not disclosed in quarterly press releases
+#   - Poonawalla ROE = not reported; NIM = NII/Avg-AUM annualized (screener.in, full 8Q now available)
 #   - AB Capital CAR = not disclosed separately in investor deck
 #   - Piramal PCR = Stage-3 PCR (27.9%); total provisions/AUM = 2.1%
 
@@ -197,12 +197,12 @@ NBFC_TIMESERIES = {
         "nnpa_pct":              [0.59,   0.32,   0.33,   0.81,   0.85,   0.85,   0.81,   0.80  ],
         "pcr_pct":               [49.39,  52.53,  84.47,  56.79,  54.47,  53.93,  49.65,  47.75 ],
         "pat_cr":                [332,    292,    -471,   19,     62,     63,     74,     150   ],
-        "nim_pct":               [11.06,  None,   None,   None,   None,   None,   None,   None  ],  # only Q4FY24 disclosed; looks like NII/AUM
-        "roa_pct":               [5.73,   4.62,   None,   0.26,   0.76,   0.68,   0.69,   1.20  ],
+        "nim_pct":               [10.90,  10.40,  9.30,   9.00,   8.60,   8.00,   8.10,   8.40  ],  # screener.in NII/Avg-AUM annualized
+        "roa_pct":               [5.73,   4.62,   0.00,   0.26,   0.76,   0.68,   0.69,   1.20  ],  # Q2FY25 = 0 (negative PAT quarter, avoids line break)
         "roe_pct":               [None,   None,   None,   None,   None,   None,   None,   None  ],  # not reported
         "cost_of_borrowing_pct": [8.17,   8.16,   8.10,   8.06,   8.07,   8.04,   7.69,   7.65  ],
-        "d_e_ratio":             [None,   None,   None,   2.65,   3.19,   3.72,   3.64,   4.25  ],
-        "car_pct":               [None,   None,   None,   None,   None,   None,   None,   18.17 ],
+        "d_e_ratio":             [1.86,   2.05,   2.26,   2.65,   3.19,   3.72,   3.64,   4.25  ],  # screener.in
+        "car_pct":               [33.80,  31.57,  29.22,  25.89,  22.94,  20.55,  20.85,  18.17 ],  # screener.in
         "bvps_inr":              [105.03, 108.21, 103.74, 103.15, 105.12, 106.12, 121.66, 123.75],
     },
     "Bajaj Finance": {
@@ -211,12 +211,12 @@ NBFC_TIMESERIES = {
         "nnpa_pct":              [0.37,   0.38,   0.46,   0.48,   0.44,   0.50,   0.60,   0.47  ],
         "pcr_pct":               [57,     56,     57,     57,     54,     52,     52,     61    ],
         "pat_cr":                [3825,   3912,   4014,   4308,   4546,   4765,   4948,   5317  ],
-        "nim_pct":               [None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed
+        "nim_pct":               [12.20,  12.17,  12.02,  12.10,  11.84,  11.76,  11.68,  11.71 ],  # screener.in (annualised net total income / avg AUM)
         "roa_pct":               [4.8,    4.6,    4.5,    4.5,    4.6,    4.5,    4.5,    4.6   ],
         "roe_pct":               [20.5,   19.9,   19.1,   19.1,   19.1,   19.0,   19.1,   19.6  ],
         "cost_of_borrowing_pct": [7.86,   7.94,   7.97,   7.96,   7.99,   7.79,   7.52,   7.45  ],
-        "d_e_ratio":             [4.9,    4.9,    4.9,    4.9,    4.9,    4.7,    4.7,    4.75  ],
-        "car_pct":               [None,   None,   None,   None,   None,   None,   None,   21.45 ],
+        "d_e_ratio":             [4.90,   4.90,   4.90,   4.90,   4.90,   4.70,   4.70,   4.75  ],  # screener.in (Q3FY26 = 4.7–4.8 range → 4.75)
+        "car_pct":               [22.52,  21.65,  21.69,  21.57,  21.93,  21.96,  21.23,  21.45 ],  # screener.in
         "bvps_inr":              [150,    152,    155,    158,    160,    162,    165,    170   ],  # estimates (~)
     },
     "Shriram Finance": {
@@ -228,9 +228,9 @@ NBFC_TIMESERIES = {
         "nim_pct":               [8.60,   8.70,   8.74,   8.48,   8.55,   8.11,   8.19,   8.58  ],  # Q4FY24-Q1FY25 ~
         "roa_pct":               [3.3,    3.0,    3.06,   2.88,   2.98,   2.76,   2.89,   3.09  ],  # Q4FY24-Q1FY25,Q3FY25 ~
         "roe_pct":               [15.0,   15.5,   16.00,  15.41,  15.75,  15.07,  15.40,  16.33 ],  # Q4FY24-Q1FY25,Q3FY25 ~
-        "cost_of_borrowing_pct": [8.7,    8.6,    8.5,    8.4,    8.3,    8.2,    8.1,    8.0   ],  # Q4FY24-Q2FY26 ~
+        "cost_of_borrowing_pct": [9.08,   9.10,   9.06,   9.00,   8.96,   8.87,   8.83,   8.69  ],  # from image
         "d_e_ratio":             [4.30,   4.1,    3.99,   4.06,   4.16,   4.15,   3.88,   4.05  ],  # Q1FY25 ~
-        "car_pct":               [None,   None,   None,   None,   None,   None,   None,   20.27 ],
+        "car_pct":               [20.30,  20.30,  20.16,  21.00,  20.66,  20.79,  20.68,  20.27 ],  # screener.in; Q1FY25 ~20.30
         "bvps_inr":              [260,    272,    277,    292,    299,    311,    321,    330   ],  # Q4FY24-Q1FY25 ~
     },
     "Chola Finance": {
@@ -323,9 +323,9 @@ NBFC_TIMESERIES = {
 # ~ = estimated / interpolated from adjacent quarters or rating reports
 # Piramal AUM: only Q2FY26+ confirmed; earlier quarters need Excel data sheet
 # AB Capital: Q4FY24 entirely absent from screener source
-# Bajaj Finance: BVPS all estimated; NIM not disclosed
+# Bajaj Finance: BVPS all estimated (~); NIM/CAR/D/E now full 8Q from screener.in
 # Muthoot Finance: NNPA and PCR not disclosed at all
-# Poonawalla: ROE not reported; NIM only Q4FY24 (likely NII/AUM, not yield-spread NIM)
+# Poonawalla: ROE not reported; NIM = NII/Avg-AUM annualized, full 8Q from screener.in; CAR full 8Q now available
 # L&T Finance: CAR not disclosed in investor deck
 # Shriram/Chola Q4FY24-Q1FY25: several metrics ~estimated
 
