@@ -208,9 +208,9 @@ def make_trend_chart(
             'color': COLORS[name],
         })
 
-    # Sort: lower first if lower_is_better, else higher first
+    # Sort descending by last value so label positions match visual top→bottom order
     series.sort(key=lambda x: x['last'] if x['last'] is not None else 0,
-                reverse=not lower_is_better)
+                reverse=True)
 
     if fmt == 'cr':
         hover_tmpl = lambda n: f"<b>{n}</b>  ₹%{{y:,.0f}} Cr<extra></extra>"
@@ -273,7 +273,7 @@ def make_trend_chart(
         template='plotly_white', height=height,
         hovermode='x unified', showlegend=False,
         plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=55, r=230, t=65, b=45),
+        margin=dict(l=55, r=230, t=55, b=45),
         font=dict(family='Inter', color='#1a3a52'),
         hoverlabel=dict(bgcolor='white', bordercolor='#cbd5e1',
                         font=dict(family='Inter', size=12)),
@@ -849,20 +849,17 @@ with tab2:
 
     # — NIM + CoB (full-width, stacked)
     st.markdown('<span class="section-label">Yield & Funding</span>', unsafe_allow_html=True)
-    st.plotly_chart(make_trend_chart('nim_pct', sel2, 'Net Interest Margin (NIM)', 'NIM (%)',
-                     note='Bajaj Finance & Poonawalla do not disclose NIM; Piramal Q4FY24–Q2FY26 estimated'),
+    st.plotly_chart(make_trend_chart('nim_pct', sel2, 'Net Interest Margin (NIM)', 'NIM (%)'),
                      use_container_width=True, config={'displayModeBar': False})
     st.plotly_chart(make_trend_chart('cost_of_borrowing_pct', sel2, 'Cost of Borrowing', 'CoB (%)',
-                     lower_is_better=True,
-                     note='Shriram & L&T older quarters interpolated'),
+                     lower_is_better=True),
                      use_container_width=True, config={'displayModeBar': False})
 
     # — ROA + ROE (full-width, stacked)
     st.markdown('<span class="section-label">Returns</span>', unsafe_allow_html=True)
     st.plotly_chart(make_trend_chart('roa_pct', sel2, 'Return on Assets (ROA)', 'ROA (%)'),
                      use_container_width=True, config={'displayModeBar': False})
-    st.plotly_chart(make_trend_chart('roe_pct', sel2, 'Return on Equity (ROE)', 'ROE (%)',
-                     note='Poonawalla does not disclose ROE; AB Capital available from Q4FY25'),
+    st.plotly_chart(make_trend_chart('roe_pct', sel2, 'Return on Equity (ROE)', 'ROE (%)'),
                      use_container_width=True, config={'displayModeBar': False})
 
     st.markdown('<div class="metric-note">Data sourced from Screener.in investor presentations. Entries marked ~ are estimates from adjacent quarters or rating reports.</div>', unsafe_allow_html=True)
@@ -883,18 +880,15 @@ with tab3:
 
     # GNPA + NNPA full-width
     st.plotly_chart(make_trend_chart('gnpa_pct', sel3, 'Gross NPA (GNPA)', 'GNPA (%)',
-                     lower_is_better=True,
-                     note='Muthoot = Stage-3 proxy; Chola Q1–Q2FY25 not reported'),
+                     lower_is_better=True),
                      use_container_width=True, config={'displayModeBar': False})
     st.plotly_chart(make_trend_chart('nnpa_pct', sel3, 'Net NPA (NNPA)', 'NNPA (%)',
-                     lower_is_better=True,
-                     note='Muthoot does not disclose NNPA'),
+                     lower_is_better=True),
                      use_container_width=True, config={'displayModeBar': False})
 
     # PCR full width
     st.plotly_chart(make_trend_chart('pcr_pct', sel3, 'Provision Coverage Ratio (PCR)',
-                     'PCR (%)', height=380,
-                     note='Muthoot does not disclose PCR; Piramal PCR = Stage-3 PCR (27.9% Q3FY26); L&T highest at 70–75%'),
+                     'PCR (%)', height=380),
                      use_container_width=True, config={'displayModeBar': False})
 
     st.markdown('<div class="metric-note">Lower GNPA/NNPA = better credit quality. Higher PCR = more conservative provisioning.</div>', unsafe_allow_html=True)
@@ -914,17 +908,14 @@ with tab4:
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     st.plotly_chart(make_trend_chart('d_e_ratio', sel4, 'Debt / Equity Ratio', 'D/E (×)',
-                     fmt='ratio', lower_is_better=True,
-                     note='Poonawalla D/E only from Q3FY25; Piramal only Q3FY26'),
+                     fmt='ratio', lower_is_better=True),
                      use_container_width=True, config={'displayModeBar': False})
     st.plotly_chart(make_trend_chart('car_pct', sel4, 'Capital Adequacy Ratio (CAR / CRAR)',
-                     'CAR (%)',
-                     note='Only Q3FY26 disclosed by most companies; historical CAR pending'),
+                     'CAR (%)'),
                      use_container_width=True, config={'displayModeBar': False})
 
     st.plotly_chart(make_trend_chart('bvps_inr', sel4, 'Book Value Per Share (BVPS)',
-                     'BVPS (₹)', fmt='cr', height=380,
-                     note='Bajaj Finance BVPS are estimates (~). Piramal BVPS ₹1,232 correct (fewer shares outstanding)'),
+                     'BVPS (₹)', fmt='cr', height=380),
                      use_container_width=True, config={'displayModeBar': False})
 
     st.markdown('<div class="metric-note">D/E (Debt-to-Equity): lower = less levered. CAR: higher = better capitalized (RBI minimum = 15%). BVPS shows net worth per share growth.</div>', unsafe_allow_html=True)
