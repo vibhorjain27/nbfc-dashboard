@@ -230,7 +230,7 @@ NBFC_TIMESERIES = {
         "roe_pct":               [15.0,   15.5,   16.00,  15.41,  15.75,  15.07,  15.40,  16.33 ],  # Q4FY24-Q1FY25,Q3FY25 ~
         "cost_of_borrowing_pct": [8.7,    8.6,    8.5,    8.4,    8.3,    8.2,    8.1,    8.0   ],  # Q4FY24-Q2FY26 ~
         "d_e_ratio":             [4.30,   4.1,    3.99,   4.06,   4.16,   4.15,   3.88,   4.05  ],  # Q1FY25 ~
-        "car_pct":               [None,   None,   None,   None,   None,   None,   None,   20.27 ],
+        "car_pct":               [20.30,  20.30,  20.16,  21.00,  20.66,  20.79,  20.68,  20.27 ],  # screener.in; Q1FY25 ~20.30
         "bvps_inr":              [260,    272,    277,    292,    299,    311,    321,    330   ],  # Q4FY24-Q1FY25 ~
     },
     "Chola Finance": {
