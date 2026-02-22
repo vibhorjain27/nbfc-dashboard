@@ -14,103 +14,134 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Professional Bloomberg-inspired theme
+# Executive terminal theme
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
-    /* Background */
-    .main {
-        background: linear-gradient(135deg, #f8f9fb 0%, #e8edf3 100%);
-        font-family: 'DM Sans', sans-serif;
-    }
+    /* Base */
+    .main { background: #eef0f4; font-family: 'Inter', sans-serif; }
+    .block-container { padding: 0.6rem 1.6rem !important; max-width: 1600px; }
 
-    .block-container {
-        padding: 2rem 3rem;
-        max-width: 1400px;
-    }
+    /* Reduce Streamlit's default vertical gap between elements */
+    div[data-testid="stVerticalBlock"] > div { gap: 0 !important; }
 
-    /* Headers */
-    h1 { color: #0a2540; font-weight: 700; font-size: 2rem; }
-    h2, h3 { color: #1a3a52; font-weight: 600; }
-
-    /* Section title — dark blue pill used across tabs */
-    .section-title {
-        background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
-        color: white;
-        padding: 14px 22px;
-        border-radius: 10px;
-        font-size: 1.15rem;
+    /* Section label — subtle left-bar uppercase tag */
+    .section-label {
+        font-size: 10px;
         font-weight: 700;
-        margin-bottom: 18px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #64748b;
+        border-left: 2px solid #0284c7;
+        padding-left: 7px;
+        margin: 12px 0 8px 0;
         display: block;
     }
-    .section-subtitle {
+    .section-label-sub {
+        font-size: 9px;
+        font-weight: 400;
+        letter-spacing: 0.04em;
         color: #94a3b8;
-        font-size: 12px;
-        margin-top: 4px;
-        display: block;
+        margin-left: 6px;
+        text-transform: none;
     }
 
-    /* Tabs */
+    /* Tabs — clean underline style, no filled pills */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 4px;
+        gap: 0;
         background: white;
-        padding: 8px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 0 8px;
+        border-radius: 0;
+        border-bottom: 1px solid #e2e8f0;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        margin-bottom: 14px;
     }
     .stTabs [data-baseweb="tab"] {
         background: transparent;
-        border-radius: 8px;
+        border-radius: 0;
         color: #64748b;
-        font-weight: 600;
-        padding: 12px 24px;
-        font-size: 14px;
+        font-weight: 500;
+        padding: 10px 18px;
+        font-size: 12.5px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        letter-spacing: 0.01em;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-        color: white !important;
+        background: transparent !important;
+        color: #0284c7 !important;
+        border-bottom: 2px solid #0284c7 !important;
+        font-weight: 600 !important;
     }
 
-    /* Stock cards */
-    .stock-card {
+    /* Ticker cards */
+    .ticker-card {
         background: white;
-        border-radius: 10px;
-        padding: 16px 20px;
-        border-left: 4px solid #0284c7;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        margin-bottom: 4px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        min-height: 100px;
+        border-radius: 5px;
+        padding: 10px 13px 8px 13px;
+        border-top: 3px solid #0284c7;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        height: 92px;
+        box-sizing: border-box;
     }
-    .stock-left { display: flex; flex-direction: column; justify-content: center; }
-    .stock-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
-    .stock-name { font-size: 17px; font-weight: 700; color: #0a2540; margin-bottom: 3px; }
-    .stock-symbol { font-size: 11px; color: #94a3b8; letter-spacing: 0.04em; margin-bottom: 6px; }
-    .stock-volume { font-size: 11px; color: #64748b; margin-top: 4px; }
-    .stock-price { font-size: 24px; font-weight: 700; color: #1a3a52; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
-    .stock-change-pos { color: #16a34a; font-weight: 700; font-size: 14px; }
-    .stock-change-neg { color: #dc2626; font-weight: 700; font-size: 14px; }
+    .ticker-sym {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #334155;
+        letter-spacing: 0.05em;
+    }
+    .ticker-name-sm { font-size: 10px; color: #94a3b8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+    .ticker-price {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: #0a2540;
+        line-height: 1.1;
+    }
+    .ticker-pos { color: #16a34a; font-size: 11px; font-weight: 600; }
+    .ticker-neg { color: #dc2626; font-size: 11px; font-weight: 600; }
+    .ticker-meta {
+        font-size: 10px;
+        color: #94a3b8;
+        margin-top: 5px;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 4px;
+        font-family: 'JetBrains Mono', monospace;
+    }
 
     /* Period buttons */
     .stButton button {
         background: white;
-        border: 1.5px solid #cbd5e1;
-        color: #475569;
-        border-radius: 8px;
-        padding: 8px 18px;
-        font-weight: 600;
-        font-size: 13px;
-        transition: all 0.15s;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        border-radius: 4px;
+        padding: 3px 10px;
+        font-weight: 500;
+        font-size: 11.5px;
+        transition: all 0.1s;
+        height: 28px !important;
+        line-height: 1 !important;
     }
     .stButton button:hover {
         border-color: #0284c7;
-        background: #f0f9ff;
         color: #0284c7;
+        background: #f0f9ff;
     }
+
+    /* Tighten checkbox rows */
+    .stCheckbox { margin-bottom: -2px; }
+    .stCheckbox label { font-size: 12.5px; color: #475569; }
+
+    /* Tighten caption */
+    .stCaption p { font-size: 10.5px !important; color: #94a3b8 !important; margin: 0 !important; }
+
+    /* Thin divider */
+    hr { margin: 8px 0; border-color: #e2e8f0; }
+
+    /* Warning / info banners — tighter */
+    .stAlert { padding: 8px 12px !important; font-size: 12px; border-radius: 5px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -358,7 +389,7 @@ def create_comparison_chart(time_period, selected_stocks):
         title=dict(
             text=f'<span style="color:#0a2540;font-weight:700;font-size:17px">'
                  f'Performance Comparison — {time_period} (Indexed to 100)</span>',
-            font=dict(family='DM Sans, sans-serif'), x=0),
+            font=dict(family='Inter, sans-serif'), x=0),
         xaxis_title='Date',
         yaxis_title='Indexed Value (Base = 100)',
         template='plotly_white',
@@ -368,7 +399,7 @@ def create_comparison_chart(time_period, selected_stocks):
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
         margin=dict(l=60, r=200, t=60, b=50),
-        font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
+        font=dict(family='Inter, sans-serif', color='#1a3a52'),
     )
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
     fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
@@ -452,7 +483,7 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
         )
 
     fig.update_layout(
-        title=dict(text=title_html, font=dict(family='DM Sans, sans-serif'), x=0, xref='paper'),
+        title=dict(text=title_html, font=dict(family='Inter, sans-serif'), x=0, xref='paper'),
         yaxis_title=ylabel,
         template='plotly_white',
         height=420,
@@ -461,9 +492,9 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
         margin=dict(l=60, r=240, t=70, b=50),
-        font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
+        font=dict(family='Inter, sans-serif', color='#1a3a52'),
         hoverlabel=dict(bgcolor='white', bordercolor='#cbd5e1',
-                        font=dict(family='DM Sans, sans-serif', size=12)),
+                        font=dict(family='Inter, sans-serif', size=12)),
     )
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1',
                      tickfont=dict(size=12, color='#475569'))
@@ -471,385 +502,42 @@ def make_fin_chart(metric_data, selected, title, ylabel, fmt='pct', note=None):
                      tickfont=dict(size=12, color='#475569'))
     return fig
 
-# ─── TAB 3: VALUATION FUNCTIONS ───────────────────────────────────────────────
-
-SCREENER_MAP = {
-    'Poonawalla Fincorp':   'POONAWALLA',
-    'Bajaj Finance':        'BAJFINANCE',
-    'Shriram Finance':      'SHRIRAMFIN',
-    'L&T Finance':          'LTF',
-    'Cholamandalam Finance':'CHOLAFIN',
-    'Aditya Birla Capital': 'ABCAPITAL',
-    'Piramal Finance':      'PIRAMALFIN',
-    'Muthoot Finance':      'MUTHOOTFIN',
-    'Mahindra Finance':     'M%26MFIN',
-}
-
-# Hardcoded book values per share (₹) — consolidated, sourced from Screener.in
-# Update quarterly after results season
-_FALLBACK_BV = {
-    'Bajaj Finance':        166.0,   # Screener consolidated Feb-2026
-    'Cholamandalam Finance':307.0,
-    'Shriram Finance':      322.0,
-    'Muthoot Finance':      887.0,
-    'Mahindra Finance':     178.0,
-    'L&T Finance':          105.0,
-    'Aditya Birla Capital': 123.0,
-    'Piramal Finance':     1210.0,
-    'Poonawalla Fincorp':   122.0,
-}
-
-_SCREENER_HEADERS = {
-    'User-Agent': (
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    ),
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Referer': 'https://www.screener.in/',
-}
-
-@st.cache_data(ttl=3600)
-def get_screener_book_value(company_name):
-    """
-    Fetch current book value per share (₹) from Screener.in key metrics section.
-    Cached for 1 hour — book value changes quarterly, price impact is negligible intra-day.
-    """
-    import requests
-    from bs4 import BeautifulSoup
-    import re
-
-    symbol = SCREENER_MAP.get(company_name)
-    if not symbol:
-        return None
-
-    try:
-        # Try consolidated page first; fall back to standalone
-        for path in [f"https://www.screener.in/company/{symbol}/consolidated/",
-                     f"https://www.screener.in/company/{symbol}/"]:
-            resp = requests.get(path, headers=_SCREENER_HEADERS, timeout=15)
-            if resp.status_code == 200:
-                break
-        if resp.status_code != 200:
-            print(f"⚠️  Screener HTTP {resp.status_code} for {company_name}")
-            return None
-
-        soup = BeautifulSoup(resp.text, 'html.parser')
-
-        # Method 1 — walk every <li>; find the one whose text contains "Book Value"
-        for li in soup.find_all('li'):
-            li_text = li.get_text(separator=' ', strip=True)
-            if 'Book Value' in li_text:
-                # Extract all numbers from the li text
-                nums = re.findall(r'[\d,]+(?:\.\d+)?', li_text)
-                for raw in nums:
-                    val = float(raw.replace(',', ''))
-                    if 5 < val < 100_000:   # plausible ₹/share range
-                        return val
-
-        # Method 2 — regex fallback directly on raw HTML
-        m = re.search(r'Book Value[^>]*>.*?₹\s*([\d,]+(?:\.\d+)?)', resp.text, re.DOTALL)
-        if m:
-            return float(m.group(1).replace(',', ''))
-
-        print(f"⚠️  Could not parse Book Value for {company_name} from Screener")
-        return None
-
-    except Exception as e:
-        print(f"❌ Screener book value error for {company_name}: {e}")
-        return None
-
-
-def get_pb_timeseries(symbol, company_name):
-    """
-    P/B time series for the last 1 year.
-
-    NOT cached here — the expensive sub-calls (fetch_stock_data,
-    get_screener_book_value) are individually cached. Caching this
-    function too causes Streamlit to throw internal errors when one
-    @st.cache_data function calls another.
-
-    Book value source priority:
-      1. yfinance quarterly_balance_sheet  → quarterly snapshots forward-filled daily
-      2. Screener.in current book value    → flat line at latest quarter BV
-      3. yfinance info['bookValue']        → last-resort flat line
-      4. hardcoded _FALLBACK_BV           → always available
-    """
-    try:
-        # Use cached fetch_stock_data — safe to call from uncached context
-        hist = fetch_stock_data(symbol, period='1y')
-        ticker = yf.Ticker(symbol)
-        if hist is None or hist.empty:
-            hist = ticker.history(period='1y')  # fallback direct call
-        if hist is None or hist.empty:
-            print(f"⚠️  No price data for {company_name} ({symbol})")
-            return None
-
-        prices = hist['Close']
-
-        # ── Layer 1: yfinance quarterly balance sheet ─────────────────────────
-        quarterly_bv = {}
-        try:
-            bs = ticker.quarterly_balance_sheet
-            info = ticker.info
-            shares = info.get('sharesOutstanding', 0)
-
-            if bs is not None and not bs.empty and shares > 0:
-                for row_name in [
-                    'Common Stock Equity',
-                    'Stockholders Equity',
-                    'Total Equity Gross Minority Interest',
-                    'Total Stockholders Equity',
-                ]:
-                    if row_name in bs.index:
-                        for date, equity in bs.loc[row_name].items():
-                            if pd.notna(equity) and equity > 0:
-                                quarterly_bv[pd.Timestamp(date).normalize()] = equity / shares
-                        break
-        except Exception as e:
-            print(f"⚠️  yfinance balance sheet error for {company_name}: {e}")
-
-        if quarterly_bv:
-            sorted_q = sorted(quarterly_bv.keys())
-            bv_list = []
-            for ts in prices.index:
-                d = pd.Timestamp(ts).normalize()
-                bv = None
-                for q in reversed(sorted_q):
-                    if d >= q:
-                        bv = quarterly_bv[q]
-                        break
-                bv_list.append(bv)
-
-            result = pd.DataFrame(
-                {'Price': prices.values, 'BookValue': bv_list},
-                index=prices.index,
-            ).dropna()
-
-            if not result.empty:
-                result['PB'] = result['Price'] / result['BookValue']
-                return result
-
-        # ── Layer 2: Screener.in current book value ───────────────────────────
-        bv = get_screener_book_value(company_name)
-
-        # ── Layer 3: yfinance info['bookValue'] ───────────────────────────────
-        if not bv or bv <= 0:
-            try:
-                bv = yf.Ticker(symbol).info.get('bookValue')
-            except Exception:
-                pass
-
-        # ── Layer 4: hardcoded fallback BV ───────────────────────────────────
-        if not bv or bv <= 0:
-            bv = _FALLBACK_BV.get(company_name)
-            if bv:
-                print(f"ℹ️  Using hardcoded fallback BV for {company_name}: ₹{bv}")
-
-        if not bv or bv <= 0:
-            print(f"⚠️  No book value available for {company_name}")
-            return None
-
-        bv = float(bv)
-        result = pd.DataFrame(
-            {'Price': prices, 'BookValue': bv, 'PB': prices / bv},
-        )
-        return result
-
-    except Exception as e:
-        print(f"❌ P/B error for {company_name}: {e}")
-        return None
-
-def create_pb_chart(selected_stocks):
-    """Create Price-to-Book time series chart"""
-    fig = go.Figure()
-    
-    performance_data = []
-    
-    for name in selected_stocks:
-        symbol = NBFCS[name]
-        try:
-            data = get_pb_timeseries(symbol, name)
-            if data is None or data.empty:
-                continue
-            
-            performance_data.append({
-                'name': name,
-                'dates': data.index,
-                'pb': data['PB'],
-                'price': data['Price'],
-                'bv': data['BookValue'],
-                'color': COLORS[name],
-                'end_pb': float(data['PB'].iloc[-1]),
-                'end_price': float(data['Price'].iloc[-1]),
-                'end_bv': float(data['BookValue'].iloc[-1]),
-            })
-        except Exception as e:
-            print(f"❌ Error processing P/B for {name}: {e}")
-            continue
-    
-    if not performance_data:
-        return None
-    
-    # Sort by current P/B ratio (descending)
-    performance_data.sort(key=lambda x: x['end_pb'], reverse=True)
-    
-    # Calculate label positioning
-    all_pb_vals = [v for item in performance_data for v in item['pb']]
-    y_range = max(all_pb_vals) - min(all_pb_vals)
-    MIN_GAP = max(0.1, min(0.5, y_range * 0.15))
-    
-    label_positions = [item['end_pb'] for item in performance_data]
-    
-    # Push-down pass
-    for i in range(1, len(label_positions)):
-        if label_positions[i - 1] - label_positions[i] < MIN_GAP:
-            label_positions[i] = label_positions[i - 1] - MIN_GAP
-    
-    # Push-up pass
-    for i in range(len(label_positions) - 2, -1, -1):
-        if label_positions[i] - label_positions[i + 1] < MIN_GAP:
-            label_positions[i] = label_positions[i + 1] + MIN_GAP
-    
-    for i, item in enumerate(performance_data):
-        # Main line trace
-        fig.add_trace(go.Scatter(
-            x=item['dates'],
-            y=item['pb'],
-            name=item['name'],
-            line=dict(color=item['color'], width=2.5),
-            mode='lines',
-            customdata=list(zip(item['price'], item['bv'])),
-            hovertemplate=(
-                f"<b>{item['name']}</b><br>"
-                "%{x|%d %b %Y}<br>"
-                "Price: ₹%{customdata[0]:.2f}<br>"
-                "Book Value: ₹%{customdata[1]:.2f}<br>"
-                "P/B: %{y:.2f}x"
-                "<extra></extra>"
-            )
-        ))
-        
-        # Quarterly snapshots
-        quarter_starts = []
-        quarter_pb = []
-        for date in item['dates']:
-            if date.month in [1, 4, 7, 10] and date.day <= 5:
-                if len(quarter_starts) == 0 or (date - quarter_starts[-1]).days > 80:
-                    quarter_starts.append(date)
-                    idx = item['dates'].get_loc(date)
-                    quarter_pb.append(item['pb'].iloc[idx])
-        
-        if quarter_starts:
-            fig.add_trace(go.Scatter(
-                x=quarter_starts,
-                y=quarter_pb,
-                mode='markers+text',
-                marker=dict(size=9, color=item['color'], symbol='circle',
-                           line=dict(color='white', width=2)),
-                text=[f"{pb:.1f}x" for pb in quarter_pb],
-                textposition='top center',
-                textfont=dict(size=9, color=item['color'], family='JetBrains Mono'),
-                showlegend=False,
-                hoverinfo='skip',
-            ))
-        
-        # Endpoint dot
-        fig.add_trace(go.Scatter(
-            x=[item['dates'][-1]],
-            y=[item['end_pb']],
-            mode='markers',
-            marker=dict(size=8, color=item['color']),
-            showlegend=False,
-            hoverinfo='skip',
-        ))
-        
-        # Connector line if needed
-        if abs(item['end_pb'] - label_positions[i]) > MIN_GAP * 0.3:
-            fig.add_shape(
-                type='line',
-                x0=item['dates'][-1], x1=item['dates'][-1],
-                y0=item['end_pb'], y1=label_positions[i],
-                line=dict(color=item['color'], width=1, dash='dot'),
-                xref='x', yref='y'
-            )
-        
-        # Endpoint label
-        fig.add_annotation(
-            x=item['dates'][-1],
-            y=label_positions[i],
-            text=f"<b>{item['name']}</b>  {item['end_pb']:.2f}x",
-            showarrow=False,
-            xanchor='left',
-            xshift=15,
-            font=dict(size=11, color=item['color']),
-            bgcolor='rgba(255,255,255,0.95)',
-            bordercolor=item['color'],
-            borderwidth=1,
-            borderpad=4,
-        )
-    
-    fig.update_layout(
-        title=dict(
-            text=(
-                '<span style="color:#0a2540;font-weight:700;font-size:16px">'
-                'Price-to-Book Ratio — Last 1 Year</span><br>'
-                '<span style="color:#94a3b8;font-size:11px;font-weight:400">'
-                'Book value: yfinance quarterly balance sheet → Screener.in → yfinance info • Updates every 5 min</span>'
-            ),
-            font=dict(family='DM Sans, sans-serif'), 
-            x=0, 
-            xref='paper'
-        ),
-        yaxis_title='P/B Ratio (x)',
-        template='plotly_white',
-        height=520,
-        hovermode='x unified',
-        showlegend=False,
-        plot_bgcolor='white',
-        paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=60, r=320, t=70, b=50),
-        font=dict(family='DM Sans, sans-serif', color='#1a3a52'),
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='#cbd5e1',
-            font=dict(family='DM Sans, sans-serif', size=12)
-        ),
-    )
-    fig.update_xaxes(
-        showgrid=True, 
-        gridcolor='#f1f5f9', 
-        showline=True, 
-        linecolor='#cbd5e1',
-        tickfont=dict(size=12, color='#475569')
-    )
-    fig.update_yaxes(
-        showgrid=True, 
-        gridcolor='#f1f5f9', 
-        showline=True, 
-        linecolor='#cbd5e1',
-        tickfont=dict(size=12, color='#475569')
-    )
-    
-    return fig
+# ─── TAB 3: VALUATION FUNCTIONS ─────────────────────────────────────────────
+# (placeholder — being rebuilt from scratch after data source analysis)
 
 # ─── HEADER ────────────────────────────────────────────────────────────────────
 
 ist = pytz.timezone('Asia/Kolkata')
 current_time = datetime.now(ist)
 
-st.title("NBFC Dashboard")
-st.caption(f"Live market data  •  Last updated: {current_time.strftime('%B %d, %Y at %I:%M %p IST')}")
+st.markdown(f"""
+    <div style="display:flex; justify-content:space-between; align-items:center;
+                padding:8px 0 10px 0; border-bottom:1px solid #dde1e8; margin-bottom:0;">
+        <div style="display:flex; align-items:baseline; gap:10px;">
+            <span style="font-size:16px; font-weight:700; color:#0a2540; letter-spacing:-0.01em; font-family:'Inter',sans-serif;">
+                NBFC Dashboard
+            </span>
+            <span style="font-size:9.5px; color:#94a3b8; font-family:'JetBrains Mono',monospace;
+                         background:#e8edf3; padding:2px 7px; border-radius:3px; letter-spacing:0.06em;">
+                NSE &nbsp;·&nbsp; INDIA
+            </span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#64748b; text-align:right; line-height:1.6;">
+            {current_time.strftime('%d %b %Y')}
+            <span style="color:#94a3b8; margin-left:6px;">{current_time.strftime('%H:%M IST')}</span>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 # ─── TABS ──────────────────────────────────────────────────────────────────────
 
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📈 Market Overview",
-    "💼 Financial Performance",
-    "💰 Valuation Metrics",
-    "📊 Historical Analysis",
-    "🔍 Deep Dive",
-    "🏆 Rankings",
+    "Market",
+    "Financials",
+    "Valuation",
+    "Historical",
+    "Deep Dive",
+    "Rankings",
 ])
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -857,7 +545,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 # ══════════════════════════════════════════════════════════════════════════════
 
 with tab1:
-    st.markdown('<div class="section-title">Current Stock Prices<span class="section-subtitle">Live NSE prices • Updates every 5 minutes</span></div>', unsafe_allow_html=True)
+    st.markdown('<span class="section-label">Stock Prices <span class="section-label-sub">Live NSE · refreshes every 5 min</span></span>', unsafe_allow_html=True)
 
     with st.spinner("Fetching live prices..."):
         stocks = get_current_prices()
@@ -866,14 +554,13 @@ with tab1:
         st.error("Unable to fetch stock data. Please try again.")
     else:
         for row_start in range(0, len(stocks), 3):
-            cols = st.columns(3)
+            cols = st.columns(3, gap="small")
             for col_idx, stock in enumerate(stocks[row_start:row_start + 3]):
                 arrow = "▲" if stock['change_pct'] >= 0 else "▼"
-                chg_class = "stock-change-pos" if stock['change_pct'] >= 0 else "stock-change-neg"
-                border_color = "#16a34a" if stock['change_pct'] >= 0 else "#dc2626"
+                chg_class = "ticker-pos" if stock['change_pct'] >= 0 else "ticker-neg"
                 abs_sign = "+" if stock['change_abs'] >= 0 else ""
                 abs_str = f"{abs_sign}₹{stock['change_abs']:.2f}"
-                pct_str = f"({abs_sign}{stock['change_pct']:.2f}%)"
+                pct_str = f"{abs_sign}{stock['change_pct']:.2f}%"
                 vol = stock['volume']
                 if vol >= 10_000_000:
                     vol_str = f"{vol/10_000_000:.1f}Cr"
@@ -884,33 +571,36 @@ with tab1:
                 else:
                     vol_str = str(vol) if vol > 0 else "—"
 
+                brand_color = COLORS.get(stock['name'], '#0284c7')
+
                 with cols[col_idx]:
                     st.markdown(f"""
-                        <div class="stock-card" style="border-left-color: {border_color}">
-                            <div class="stock-left">
-                                <div class="stock-name">{stock['name']}</div>
-                                <div class="stock-symbol">{stock['symbol']}</div>
-                                <div class="stock-volume">Vol: {vol_str}</div>
+                        <div class="ticker-card" style="border-top-color:{brand_color};">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <div>
+                                    <div class="ticker-sym">{stock['symbol']}</div>
+                                    <div class="ticker-name-sm">{stock['name']}</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div class="ticker-price">₹{stock['price']:,.0f}</div>
+                                    <div class="{chg_class}">{arrow} {pct_str}</div>
+                                </div>
                             </div>
-                            <div class="stock-right">
-                                <div class="stock-price">₹{stock['price']:,.2f}</div>
-                                <div class="{chg_class}">{arrow} {abs_str} {pct_str}</div>
-                            </div>
+                            <div class="ticker-meta">{abs_str} &nbsp;·&nbsp; Vol {vol_str}</div>
                         </div>
                     """, unsafe_allow_html=True)
+            st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+    st.markdown('<span class="section-label">Performance Comparison <span class="section-label-sub">Indexed to 100 · select stocks and period below</span></span>', unsafe_allow_html=True)
 
-    st.markdown('<div class="section-title">Performance Comparison<span class="section-subtitle">Indexed to 100 • Select stocks and time period below</span></div>', unsafe_allow_html=True)
-
-    st.caption("Select stocks to include in comparison chart:")
     other_stocks = [n for n in NBFCS if n != 'Poonawalla Fincorp']
     col1, col2, col3 = st.columns(3)
     cols_map = [col1, col2, col3]
 
     selected_others = []
     with col1:
-        st.markdown("**Poonawalla Fincorp** *(always shown)*")
+        st.markdown("<span style='font-size:12px;font-weight:600;color:#334155;'>Poonawalla Fincorp <span style='font-weight:400;color:#94a3b8;font-size:11px;'>always shown</span></span>", unsafe_allow_html=True)
     for i, name in enumerate(other_stocks):
         with cols_map[i % 3]:
             is_default = name in DEFAULT_COMPARISON
@@ -919,7 +609,7 @@ with tab1:
 
     comparison_stocks = ['Poonawalla Fincorp'] + selected_others
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
     periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
     active = st.session_state.time_period
 
@@ -964,7 +654,7 @@ with tab1:
     def fmt_date(dt):
         return dt.strftime("%-d %b'%y")
 
-    st.caption(f"**{active}** &nbsp;|&nbsp; {fmt_date(range_start)} – {fmt_date(today)} &nbsp;|&nbsp; Indexed to 100")
+    st.caption(f"**{active}** · {fmt_date(range_start)} – {fmt_date(today)} · Indexed to 100")
 
     with st.spinner("Loading chart..."):
         try:
@@ -979,35 +669,36 @@ with tab1:
 
 with tab2:
     st.markdown("""
-        <div style="background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
-                    padding: 20px 28px; border-radius: 12px; margin-bottom: 20px;">
-            <h2 style="color: white; margin: 0; font-size: 1.4rem;">Financial Performance — Quarterly Metrics</h2>
-            <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">
-                Consolidated results  •  Q3 FY25 – Q3 FY26  •  5 quarters for YoY comparison
-            </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                    padding:10px 14px; background:white; border-radius:5px;
+                    border-left:3px solid #0284c7; margin-bottom:10px;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <div>
+                <span style="font-size:13px; font-weight:700; color:#0a2540;">Financial Performance — Quarterly Metrics</span>
+                <span style="font-size:10.5px; color:#94a3b8; margin-left:12px;">Q3 FY25 – Q3 FY26 &nbsp;·&nbsp; 5 quarters</span>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
-        <div style="background:#fefce8; border:1px solid #fbbf24; border-radius:8px;
-                    padding:12px 16px; margin-bottom:18px; font-size:13px; color:#92400e;">
-            <b>⚠️ Data collection in progress.</b>
-            Charts show only numbers confirmed directly from official company investor
-            presentation PDFs. Gaps indicate quarters where data has not yet been verified
-            from source. No estimates or analyst-cited numbers are used.
+        <div style="background:#fffbeb; border:1px solid #fbbf24; border-radius:4px;
+                    padding:8px 12px; margin-bottom:10px; font-size:11.5px; color:#92400e;">
+            <b>⚠ Data collection in progress.</b>
+            Charts show only numbers confirmed from official investor presentation PDFs.
+            Gaps = quarters not yet verified. No estimates used.
         </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("**Select NBFCs to compare:**")
+    st.markdown('<span class="section-label">Select NBFCs to compare</span>', unsafe_allow_html=True)
 
     st.markdown("""
         <div style="display:inline-flex;align-items:center;gap:8px;
-                    margin-bottom:10px;opacity:0.4;cursor:not-allowed;">
+                    margin-bottom:6px;opacity:0.4;cursor:not-allowed;">
             <input type="checkbox" checked disabled
-                   style="width:16px;height:16px;accent-color:#0284c7;">
-            <span style="font-size:14px;font-weight:600;color:#0a2540;">
+                   style="width:14px;height:14px;accent-color:#0284c7;">
+            <span style="font-size:12.5px;font-weight:600;color:#0a2540;">
                 Poonawalla Fincorp
-                <span style="font-size:11px;font-weight:400;color:#64748b;"> — always shown</span>
+                <span style="font-size:10.5px;font-weight:400;color:#64748b;"> — always shown</span>
             </span>
         </div>
     """, unsafe_allow_html=True)
@@ -1029,7 +720,7 @@ with tab2:
             if st.checkbox(name, value=default, key=f"fin_{name}"):
                 selected_fin.append(name)
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
     for _data, _title, _ylabel, _fmt, _note in [
         (AUM,  "Assets Under Management (AUM)", "₹ Crore",  "num", None),
@@ -1046,15 +737,14 @@ with tab2:
         )
 
     st.markdown("""
-        <div style="background:#f8fafc;border-radius:8px;padding:12px 18px;
-                    margin-top:8px;border-left:3px solid #0284c7;font-size:12px;color:#64748b;">
-            <b>Data sourced directly from:</b> Official company investor presentation PDFs and IR pages.
-            Gaps in charts = data pending PDF verification.
-            Poonawalla: poonawallafincorp.com &nbsp;|&nbsp;
-            Bajaj Finance: cms-assets.bajajfinserv.in &nbsp;|&nbsp;
-            Piramal: piramalfinance.com &nbsp;|&nbsp;
-            Aditya Birla Capital: adityabirlacapital.com &nbsp;|&nbsp;
-            Remaining NBFCs: collection in progress.
+        <div style="background:#f8fafc;border-radius:4px;padding:8px 14px;
+                    margin-top:4px;border-left:2px solid #0284c7;font-size:11px;color:#64748b;">
+            <b>Data sourced from:</b> Official investor presentation PDFs and IR pages.
+            Gaps = pending verification. &nbsp;
+            Poonawalla: poonawallafincorp.com &nbsp;·&nbsp;
+            Bajaj Finance: cms-assets.bajajfinserv.in &nbsp;·&nbsp;
+            Piramal: piramalfinance.com &nbsp;·&nbsp;
+            Aditya Birla Capital: adityabirlacapital.com
         </div>
     """, unsafe_allow_html=True)
 
@@ -1063,85 +753,27 @@ with tab2:
 # ══════════════════════════════════════════════════════════════════════════════
 
 with tab3:
-    st.markdown(
-        '<div class="section-title">Valuation Metrics'
-        '<span class="section-subtitle">Price-to-Book and Price-to-Earnings analysis</span></div>',
-        unsafe_allow_html=True
-    )
-    
-    st.markdown("#### Select NBFCs to Compare")
-    
-    # Poonawalla is always included (non-removable)
-    selected_valuation = ['Poonawalla Fincorp']
-    
-    # Default selected stocks (togglable)
-    default_togglable = ['Bajaj Finance', 'Shriram Finance', 'L&T Finance']
-    
-    # Other stocks (not selected by default, but togglable)
-    other_togglable = ['Cholamandalam Finance', 'Aditya Birla Capital', 
-                       'Piramal Finance', 'Muthoot Finance', 'Mahindra Finance']
-    
-    # Display stock selectors
-    st.caption("**Poonawalla Fincorp** *(always included)* • Select others to compare:")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    # Column 1: Default togglable
-    with col1:
-        st.markdown("**Default:**")
-        for name in default_togglable:
-            if st.checkbox(name, value=True, key=f"val_{name}"):
-                selected_valuation.append(name)
-    
-    # Columns 2-3: Other togglable
-    with col2:
-        st.markdown("**More NBFCs:**")
-        for name in other_togglable[:3]:
-            if st.checkbox(name, value=False, key=f"val_{name}"):
-                selected_valuation.append(name)
-    
-    with col3:
-        st.markdown("&nbsp;")  # Spacing
-        for name in other_togglable[3:]:
-            if st.checkbox(name, value=False, key=f"val_{name}"):
-                selected_valuation.append(name)
-    
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-    
-    st.markdown("### 📊 Price-to-Book Ratio")
-    
-    with st.spinner("Calculating P/B time series..."):
-        pb_chart = create_pb_chart(selected_valuation)
-
-    if pb_chart:
-        st.plotly_chart(pb_chart, use_container_width=True, config={'displayModeBar': False})
-    else:
-        st.warning("⚠️ Unable to fetch P/B data. Please try again later or select different stocks.")
-        with st.expander("🔍 Debug info"):
-            for name in selected_valuation:
-                symbol = NBFCS[name]
-                hist = fetch_stock_data(symbol, period='1y')
-                bv_fallback = _FALLBACK_BV.get(name)
-                st.write(f"**{name}** ({symbol}): price_rows={len(hist) if hist is not None and not hist.empty else 'NO DATA'}, fallback_BV=₹{bv_fallback}")
-    
-    st.markdown("### 📊 Price-to-Earnings Ratio")
-    st.info("⏳ P/E chart coming next...")
+    st.info("Valuation Metrics — rebuilding with reliable data sources. Coming soon.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TABS 4–6 — PLACEHOLDERS
 # ══════════════════════════════════════════════════════════════════════════════
 
 with tab4:
-    st.header("Historical Analysis")
+    st.markdown('<span class="section-label">Historical Analysis</span>', unsafe_allow_html=True)
     st.info("Coming soon — multi-year trend analysis.")
 
 with tab5:
-    st.header("Deep Dive")
+    st.markdown('<span class="section-label">Deep Dive</span>', unsafe_allow_html=True)
     st.info("Coming soon — individual NBFC deep-dive profiles.")
 
 with tab6:
-    st.header("Rankings")
+    st.markdown('<span class="section-label">Rankings</span>', unsafe_allow_html=True)
     st.info("Coming soon — scorecard rankings across all metrics.")
 
-st.markdown("---")
-st.caption("Data sources: Yahoo Finance • NSE • BSE  •  Dashboard updates every 5 minutes")
+st.markdown("""
+    <div style="font-size:10px; color:#94a3b8; font-family:'JetBrains Mono',monospace;
+                border-top:1px solid #e2e8f0; padding-top:8px; margin-top:12px;">
+        Yahoo Finance &nbsp;·&nbsp; NSE &nbsp;·&nbsp; BSE &nbsp;·&nbsp; Updates every 5 min
+    </div>
+""", unsafe_allow_html=True)
