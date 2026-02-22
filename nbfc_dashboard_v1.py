@@ -36,12 +36,12 @@ st.markdown("""
         color: #94a3b8; margin-left: 6px; text-transform: none;
     }
     .tab-intro {
-        background: white; border-left: 3px solid #0284c7;
-        padding: 9px 14px; border-radius: 5px; margin-bottom: 10px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        background: white; border-left: 4px solid #0284c7;
+        padding: 12px 18px; border-radius: 5px; margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.07);
     }
-    .tab-intro-title { font-size: 13px; font-weight: 700; color: #0a2540; }
-    .tab-intro-sub   { font-size: 10.5px; color: #94a3b8; margin-left: 12px; }
+    .tab-intro-title { font-size: 17px; font-weight: 700; color: #0a2540; display: block; }
+    .tab-intro-sub   { font-size: 12.5px; color: #94a3b8; display: block; margin-top: 3px; }
 
     .metric-note {
         background: #f8fafc; border-radius: 4px; padding: 6px 12px;
@@ -319,10 +319,10 @@ def make_bar_chart(
         template='plotly_white', height=height,
         hovermode='x unified', showlegend=True,
         plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=55, r=20, t=60, b=45),
+        margin=dict(l=55, r=20, t=55, b=90),
         font=dict(family='Inter', color='#1a3a52'),
-        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1,
-                    font=dict(size=10.5)),
+        legend=dict(orientation='h', yanchor='top', y=-0.18,
+                    xanchor='center', x=0.5, font=dict(size=10.5)),
     )
     fig.update_xaxes(showgrid=False, showline=True, linecolor='#cbd5e1',
                      tickfont=dict(size=11, color='#475569'))
@@ -554,9 +554,18 @@ def build_rankings_table():
             t = (v - mn) / (mx - mn)  # 0=min, 1=max
             if lower_is_better:
                 t = 1 - t  # invert: low = good = green
-            r = int(220 - t * 120)
-            g = int(100 + t * 120)
-            colors.append(f'rgba({r},{g},110,0.25)')
+            # Piecewise red(0) → yellow(0.5) → green(1)
+            if t <= 0.5:
+                s = t * 2
+                r = int(220 + s * (255 - 220))   # 220 → 255
+                g = int(60  + s * (215 - 60))    # 60  → 215
+                b = int(60  + s * (50  - 60))    # 60  → 50
+            else:
+                s = (t - 0.5) * 2
+                r = int(255 + s * (60  - 255))   # 255 → 60
+                g = int(215 + s * (190 - 215))   # 215 → 190
+                b = int(50  + s * (80  - 50))    # 50  → 80
+            colors.append(f'rgba({r},{g},{b},0.35)')
         return colors
 
     col_labels = ['NBFC'] + [m[1] for m in METRICS]
@@ -666,8 +675,7 @@ def make_deep_dive(nbfc_disp: str):
 def nbfc_selector(tab_key: str, default_on=None) -> list:
     """Renders a compact NBFC checkbox row, returns selected display names."""
     if default_on is None:
-        default_on = ['Bajaj Finance', 'Shriram Finance', 'L&T Finance',
-                      'Cholamandalam Finance', 'Aditya Birla Capital']
+        default_on = ['Bajaj Finance', 'Shriram Finance', 'L&T Finance']
     cols = st.columns(5)
     selected = ['Poonawalla Fincorp']
     others = [n for n in DISPLAY_NAMES if n != 'Poonawalla Fincorp']
@@ -839,29 +847,23 @@ with tab2:
     with c2:
         st.plotly_chart(make_bar_chart('pat_cr', sel2, 'Profit After Tax (PAT)', '₹ Crore'), use_container_width=True, config={'displayModeBar': False})
 
-    # — NIM + CoB (lines, 2-col)
+    # — NIM + CoB (full-width, stacked)
     st.markdown('<span class="section-label">Yield & Funding</span>', unsafe_allow_html=True)
-    c1, c2 = st.columns(2)
-    with c1:
-        st.plotly_chart(make_trend_chart('nim_pct', sel2, 'Net Interest Margin (NIM)', 'NIM (%)',
-                         note='Bajaj Finance & Poonawalla do not disclose NIM; Piramal Q4FY24–Q2FY26 estimated'),
-                         use_container_width=True, config={'displayModeBar': False})
-    with c2:
-        st.plotly_chart(make_trend_chart('cost_of_borrowing_pct', sel2, 'Cost of Borrowing', 'CoB (%)',
-                         lower_is_better=True,
-                         note='Shriram & L&T older quarters interpolated'),
-                         use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(make_trend_chart('nim_pct', sel2, 'Net Interest Margin (NIM)', 'NIM (%)',
+                     note='Bajaj Finance & Poonawalla do not disclose NIM; Piramal Q4FY24–Q2FY26 estimated'),
+                     use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(make_trend_chart('cost_of_borrowing_pct', sel2, 'Cost of Borrowing', 'CoB (%)',
+                     lower_is_better=True,
+                     note='Shriram & L&T older quarters interpolated'),
+                     use_container_width=True, config={'displayModeBar': False})
 
-    # — ROA + ROE (lines, 2-col)
+    # — ROA + ROE (full-width, stacked)
     st.markdown('<span class="section-label">Returns</span>', unsafe_allow_html=True)
-    c1, c2 = st.columns(2)
-    with c1:
-        st.plotly_chart(make_trend_chart('roa_pct', sel2, 'Return on Assets (ROA)', 'ROA (%)'),
-                         use_container_width=True, config={'displayModeBar': False})
-    with c2:
-        st.plotly_chart(make_trend_chart('roe_pct', sel2, 'Return on Equity (ROE)', 'ROE (%)',
-                         note='Poonawalla does not disclose ROE; AB Capital available from Q4FY25'),
-                         use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(make_trend_chart('roa_pct', sel2, 'Return on Assets (ROA)', 'ROA (%)'),
+                     use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(make_trend_chart('roe_pct', sel2, 'Return on Equity (ROE)', 'ROE (%)',
+                     note='Poonawalla does not disclose ROE; AB Capital available from Q4FY25'),
+                     use_container_width=True, config={'displayModeBar': False})
 
     st.markdown('<div class="metric-note">Data sourced from Screener.in investor presentations. Entries marked ~ are estimates from adjacent quarters or rating reports.</div>', unsafe_allow_html=True)
 
@@ -879,18 +881,15 @@ with tab3:
     sel3 = nbfc_selector('aq')
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-    # GNPA + NNPA side by side
-    c1, c2 = st.columns(2)
-    with c1:
-        st.plotly_chart(make_trend_chart('gnpa_pct', sel3, 'Gross NPA (GNPA)', 'GNPA (%)',
-                         lower_is_better=True,
-                         note='Muthoot = Stage-3 proxy; Chola Q1–Q2FY25 not reported'),
-                         use_container_width=True, config={'displayModeBar': False})
-    with c2:
-        st.plotly_chart(make_trend_chart('nnpa_pct', sel3, 'Net NPA (NNPA)', 'NNPA (%)',
-                         lower_is_better=True,
-                         note='Muthoot does not disclose NNPA'),
-                         use_container_width=True, config={'displayModeBar': False})
+    # GNPA + NNPA full-width
+    st.plotly_chart(make_trend_chart('gnpa_pct', sel3, 'Gross NPA (GNPA)', 'GNPA (%)',
+                     lower_is_better=True,
+                     note='Muthoot = Stage-3 proxy; Chola Q1–Q2FY25 not reported'),
+                     use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(make_trend_chart('nnpa_pct', sel3, 'Net NPA (NNPA)', 'NNPA (%)',
+                     lower_is_better=True,
+                     note='Muthoot does not disclose NNPA'),
+                     use_container_width=True, config={'displayModeBar': False})
 
     # PCR full width
     st.plotly_chart(make_trend_chart('pcr_pct', sel3, 'Provision Coverage Ratio (PCR)',
@@ -914,17 +913,14 @@ with tab4:
     sel4 = nbfc_selector('cap')
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-    c1, c2 = st.columns(2)
-    with c1:
-        st.plotly_chart(make_trend_chart('d_e_ratio', sel4, 'Debt / Equity Ratio', 'D/E (×)',
-                         fmt='ratio', lower_is_better=True,
-                         note='Poonawalla D/E only from Q3FY25; Piramal only Q3FY26'),
-                         use_container_width=True, config={'displayModeBar': False})
-    with c2:
-        st.plotly_chart(make_trend_chart('car_pct', sel4, 'Capital Adequacy Ratio (CAR / CRAR)',
-                         'CAR (%)',
-                         note='Only Q3FY26 disclosed by most companies; historical CAR pending'),
-                         use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(make_trend_chart('d_e_ratio', sel4, 'Debt / Equity Ratio', 'D/E (×)',
+                     fmt='ratio', lower_is_better=True,
+                     note='Poonawalla D/E only from Q3FY25; Piramal only Q3FY26'),
+                     use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(make_trend_chart('car_pct', sel4, 'Capital Adequacy Ratio (CAR / CRAR)',
+                     'CAR (%)',
+                     note='Only Q3FY26 disclosed by most companies; historical CAR pending'),
+                     use_container_width=True, config={'displayModeBar': False})
 
     st.plotly_chart(make_trend_chart('bvps_inr', sel4, 'Book Value Per Share (BVPS)',
                      'BVPS (₹)', fmt='cr', height=380,
@@ -964,7 +960,7 @@ with tab6:
     st.markdown("""
         <div class="tab-intro">
             <span class="tab-intro-title">Peer Scorecard — Q3 FY26</span>
-            <span class="tab-intro-sub">All 9 NBFCs · 11 metrics · Green = better, Red = worse within peer group</span>
+            <span class="tab-intro-sub">All 9 NBFCs · 11 metrics · Red → Yellow → Green spectrum within each column</span>
         </div>
     """, unsafe_allow_html=True)
 
@@ -973,7 +969,7 @@ with tab6:
 
     st.markdown("""
         <div class="metric-note">
-            <b>Color coding:</b> Within each column, green = best-in-class, red = weakest.
+            <b>Color coding:</b> Within each column, green = best-in-class, yellow = mid-range, red = weakest (continuous spectrum).
             For GNPA/NNPA/CoB/D/E lower is better; for AUM/PAT/NIM/ROA/ROE/CAR higher is better. &nbsp;·&nbsp;
             <b>—</b> = not disclosed or not yet available.
         </div>
