@@ -339,26 +339,80 @@ def fetch_stock_data(symbol, period='1y'):
     except:
         return None
 
-@st.cache_data(ttl=300)
-def get_current_prices():
-    rows = []
-    for name, symbol in NBFCS.items():
+def _fetch_all_prices():
+    """Batch-download all 9 tickers in one request; retry missing ones individually."""
+    symbols  = list(NBFCS.values())
+    name_map = {v: k for k, v in NBFCS.items()}
+    rows = {}
+
+    # --- 1. Single batch download (avoids per-ticker rate-limiting) ---
+    try:
+        raw = yf.download(
+            symbols, period='1mo', group_by='ticker',
+            auto_adjust=True, progress=False, threads=False,
+        )
+        if raw is not None and not raw.empty:
+            for symbol in symbols:
+                try:
+                    df = raw[symbol] if len(symbols) > 1 else raw
+                    df = df.dropna(subset=['Close'])
+                    if len(df) < 2:
+                        continue
+                    cur  = float(df['Close'].iloc[-1])
+                    prev = float(df['Close'].iloc[-2])
+                    chg  = cur - prev
+                    rows[symbol] = {
+                        'name': name_map[symbol],
+                        'symbol': symbol.replace('.NS', ''),
+                        'price': cur, 'change_abs': chg,
+                        'change_pct': (chg / prev) * 100,
+                        'volume': int(df['Volume'].iloc[-1]) if 'Volume' in df.columns else 0,
+                    }
+                except Exception:
+                    continue
+    except Exception:
+        pass
+
+    # --- 2. Individually retry any ticker that the batch missed ---
+    for symbol in [s for s in symbols if s not in rows]:
         try:
             hist = yf.Ticker(symbol).history(period='1mo')
-            if hist.empty:
+            hist = hist.dropna(subset=['Close'])
+            if len(hist) < 2:
                 continue
-            cur  = hist['Close'].iloc[-1]
-            prev = hist['Close'].iloc[-2] if len(hist) > 1 else cur
+            cur  = float(hist['Close'].iloc[-1])
+            prev = float(hist['Close'].iloc[-2])
             chg  = cur - prev
-            rows.append({
-                'name': name, 'symbol': symbol.replace('.NS', ''),
+            rows[symbol] = {
+                'name': name_map[symbol],
+                'symbol': symbol.replace('.NS', ''),
                 'price': cur, 'change_abs': chg,
                 'change_pct': (chg / prev) * 100,
                 'volume': int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else 0,
-            })
-        except:
+            }
+        except Exception:
             continue
-    return rows
+
+    # Return in NBFCS display order
+    return [rows[s] for s in symbols if s in rows]
+
+
+def get_current_prices():
+    """Smart cache: 5 min when all 9 stocks loaded; 30 sec when partial so it retries fast."""
+    import time
+    now   = time.time()
+    cache = st.session_state.get('_prices_cache', [])
+    ts    = st.session_state.get('_prices_ts', 0)
+    ttl   = 300 if len(cache) == len(NBFCS) else 30
+
+    if cache and (now - ts) < ttl:
+        return cache
+
+    result = _fetch_all_prices()
+    if result:
+        st.session_state['_prices_cache'] = result
+        st.session_state['_prices_ts']    = now
+    return result
 
 def create_comparison_chart(time_period, selected_stocks):
     fig = go.Figure()
