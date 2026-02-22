@@ -22,17 +22,17 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
     .main { background: #eef0f4; font-family: 'Inter', sans-serif; }
-    .block-container { padding: 0.6rem 1.6rem !important; max-width: 1600px; }
+    .block-container { padding: 2.8rem 1.6rem 0.6rem 1.6rem !important; max-width: 1600px; }
     div[data-testid="stVerticalBlock"] > div { gap: 0 !important; }
 
     .section-label {
-        font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+        font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
         text-transform: uppercase; color: #64748b;
         border-left: 2px solid #0284c7; padding-left: 7px;
         margin: 12px 0 8px 0; display: block;
     }
     .section-label-sub {
-        font-size: 9px; font-weight: 400; letter-spacing: 0.04em;
+        font-size: 10.5px; font-weight: 400; letter-spacing: 0.03em;
         color: #94a3b8; margin-left: 6px; text-transform: none;
     }
     .tab-intro {
@@ -57,7 +57,7 @@ st.markdown("""
     }
     .stTabs [data-baseweb="tab"] {
         background: transparent; border-radius: 0; color: #64748b;
-        font-weight: 500; padding: 10px 18px; font-size: 12.5px;
+        font-weight: 500; padding: 10px 18px; font-size: 13.5px;
         border-bottom: 2px solid transparent; margin-bottom: -1px;
     }
     .stTabs [aria-selected="true"] {
@@ -100,7 +100,7 @@ st.markdown("""
     .stButton button:hover { border-color: #0284c7; color: #0284c7; background: #f0f9ff; }
 
     .stCheckbox { margin-bottom: -2px; }
-    .stCheckbox label { font-size: 12.5px; color: #475569; }
+    .stCheckbox label { font-size: 13.5px; color: #475569; }
     .stCaption p { font-size: 10.5px !important; color: #94a3b8 !important; margin: 0 !important; }
     hr { margin: 8px 0; border-color: #e2e8f0; }
     .stAlert { padding: 8px 12px !important; font-size: 12px; border-radius: 5px; }
@@ -671,10 +671,7 @@ def nbfc_selector(tab_key: str, default_on=None) -> list:
     cols = st.columns(5)
     selected = ['Poonawalla Fincorp']
     others = [n for n in DISPLAY_NAMES if n != 'Poonawalla Fincorp']
-    cols[0].markdown(
-        "<span style='font-size:12px;font-weight:600;color:#0a2540;'>"
-        "Poonawalla <span style='font-weight:400;color:#94a3b8;font-size:10px;'>"
-        "(always)</span></span>", unsafe_allow_html=True)
+    cols[0].checkbox("Poonawalla Fincorp", value=True, disabled=True, key=f"{tab_key}_poonawalla_fixed")
     for i, name in enumerate(others):
         with cols[(i + 1) % 5]:
             if st.checkbox(name, value=(name in default_on), key=f"{tab_key}_{name}"):
@@ -762,19 +759,18 @@ with tab1:
     st.markdown('<span class="section-label">Performance Comparison <span class="section-label-sub">Indexed to 100 · select stocks and period below</span></span>', unsafe_allow_html=True)
 
     others = [n for n in NBFCS if n != 'Poonawalla Fincorp']
-    c1, c2, c3 = st.columns(3)
-    cmap = [c1, c2, c3]
-    c1.markdown("<span style='font-size:12px;font-weight:600;color:#334155;'>Poonawalla Fincorp <span style='font-weight:400;color:#94a3b8;font-size:11px;'>always shown</span></span>", unsafe_allow_html=True)
+    cmap = st.columns(5)
+    cmap[0].checkbox("Poonawalla Fincorp", value=True, disabled=True, key="mkt_poonawalla_fixed")
     sel_mkt = ['Poonawalla Fincorp']
     for i, name in enumerate(others):
-        with cmap[i % 3]:
+        with cmap[(i + 1) % 5]:
             if st.checkbox(name, value=(name in DEFAULT_COMPARISON), key=f"mkt_{name}"):
                 sel_mkt.append(name)
 
     st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
     periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
     active  = st.session_state.time_period
-    btn_cols = st.columns(6)
+    btn_cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 4.5])
     for i, p in enumerate(periods):
         with btn_cols[i]:
             if st.button(p, key=f"pb_{p}", use_container_width=True):
@@ -807,11 +803,16 @@ with tab1:
     range_from = today - timedelta(days=days_back)
     fmt_from   = range_from.strftime("%-d %b'%y")
     fmt_to     = today.strftime("%-d %b'%y")
-    st.caption(f"**{active}** · {fmt_from} – {fmt_to} · Indexed to 100")
 
     with st.spinner("Loading chart..."):
         try:
             ch, _, _ = create_comparison_chart(active, sel_mkt)
+            ch.update_layout(title_text=(
+                f'<span style="color:#0a2540;font-weight:700;font-size:17px">'
+                f'Performance Comparison — {active} (Indexed to 100)</span>'
+                f'<span style="color:#94a3b8;font-size:13px;font-weight:400;">'
+                f' &nbsp;·&nbsp; {fmt_from} – {fmt_to}</span>'
+            ))
             st.plotly_chart(ch, use_container_width=True, config={'displayModeBar': False})
         except Exception as e:
             st.error(f"Chart error: {e}")
