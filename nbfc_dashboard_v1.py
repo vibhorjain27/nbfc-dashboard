@@ -82,17 +82,25 @@ st.markdown("""
         padding: 10px 13px 8px 13px;
         border-top: 3px solid #0284c7;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        height: 92px;
+        height: 98px;
         box-sizing: border-box;
+    }
+    .ticker-name-sm {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0a2540;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .ticker-sym {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 11.5px;
-        font-weight: 700;
-        color: #334155;
+        font-size: 10px;
+        font-weight: 400;
+        color: #94a3b8;
         letter-spacing: 0.05em;
+        margin-top: 2px;
     }
-    .ticker-name-sm { font-size: 10px; color: #94a3b8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
     .ticker-price {
         font-family: 'JetBrains Mono', monospace;
         font-size: 18px;
@@ -571,15 +579,15 @@ with tab1:
                 else:
                     vol_str = str(vol) if vol > 0 else "—"
 
-                brand_color = COLORS.get(stock['name'], '#0284c7')
+                border_color = "#16a34a" if stock['change_pct'] >= 0 else "#dc2626"
 
                 with cols[col_idx]:
                     st.markdown(f"""
-                        <div class="ticker-card" style="border-top-color:{brand_color};">
+                        <div class="ticker-card" style="border-top-color:{border_color};">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div>
-                                    <div class="ticker-sym">{stock['symbol']}</div>
                                     <div class="ticker-name-sm">{stock['name']}</div>
+                                    <div class="ticker-sym">{stock['symbol']}</div>
                                 </div>
                                 <div style="text-align:right;">
                                     <div class="ticker-price">₹{stock['price']:,.0f}</div>
