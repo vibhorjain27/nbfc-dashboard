@@ -1,0 +1,480 @@
+NBFC AI Initiatives — Source URLs
+Compiled: 23 Feb 2026
+Research by: Claude AI Research Agent (claude-sonnet-4-6)
+===========================================================
+
+=== Bajaj Finance ===
+
+# BFL 3.0 / FinAI Annual Report FY2024-25
+https://www.bajajfinserv.in/finance-digital-annual-report-fy25/finai-company.html
+
+# Bajaj Finance Annual Report FY2024-25 (PDF)
+https://www.bajajfinserv.in/finance-digital-annual-report-fy25/bajaj-finance-ltd-ar-2024-25-assets/pdf/annual-report-fy2025.pdf
+
+# Microsoft Partnership Announcement (Jan 2025)
+https://news.microsoft.com/source/asia/2025/01/08/microsoft-inks-strategic-partnerships-to-make-indias-core-sectors-ai-first/
+
+# Microsoft India Partnership (India site)
+https://news.microsoft.com/en-in/microsoft-inks-strategic-partnerships-to-make-indias-core-sectors-ai-first/
+
+# Bajaj Finance FinAI — aboutbajajfinserv.com
+https://www.aboutbajajfinserv.com/ticc/fin-ai
+
+# Generative AI page — aboutbajajfinserv.com
+https://www.aboutbajajfinserv.com/ticc/generative-ai
+
+# Content AI page — aboutbajajfinserv.com
+https://www.aboutbajajfinserv.com/ticc/content-ai
+
+# Medianama: 800+ AI Agents Q3 FY26 Earnings Call
+https://www.medianama.com/2026/02/223-bajaj-finance-800-ai-agents-lending-operations/
+
+# Medianama: FinAI Q2 FY26 Deployment
+https://www.medianama.com/2025/11/223-bajaj-finance-finai-deployment-operating-efficiency-q2fy26/
+
+# Trak.in: 100 Million AI Calls by 2027
+https://trak.in/stories/bajaj-finance-will-use-ai-for-managing-100-million-customer-calls-by-2027/
+
+# OfficeChai: AI Call Centres 10% of Loan Disbursements
+https://officechai.com/ai/ai-powered-call-centers-are-now-accounting-for-10-of-all-loan-disbursements-at-bajaj-finance/
+
+# Klover.ai: Bajaj Finance AI Strategy Deep-Dive
+https://www.klover.ai/bajaj-finance-ai-strategy-analysis-of-bfl-dominance-in-nonbanking-financial-services-ai/
+
+# The Ken: Bajaj Finance AI Bar Raiser
+https://the-ken.com/kaching/bajaj-finance-is-the-ai-bar-raiser-not-indian-fintechs/
+
+# MoneyControl / TradingView: Brokerages Bullish on AI
+https://www.tradingview.com/news/moneycontrol:a22b0d99a094b:0-brokerages-bullish-on-bajaj-finance-s-ai-thrust-say-operational-efficiencies-will-see-boost/
+
+# Swastika: Q3FY26 Concall Insights AI Strategy
+https://www.swastika.co.in/blog/q3fy26-concall-insights-how-bajaj-finance-is-turning-ai-into-a-revenue-engine
+
+# InvestingCube: Rs 1,600 Crore AI Revenue Surge
+https://news.investingcube.com/shares/bajaj-finance-ai-revolution-%E2%82%B91600-crore-revenue-surge-amid-february-market-volatility/
+
+# Yellow.ai Case Study (Bajaj Finserv BLU chatbot)
+https://yellow.ai/case-study/how-bajaj-finserv-boosts-cx/
+
+# Tableau: Bajaj Finserv Data-Driven Risk Decisions
+https://www.tableau.com/solutions/customer/Bajaj-Finserv-minimizes-lending-risk-with-data-driven-decisions
+
+# BSE Filing Q3 FY26 Investor Presentation
+https://www.bseindia.com/xml-data/corpfiling/AttachLive/fc30b0b8-a3df-4635-9997-5c45cca16f62.pdf
+
+# Magzter/Hindustan Times: Bajaj Fin Scales Back Payments, Shifts to AI
+https://www.magzter.com/stories/newspaper/Hindustan-Times-East-UP/BAJAJ-FIN-SCALES-BACK-PAYMENTS-AMBITIONS-SHIFTS-FOCUS-TO-AI
+
+# LinkedIn: Bajaj Finance Saving Rs 150 Cr from AI Calls
+https://www.linkedin.com/posts/aviral-bhatnagar-ajuniorvc_bajaj-finance-is-saving-150-cr-of-cost-from-activity-7309815586266529792-VmOu
+
+# Microsoft AI First Movers: Aditya Birla Capital (also covers Bajaj Finance context)
+https://www.microsoft.com/en-in/aifirstmovers/adityabirlacapital
+
+
+=== Shriram Finance ===
+
+# Microsoft: Shriram One Super App (Microsoft Azure Partnership)
+https://news.microsoft.com/source/asia/features/with-shriram-one-financial-services-travel-with-the-customer/
+
+# Glib.ai Case Study: IDP for Shriram Finance Loan Processing
+https://glib.ai/case-studies/transforming-shriram-finance-auto-two-wheeler-loan-processing/
+
+# Netcore Case Study: 81X ROI with AI Marketing Automation
+https://netcorecloud.com/success-story/shriram-finance/
+
+# Shriram Finance Article on AI in Finance
+https://www.shriramfinance.in/article-integration-of-the-use-of-ai-in-finance
+
+# Shriram Finance Article on AI Opportunities in Financial Sector
+https://shriramfinance.in/article-what-are-the-opportunities-for-ai-in-the-financial-sector
+
+# Elets BFSI: Shriram Finance Digital Transformation Fintech Entry
+https://bfsi.eletsonline.com/shriram-finance-accelerates-digital-transformation-with-ambitious-fintech-entry/
+
+# Ainvest: Shriram Finance Digital Payments Entry 2025
+https://www.ainvest.com/news/shriram-finance-dives-digital-payments-strategic-move-risky-gamble-2504/
+
+# Shriram Finance Annual Report FY2023-24 (PDF)
+https://cdn.shriramfinance.in/sfl-kalam/files/2024-07/Shriram_Finance-AR-2023-24.pdf
+
+# Shriram Finance Annual Report FY2024-25 (PDF)
+https://cdn.shriramfinance.in/sfl-kalam/files/2025-06/Shriram_Finance-AR-2024-25.pdf
+
+# Equitymaster: Shriram Finance 2023-24 Annual Report Analysis
+https://www.equitymaster.com/research-it/annual-results-analysis/SHTRA/SHRIRAM-FINANCE-2023-24-Annual-Report-Analysis/10486
+
+# AppsRunTheWorld: Shriram Finance Digital Transformation
+https://www.appsruntheworld.com/customers-database/customers/view/shriram-transport-finance-company-india
+
+
+=== L&T Finance ===
+
+# L&T Finance Press Release: Project Cyclops Deployment
+https://www.ltfs.com/docs/default-source/newsroom/press-release/L-T-Finance-deploys-Project-Cyclops-a-revolutionary-AI-driven-next-gen-digital-credit-engine-for-real-time-credit-risk-assessment-
+
+# MediaBrief: L&T Finance Deploys Project Cyclops
+https://mediabrief.com/lt-finance-deploys-cyclops/
+
+# Content Media Solution: L&T Finance Project Cyclops
+https://contentmediasolution.com/business/lt-finance-launches-project-cyclops-ai-credit-engine/
+
+# DQ India: Project Cyclops Interview
+https://www.dqindia.com/interview/project-cyclops-lt-finances-innovative-approach-to-credit-underwriting-8692632
+
+# AIM: L&T Finance Hopes Cyclops Would Be 90% Agentic
+https://analyticsindiamag.com/ai-features/lt-finance-hopes-project-cyclops-would-be-90-agentic-one-day/
+
+# L&T Finance Project Cyclops White Paper (PDF)
+https://www.ltfinance.com/docs/default-source/default-document-library/print-and-online/project_cyclops_l-t_finances_innovative_approach_to_credit_underwriting.pdf
+
+# L&T Finance Project Cyclops Credit & Countryside (PDF)
+https://www.ltfinance.com/docs/default-source/default-document-library/print-and-online/project-cyclops-credit-and-the-countryside_how-l-t-finance-is-powering-india-s-lending-future-with-ai.pdf
+
+# The Print (ANI): L&T Finance Launches KAI Home Loan Advisor
+https://theprint.in/ani-press-releases/lt-finance-ltd-launches-knowledgeable-ai-kai-an-ai-powered-virtual-home-loan-advisor-on-its-new-corporate-website/2474528/
+
+# TaxTMI: L&T Finance KAI Launch
+https://www.taxtmi.com/news?id=32366
+
+# Analytics India Magazine: L&T Finance AI-Powered Home Loan Advisor
+https://analyticsindiamag.com/ai-news-updates/lt-finance-launches-ai-powered-home-loan-advisor/
+
+# APAC News Network: KAI Virtual Advisor
+https://apacnewsnetwork.com/2025/02/lt-finance-unveils-ai-powered-virtual-advisor-kai-to-revolutionize-home-loan-experience-for-customers/
+
+# L&T Finance Press Release: KAI Launch (Official)
+https://www.ltfs.com/docs/default-source/newsroom/press-release/LT-Finance-Ltd-launches-Knowledgeable-AI-an-AI-powered-virtual-home-loan-advisor-on-its-new-corporate-website
+
+# Business Standard: Large NBFCs Scale AI Adoption (Covers L&T Finance)
+https://www.business-standard.com/technology/tech-news/large-nbfcs-scale-ai-adoption-across-acquisition-underwriting-servicing-126021700833_1.html
+
+# Republic World: L&T Finance Chief AI Officer on AI Adoption
+https://www.republicworld.com/tech/flagship-ai-engines-current-ai-applications-chief-ai-officer-at-lt-finance-stresses-on-india-s-need-to-accept-ai
+
+# Tribune India: RAISE' 25 Pitch Point AI Startup Competition
+https://www.tribuneindia.com/news/business/lt-finance-ltd-launches-pitch-point-a-competition-for-ai-startups-ahead-of-raise-25/
+
+# L&T Finance RAISE' 25 Blueprint PDF
+https://www.ltfinance.com/docs/default-source/corporatedisclosure/l-t-finance-raise'-25-sets-a-new-blueprint-for-ai-in-bfsi.pdf
+
+# Lakshya 2026 Strategy Document (PDF)
+https://www.ltfs.com/docs/default-source/default-document-library/lakshya-2026-new-may31608848-a036-42dd-9212-ce397f11eba5.pdf
+
+# Rakesh Jhunjhunwala Blog: Project Cyclops Analysis
+https://rakesh-jhunjhunwala.in/lt-finances-project-cyclops-the-ai-driven-multi-dimensional-underwriting-engine-will-hog-the-limelight-buy-for-target-price-of-%E2%82%B9200-42-upside/
+
+# Ignosis Case Study: L&T Finance Income Assessment (Account Aggregator)
+https://ignosis.ai/blog/case-study/lt-and-ignosis-transforming-income-assessment-with-multi-aa-implementation/
+
+# BSE Intimation (November 2025 Filing)
+https://www.bseindia.com/xml-data/corpfiling/AttachHis/2284dbfe-c7b2-4a7d-a7a7-694c4ce2eaf3.pdf
+
+
+=== Cholamandalam Finance ===
+
+# Nucleus Software: GenAI in Lending with Cholamandalam
+https://www.nucleussoftware.com/customer-connects/cholamandalams-vision-for-smarter-lending-with-nucleus-software/
+
+# Nucleus Software: Cholamandalam Co-Lending Launch
+https://www.nucleussoftware.com/news/press-release/cholamandalam-investment-and-finance-company-limited-chola-launches-its-co-lending-business-with-technology-from-nucleus-software-2020-11-10
+
+# Finextra: Chola Co-Lending with Nucleus Software
+https://www.finextra.com/pressarticle/84885/chola-launches-co-lending-business-with-technology-from-nucleus-software
+
+# Cholamandalam Annual Report FY2023-24 (PDF)
+https://files.cholamandalam.com/files/annual-report-fy-2023-2024.pdf
+
+# Cholamandalam Annual Report FY2024-25 (PDF)
+https://files.cholamandalam.com/Annual_Report_for_FY_2024_25_6829876a3e.pdf
+
+# Cholamandalam Investor Presentations
+https://www.cholamandalam.com/investors/financials
+
+# Cholamandalam Press Releases
+https://www.cholamandalam.com/news/press-release
+
+# Finacle: Chola Treasury Modernization
+https://www.finacle.com/news-room/press-release/chola-treasury-transformation-journey/
+
+# AppsRunTheWorld: Cholamandalam Digital Transformation
+https://www.appsruntheworld.com/customers-database/customers/view/cholamandalam-investment-and-finance-company-india
+
+# Tracxn: Cholamandalam Company Profile (references digital lending restart)
+https://tracxn.com/d/companies/cholamandalam-investment-and-finance-company/__B9SzoJxlGla_CtZ7pvwktvjAoFjp5rtarwKYONTM7ik
+
+# Cholamandalam Investor Presentation March 2024
+https://files.cholamandalam.com/investor_presentation_mar_24_5c01ec62d5.pdf
+
+
+=== Aditya Birla Capital ===
+
+# Microsoft Customer Story: Aditya Birla Capital GenAI 40% Cost Reduction
+https://www.microsoft.com/en/customers/story/20596-aditya-birla-financial-shared-services-azure-open-ai-service
+
+# Microsoft AI First Movers: Aditya Birla Capital
+https://www.microsoft.com/en-in/aifirstmovers/adityabirlacapital
+
+# Business Standard: ABCD Platform GenAI Tools Launch (Oct 2025)
+https://www.business-standard.com/companies/news/aditya-birla-capital-launches-genai-tools-on-abcd-platform-125100801284_1.html
+
+# Business Standard: ABCD AI-Powered Features
+https://www.business-standard.com/markets/capital-market-news/aditya-birla-capital-unveils-ai-powered-features-on-abcd-platform-125100801239_1.html
+
+# Aditya Birla Capital Press Release (PDF via official site)
+https://www.adityabirlacapital.com/-/media/ABCL/pdf/Press-release/081025Press-ReleaseAditya-Birla-Capital-Accelerates-AIFirst-Strategy-with-Enterprisewide-Innovations.ashx
+
+# BSE Filing: ABCL AI-First Strategy
+https://www.bseindia.com/xml-data/corpfiling/AttachHis/2174e175-b54d-4768-950a-b7a0bd01ecb6.pdf
+
+# Financial Express CIO: Aditya Birla Capital AI-First Playbook
+https://db.financialexpressb2b.com/features/aditya-birla-capital-simplifies-finance-through-a-digital-and-ai-first-growth-playbook
+
+# FintechBizNews: Aditya Birla Capital AI-1st Plan
+https://www.fintechbiznews.com/fintech-technology/aditya-birla-capital-accelerates-ai-1st-plan-
+
+# AngelOne: ABCD Platform AI Capabilities
+https://www.angelone.in/news/market-updates/aditya-birla-capital-expands-ai-capabilities-with-abcd-platform
+
+# Aditya Birla Group: AI Revolution Story
+https://www.adityabirla.com/media/stories/gripping-the-artificial-intelligence-revolution/
+
+# Aditya Birla Group: Digital Transformation Story
+https://www.adityabirla.com/media/stories/accelerating-the-digital-transformation-journey-at-aditya-birla-capital/
+
+# Whalesbook: Birla AI Labs Launch
+https://www.whalesbook.com/news/English/tech/Birla-AI-Labs-Launched-Conglomerate-Bets-on-Cognitive-Amplification/699895b0057e346edab46d89
+
+# Entrepreneur India: Aditya Birla Ventures Backs Articul8 AI
+https://www.entrepreneur.com/en-in/news-and-trends/aditya-birla-ventures-backs-genai-firm-articul8-ai-in/501700
+
+# Sahyadri Startups: ABCD Platform at GFF 2025
+https://sahyadristartups.com/news/aditya-birla-capital-unveils-next-gen-ai-features-on-abcd-platform-at-global-fintech-fest-2025/
+
+# Elite Wealth: ABCD AI-Powered Innovations
+https://elitewealth.in/aditya-birla-capital-launches-ai-powered-innovations-on-d2c-platform-abcd/
+
+# MarketScreener: ABCL AI Innovations at GFF 2025
+https://in.marketscreener.com/news/aditya-birla-capital-limited-announces-the-launch-of-suite-of-ai-powered-features-and-innovations-on-ce7d5ad9dc81f22c
+
+
+=== Piramal Finance ===
+
+# Business Standard: Piramal Finance Innovation Lab Bengaluru
+https://www.business-standard.com/article/companies/piramal-finance-launches-innovation-lab-in-bengaluru-to-have-300-members-122121500509_1.html
+
+# Piramal Finance Innovation Lab Press Release (PDF)
+https://www.piramalenterprises.com/Assets/download/Press-Releases/PR_Piramal-Innovation-Lab-Bengaluru_Dec-15_Final.pdf
+
+# Piramal Finance Press Release Page (Official)
+https://www.piramalfinance.com/media/press-release
+
+# Open The Magazine: Piramal Finance AI-Driven Software (Claude AI usage)
+https://openthemagazine.com/india/artificial-intelligence-india-incs-inflection-point
+
+# Piramal.ai Website (AI as Core Identity)
+https://piramal.ai/
+
+# CIO.com: Piramal CTO Saurabh Mittal on Financial Services Innovation
+https://www.cio.com/article/416422/piramal-cto-saurabh-mittal-on-financial-services-innovation.html
+
+# DQ India: Piramal Finance Tech-First Strategy
+https://www.dqindia.com/weve-made-a-choice-to-be-tech-first-in-every-aspect-of-our-business-saurabh-mittal-piramal-capital-housing-finance/
+
+# Entrepreneur India: Piramal Innovation Lab Bangalore
+https://www.entrepreneur.com/en-in/news-and-trends/piramal-finance-launches-innovation-lab-in-bangalore/441207
+
+# EquityBulls: Piramal Innovation Lab
+https://www.equitybulls.com/category.php?page=1&id=324198
+
+# IndiaInfoline: Piramal Innovation Lab
+https://www.indiainfoline.com/news/markets/in-bengaluru-piramal-finance-launches-an-innovation-lab
+
+# Navi and Piramal Finance: Co-lending Digital Personal Loan
+https://bfsi.eletsonline.com/navi-and-piramal-finance-inks-co-lending-partnership-to-offer-digital-personal-loan/
+
+# MarketScreener: Piramal Finance Digital India CSC Partnership
+https://www.marketscreener.com/quote/stock/PIRAMAL-ENTERPRISES-LIMIT-6492465/news/Piramal-Enterprises-Finance-partners-with-Digital-India-s-Common-Service-Centers-to-Enhance-Cred-47873190/
+
+# Business Standard: Piramal Finance AUM target Rs 1.5 trillion by 2028
+https://www.business-standard.com/companies/news/piramal-finance-aims-aum-of-1-5-trillion-by-2028-ceo-jairam-sridharan-125110700797_1.html
+
+# Piramal Enterprises Key Milestones
+https://www.piramal.com/piramal-html/key-milestones-of-our-14-year-financial-services-journey.html
+
+
+=== Muthoot Finance ===
+
+# Muthoot Finance: MATTU & MITTU AI Chatbot Launch (Official)
+https://www.muthootfinance.com/news-board/the-muthoot-group-becomes-one-of-the-first-in-the-nbfc-sector-to-launch-an-ai-based-chatbot-mattu-mittu
+
+# Muthoot Finance: MATTU & MITTU Alternate URL
+https://www.muthootfinance.com/news-board/the-muthoot-group-becomes-one-of-the-first-in-the-nbfc-sector-to-launch-an-ai-based-chatboat-mattu-mittu
+
+# Analytics India Magazine: Muthoot MATTU & MITTU
+https://analyticsindiamag.com/ai-news-updates/muthoot-group-debuts-its-ai-chatbot-mattu-mittu-the-new-customer-assistant/
+
+# DQ India: Muthoot MATTU & MITTU AI Chatbot
+https://www.dqindia.com/mattu-mittu-muthoot-groups-artificial-intelligence-based-chatbot/
+
+# CIO Axis: Muthoot Launches AI Virtual Assistant Mattu (Senseforth.ai)
+https://cioaxis.com/just-in/muthoot-finance-launches-ai-virtual-assistant-mattu
+
+# Business Standard: Google Pay Partners with Muthoot Finance (Oct 2024)
+https://www.business-standard.com/companies/news/google-muthoot-finance-tie-up-to-provide-gold-backed-loans-through-gpay-124100300876_1.html
+
+# Business Standard: Google Pay Personal/Gold Loans Partners (Oct 2024)
+https://www.business-standard.com/finance/personal-finance/google-pay-partners-with-muthoot-finance-to-sell-gold-backed-loans-124100400490_1.html
+
+# Deccan Herald: Muthoot Finance Gold Loans via Google Pay
+https://www.deccanherald.com/business/companies/muthoot-finances-flagship-gold-loans-can-be-availed-using-google-pay-3223038
+
+# BusinessToday: Google Offers Gold Loans with Muthoot Finance
+https://www.businesstoday.in/personal-finance/news/story/google-to-offer-personal-gold-loans-partners-with-aditya-birla-finance-muthoot-finance-448609-2024-10-03
+
+# Muthoot Finance: iMuthoot App v3.0 with AI Chatbot
+https://financialit.net/news/transaction-banking/muthoot-finance-launches-imuthoot-mobile-app-version-30-provide-enhanced
+
+# Muthoot Finance Annual Reports (Official Page)
+https://www.muthootfinance.com/annual-reports
+
+# AppsRunTheWorld: Muthoot Finance Digital Transformation
+https://www.appsruntheworld.com/customers-database/customers/view/muthoot-finance-india
+
+# FF News: Muthoot FinCorp Nucleus FinnOne Neo Digital Transformation
+https://ffnews.com/newsarticle/muthoot-fincorp-announces-the-next-phase-of-digital-transformation-with-nucleus-finnone-neo/
+
+
+=== Mahindra Finance ===
+
+# Mahindra.com Press Release: Credgenics Partnership for Digital Collections
+https://www.mahindra.com/news-room/press-release/en/mahindra-finance-to-boost-its-digital-collections-with-credgenics
+
+# Credgenics: Mahindra Finance Press Release
+https://www.credgenics.com/mahindra-finance-press-release
+
+# IBS Intelligence: Mahindra Finance Teams Up with Credgenics
+https://ibsintelligence.com/ibsi-news/mahindra-finance-teams-up-with-credgenics-to-boost-its-loan-collections/
+
+# Business Standard: Mahindra Finance Partners with Credgenics (Jul 2022)
+https://www.business-standard.com/article/news-cm/mahindra-mahindra-financial-services-partners-with-credgenics-122071900510_1.html
+
+# Salesforce India: Mahindra Finance Collaboration
+https://www.salesforce.com/in/news/stories/mahindra-finance-collaborates-with-salesforce-to-digitize-lending/
+
+# FintechBizNews: Mahindra Finance Partners with Salesforce
+https://www.fintechbiznews.com/fintech-digital-lending/mahindra-finance-partners-with-salesforce-to-digitize-msme-lending
+
+# APAC News Network: Mahindra Finance Salesforce Partnership (Oct 2024)
+https://apacnewsnetwork.com/2024/10/mahindra-finance-and-salesforce-join-hands-to-digitize-msme-lending/
+
+# Elets BFSI: M&M Finance Digital Collections Credgenics
+https://bfsi.eletsonline.com/mm-finance-to-boost-digital-collections-with-credgenics/
+
+# CRN India: Mahindra Finance Salesforce MSME
+https://www.crn.in/news/mahindra-finance-collaborates-with-salesforce-to-digitise-msme-lending/
+
+# CXO Today: Mahindra Finance Salesforce Collaboration
+https://cxotoday.com/press-release/mahindra-finance-collaborates-with-salesforce-to-digitize-msme-lending/
+
+# Mahindra AI Platform (Group Level)
+https://www.mahindra.com/mahindra-ai
+
+# Mahindra Annual Report FY2024-25
+https://www.mahindrafinance.com/investor-relations/financial-information/annual-report-2024-2025
+
+# Mahindra Finance LinkedIn: Credit Score Awareness
+https://www.linkedin.com/posts/mahindra-finance_mahindrafinance-emi-creditscore-activity-7203374232012046340-waA9
+
+# Mahindra Group: GenAI Digital Transformation Journey
+https://echo.mahindra.com/2024/july/issue3/mahindra-groups-digital-transformation-journey-supercharged-with-genai
+
+# MarketScreener: Mahindra Finance Salesforce MSME Lending
+https://www.marketscreener.com/quote/stock/MAHINDRA-MAHINDRA-FINANCI-13788840/news/Mahindra-Mahindra-Financial-Services-Finance-collaborates-with-Salesforce-to-digitize-MSME-Lendi-48085274/
+
+# City Air News: Mahindra Finance Credgenics
+https://www.cityairnews.com/content/mahindra-finance-to-boost-its-digital-collections-with-credgenics
+
+
+=== Poonawalla Fincorp ===
+
+# Business Standard: Poonawalla Fincorp AI-First Approach (Jan 2026)
+https://www.business-standard.com/markets/capital-market-news/poonawalla-fincorp-deepens-commitment-to-its-ai-first-approach-126012800222_1.html
+
+# Business Standard: Poonawalla Fincorp 5 AI Solutions (Oct 2025)
+https://www.business-standard.com/markets/capital-market-news/poonawalla-fincorp-deploys-5-ai-powered-solutions-for-its-digital-transformation-125102700142_1.html
+
+# Technuter: Poonawalla Fincorp 5 New Enterprise AI Solutions
+https://technuter.com/artificial-intelligence/poonawalla-fincorp-deepens-ai-first-transformation-with-five-new-enterprise-ai-solutions.html
+
+# ScanX: Poonawalla Fincorp Five Enterprise AI Solutions
+https://scanx.trade/stock-market-news/stocks/poonawalla-fincorp-launches-five-enterprise-ai-solutions-to-accelerate-digital-transformation/31114424
+
+# InvestyWise: Poonawalla Fincorp AI Transformation
+https://www.investywise.com/poonawalla-fincorp-ai-transformation-with-new-solutions/
+
+# Business Upturn: Poonawalla Fincorp Five New AI Deployments
+https://www.businessupturn.com/business/corporates/poonawalla-fincorp-accelerates-digital-transformation-with-five-new-ai-deployments/
+
+# HDFC Sky: Poonawalla Fincorp Rolls Out 5 New AI Tools
+https://hdfcsky.com/news/poonawalla-fincorp-expands-ai-first-transformation
+
+# DQ India: Poonawalla Fincorp AI HR Revolution (IIT Bombay)
+https://www.dqindia.com/news/poonawalla-fincorp-embraces-ai-for-transformative-hr-revolution-8556670
+
+# India Technology News: Poonawalla Fincorp AI in HR
+https://indiatechnologynews.in/poonawalla-fincorp-integrates-artificial-intelligence-ai-into-its-human-resources-hr-strategic-business-unit/
+
+# CRN India: Poonawalla Fincorp AI Across HR SBU
+https://www.crn.in/ai/poonawalla-fincorp-integrates-ai-across-its-human-resources-hr-strategic-business-unit-sbu/
+
+# Elets BFSI: Poonawalla Fincorp AI HR Processes
+https://bfsi.eletsonline.com/poonawalla-fincorp-introduces-ai-in-its-hr-processes/
+
+# Construction World: Poonawalla Fincorp Five AI Solutions
+https://www.constructionworld.in/latest-construction-technology/poonawalla-fincorp-deploys-five-new-ai-solutions-in-digital-drive/80553
+
+# Finance Director Europe: Poonawalla AI Underwriting System
+https://www.financedirectoreurope.com/news/poonawalla-fincorp-introduces-ai-powered-underwriting-system/
+
+# MediaBrief: Poonawalla Fincorp Four AI Systems
+https://mediabrief.com/poonawalla-fincorp-ai-solutions-finance-operations/
+
+# SME Street: Poonawalla Fincorp New AI Tools for Customer Insights
+https://smestreet.in/banking/poonawalla-fincorp-introduces-new-ai-tools-for-customer-insights-11039770
+
+# Medium: Poonawalla Fincorp and IIT Bombay AI in HR
+https://medium.com/@pujaraajinkya43/bringing-ai-in-hr-poonawalla-fincorp-and-iit-bombays-mou-7abd1cc190b2
+
+# CXO Today: Poonawalla Fincorp Goes AI
+https://cxotoday.com/press-release/poonawalla-fincorp-goes-ai/
+
+# SlideShare: Poonawalla Fincorp AI Journey
+https://www.slideshare.net/slideshow/poonawalla-fincorp-s-journey-towards-ai-driven-excellence-pdf/274514883
+
+# SlideShare: Poonawalla Fincorp New Level of AI
+https://www.slideshare.net/slideshow/a-new-level-of-ai-at-poonawalla-fincorp/274515608
+
+# GMI Capitals Blog: Poonawalla Fincorp Bold Digital Transformation
+https://blog.gmicapitals.com/poonawalla-fincorp-drives-bold-digital-transformation-by-embedding-ai-across-operations/
+
+
+=== Cross-NBFC / Industry Reports ===
+
+# Business Standard: Large NBFCs Scale AI Adoption (Feb 2026)
+https://www.business-standard.com/technology/tech-news/large-nbfcs-scale-ai-adoption-across-acquisition-underwriting-servicing-126021700833_1.html
+
+# Whalesbook: AI Investment Accelerates NBFC Efficiency Race
+https://www.whalesbook.com/news/English/bankingfinance/AI-Investment-Accelerates-NBFC-Efficiency-Race/69947c9acffb93b3e92848b9
+
+# PwC India: Breaking New Ground — Emerging Technologies NBFCs
+https://www.pwc.in/industries/financial-services/fintech/fintech-insights/breaking-new-ground.html
+
+# Klover.ai: Bajaj Finance AI Strategy (also references industry context)
+https://www.klover.ai/bajaj-finance-ai-strategy-analysis-of-bfl-dominance-in-nonbanking-financial-services-ai/
+
+===========================================================
+END OF SOURCES
+Total NBFCs covered: 9
+Total source URLs listed: 100+
+===========================================================
