@@ -685,6 +685,104 @@ def fetch_stock_data(symbol, period='1y'):
     except:
         return None
 
+
+@st.cache_data(ttl=3600)
+def fetch_shares_outstanding():
+    """Returns {symbol: shares_outstanding} for all NBFCs, cached 1 hr."""
+    result = {}
+    for name, symbol in NBFCS.items():
+        try:
+            shares = yf.Ticker(symbol).fast_info.shares
+            if shares and shares > 0:
+                result[symbol] = int(shares)
+        except Exception:
+            pass
+    return result
+
+
+def make_mktcap_trend_chart(selected: list, height: int = 440):
+    """1-year daily market cap trend in ₹ Lakh Crore (price × shares outstanding)."""
+    shares_map = fetch_shares_outstanding()
+    fig = go.Figure()
+    series = []
+
+    for name in selected:
+        symbol = NBFCS[name]
+        shares = shares_map.get(symbol)
+        if not shares:
+            continue
+        try:
+            hist = fetch_stock_data(symbol, period='1y')
+            if hist is None or hist.empty:
+                continue
+            mktcap = (hist['Close'] * shares) / 1e12  # ₹ Lakh Crore (1 L.Cr = 1e12 INR)
+            series.append({
+                'name': name, 'dates': hist.index,
+                'values': mktcap.values, 'color': COLORS[name],
+                'last': float(mktcap.iloc[-1]),
+            })
+        except Exception:
+            continue
+
+    series.sort(key=lambda x: x['last'], reverse=True)
+
+    for s in series:
+        fig.add_trace(go.Scatter(
+            x=s['dates'], y=s['values'], name=s['name'],
+            mode='lines', line=dict(color=s['color'], width=2.5),
+            hovertemplate=(
+                f"<b>{s['name']}</b><br>"
+                "%{x|%d %b %Y}<br>"
+                "MCap: ₹%{y:.2f} L.Cr<extra></extra>"
+            ),
+        ))
+
+    # Staggered right-side labels
+    if series:
+        label_y = [s['last'] for s in series]
+        all_vals = [float(v) for s in series for v in s['values'] if not pd.isna(float(v))]
+        if all_vals:
+            y_range = max(all_vals) - min(all_vals) if len(all_vals) > 1 else 1
+            GAP = max(y_range * 0.06, 0.05)
+            for i in range(1, len(label_y)):
+                if label_y[i - 1] - label_y[i] < GAP:
+                    label_y[i] = label_y[i - 1] - GAP
+            for i in range(len(label_y) - 2, -1, -1):
+                if label_y[i] - label_y[i + 1] < GAP:
+                    label_y[i] = label_y[i + 1] + GAP
+        for i, s in enumerate(series):
+            fig.add_trace(go.Scatter(
+                x=[s['dates'][-1]], y=[s['last']],
+                mode='markers', marker=dict(size=7, color=s['color']),
+                showlegend=False, hoverinfo='skip',
+            ))
+            fig.add_annotation(
+                x=s['dates'][-1], y=label_y[i],
+                text=f"<b>{s['name']}</b>  ₹{s['last']:.2f} L.Cr",
+                showarrow=False, xanchor='left', xshift=12,
+                font=dict(size=11, color=s['color']),
+                bgcolor='rgba(255,255,255,0.9)',
+                bordercolor=s['color'], borderwidth=1, borderpad=4,
+            )
+
+    fig.update_layout(
+        height=height,
+        margin=dict(l=60, r=230, t=55, b=40),
+        plot_bgcolor='white', paper_bgcolor='white',
+        showlegend=False,
+        font=dict(family='Inter', color='#1a3a52'),
+        hoverlabel=dict(bgcolor='white', bordercolor='#cbd5e1',
+                        font=dict(family='Inter', size=12)),
+        xaxis=dict(showgrid=True, gridcolor='#f1f5f9', showline=True,
+                   linecolor='#cbd5e1', tickfont=dict(size=11, color='#475569')),
+        yaxis=dict(showgrid=True, gridcolor='#f1f5f9', showline=True,
+                   linecolor='#cbd5e1', tickfont=dict(size=11, color='#475569'),
+                   ticksuffix=' L.Cr',
+                   title=dict(text='₹ Lakh Crore', font=dict(size=11, color='#64748b'))),
+    )
+    return fig
+
+
 def _fetch_all_prices():
     """Batch-download all 9 tickers in one request; retry missing ones individually."""
     symbols  = list(NBFCS.values())
@@ -738,6 +836,14 @@ def _fetch_all_prices():
             }
         except Exception:
             continue
+
+    # Enrich with current market cap from fast_info
+    for symbol in list(rows.keys()):
+        try:
+            mc = yf.Ticker(symbol).fast_info.market_cap
+            rows[symbol]['market_cap'] = int(mc) if mc and mc > 0 else None
+        except Exception:
+            rows[symbol]['market_cap'] = None
 
     # Return in NBFCS display order
     return [rows[s] for s in symbols if s in rows]
@@ -1091,6 +1197,14 @@ with tab1:
                          else f"{vol/1e3:.0f}K" if vol >= 1e3
                          else str(vol) if vol > 0 else "—")
                 bc = "#16a34a" if stock['change_pct'] >= 0 else "#dc2626"
+                mc = stock.get('market_cap')
+                if mc and mc > 0:
+                    cr = mc / 1e7
+                    mktcap_s = (f"₹{cr/1e5:.2f} L.Cr" if cr >= 1e5
+                                else f"₹{cr/1e3:.1f}K Cr" if cr >= 1000
+                                else f"₹{cr:.0f} Cr")
+                else:
+                    mktcap_s = "—"
                 with cols[ci]:
                     st.markdown(f"""
                         <div class="ticker-card" style="border-top-color:{bc};">
@@ -1105,6 +1219,7 @@ with tab1:
                                 </div>
                             </div>
                             <div class="ticker-meta">{sign}₹{stock['change_abs']:.2f} &nbsp;·&nbsp; Vol {vol_s}</div>
+                            <div class="ticker-meta" style="margin-top:3px;color:#0a2540;font-weight:600;">MCap {mktcap_s}</div>
                         </div>
                     """, unsafe_allow_html=True)
             st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
@@ -1170,6 +1285,34 @@ with tab1:
             st.plotly_chart(ch, use_container_width=True, config={'displayModeBar': False}, key="mkt_comparison")
         except Exception as e:
             st.error(f"Chart error: {e}")
+
+    # ── Market Capitalisation Trend ──────────────────────────────────────────
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    st.markdown('<span class="section-label">Market Capitalisation Trend <span class="section-label-sub">1-year daily · ₹ Lakh Crore · price × shares outstanding</span></span>', unsafe_allow_html=True)
+
+    others_mc = [n for n in NBFCS if n != 'Poonawalla Fincorp']
+    mc_cols = st.columns(5)
+    mc_cols[0].checkbox("Poonawalla Fincorp", value=True, disabled=True, key="mc_poonawalla_fixed")
+    sel_mc = ['Poonawalla Fincorp']
+    for i, name in enumerate(others_mc):
+        with mc_cols[(i + 1) % 5]:
+            if st.checkbox(name, value=(name in DEFAULT_COMPARISON), key=f"mc_{name}"):
+                sel_mc.append(name)
+
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    with st.spinner("Fetching 1-year price history for market cap trend..."):
+        try:
+            mc_fig = make_mktcap_trend_chart(sel_mc, height=440)
+            mc_fig.update_layout(title_text=(
+                '<span style="color:#0a2540;font-weight:700;font-size:17px">'
+                'Market Capitalisation — 1 Year</span>'
+                '<span style="color:#94a3b8;font-size:13px;font-weight:400;">'
+                ' &nbsp;·&nbsp; Daily NSE price × current shares outstanding</span>'
+            ))
+            st.plotly_chart(mc_fig, use_container_width=True, config={'displayModeBar': False}, key="mkt_mcap")
+        except Exception as e:
+            st.error(f"Market cap chart error: {e}")
+    st.markdown('<div class="metric-note">Market cap = daily NSE closing price × current shares outstanding (sourced from yfinance). Values in ₹ Lakh Crore (1 L.Cr = ₹1 Trillion). Use the MCap row on each price card above for the current total market capitalisation.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — FINANCIALS  (Growth & Profitability)
