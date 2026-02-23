@@ -642,7 +642,7 @@ def make_pb_chart(selected: list, height: int = 520):
             if hist is None or hist.empty:
                 continue
 
-            dates, pb_vals = [], []
+            dates, pb_vals, prices_list, bvps_list = [], [], [], []
             for dt, row in hist.iterrows():
                 try:
                     price = float(row['Close'])
@@ -664,6 +664,8 @@ def make_pb_chart(selected: list, height: int = 520):
 
                     dates.append(pd.Timestamp(dt))
                     pb_vals.append(round(price / bvps, 2))
+                    prices_list.append(price)
+                    bvps_list.append(bvps)
                 except Exception:
                     continue
 
@@ -673,6 +675,7 @@ def make_pb_chart(selected: list, height: int = 520):
             last_pb = pb_vals[-1]
             series.append({
                 'name': name, 'dates': dates, 'pb': pb_vals,
+                'prices': prices_list, 'bvps_vals': bvps_list,
                 'last': last_pb, 'color': COLORS[name],
             })
         except Exception:
@@ -682,15 +685,21 @@ def make_pb_chart(selected: list, height: int = 520):
     series.sort(key=lambda x: x['last'] if x['last'] is not None else 0, reverse=True)
 
     for s in series:
+        import numpy as _np
+        _cd = _np.column_stack([s['prices'], s['bvps_vals']])
         fig.add_trace(go.Scatter(
             x=s['dates'], y=s['pb'],
             name=s['name'],
             mode='lines',
             line=dict(color=s['color'], width=2),
+            customdata=_cd,
             hovertemplate=(
                 f"<b>{s['name']}</b><br>"
                 "%{x|%d %b %Y}<br>"
-                "P/B: %{y:.2f}x<extra></extra>"
+                "P/B: %{y:.2f}x &nbsp;·&nbsp; "
+                "Price: ₹%{customdata[0]:,.0f} &nbsp;·&nbsp; "
+                "BVPS: ₹%{customdata[1]:,.0f}"
+                "<extra></extra>"
             ),
         ))
 
@@ -749,6 +758,15 @@ def fetch_stock_data(symbol, period='1y'):
     try:
         return yf.Ticker(symbol).history(period=period)
     except:
+        return None
+
+
+@st.cache_data(ttl=3600)
+def fetch_stock_data_range(symbol, start_str, end_str):
+    """Fetch daily OHLCV between start_str and end_str ('YYYY-MM-DD')."""
+    try:
+        return yf.Ticker(symbol).history(start=start_str, end=end_str)
+    except Exception:
         return None
 
 
@@ -932,29 +950,55 @@ def get_current_prices():
         st.session_state['_prices_ts']    = now
     return result
 
-def create_comparison_chart(time_period, selected_stocks):
+def create_comparison_chart(time_period, selected_stocks, start_date=None, end_date=None):
+    """Indexed-to-100 performance chart.
+
+    Pass start_date / end_date (date objects) to use a custom range;
+    otherwise time_period string drives the window.
+    """
     fig = go.Figure()
-    days = {'1D': 1, '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365}.get(time_period, 180)
-    yf_period = '5d' if days <= 7 else '1mo' if days <= 30 else '3mo' if days <= 90 else '1y'
+    use_custom = start_date is not None and end_date is not None
+
+    DAYS_MAP = {'1W': 7, '1M': 30, '3M': 90, '6M': 180,
+                '1Y': 365, '3Y': 3 * 365, '5Y': 5 * 365}
+
+    if not use_custom:
+        days = DAYS_MAP.get(time_period, 180)
+        yf_period = ('5d'  if days <= 7   else
+                     '1mo' if days <= 30  else
+                     '3mo' if days <= 90  else
+                     '1y'  if days <= 365 else '5y')
 
     perf = []
     for name in selected_stocks:
         try:
-            df = fetch_stock_data(NBFCS[name], period=yf_period)
-            if df is None or df.empty:
+            if use_custom:
+                df = fetch_stock_data_range(
+                    NBFCS[name], str(start_date), str(end_date)
+                )
+            else:
+                df = fetch_stock_data(NBFCS[name], period=yf_period)
+                if df is not None and not df.empty:
+                    end = df.index[-1]
+                    df = df[df.index >= end - timedelta(days=days)]
+
+            if df is None or df.empty or len(df) < 2:
                 continue
-            end = df.index[-1]
-            filtered = df[df.index >= end - timedelta(days=days)]
-            if len(filtered) < 2:
-                continue
-            prices  = filtered['Close']
+
+            prices  = df['Close']
             indexed = (prices / prices.iloc[0]) * 100
             perf.append({
-                'name': name, 'performance': float(indexed.iloc[-1]) - 100,
-                'dates': filtered.index, 'values': indexed,
-                'color': COLORS[name], 'end_y': float(indexed.iloc[-1]),
+                'name':        name,
+                'performance': float(indexed.iloc[-1]) - 100,
+                'dates':       df.index,
+                'values':      indexed,
+                'raw_prices':  prices.values,       # actual ₹ prices for hover
+                'start_price': float(prices.iloc[0]),
+                'end_price':   float(prices.iloc[-1]),
+                'color':       COLORS[name],
+                'end_y':       float(indexed.iloc[-1]),
             })
-        except:
+        except Exception:
             continue
 
     perf.sort(key=lambda x: x['performance'], reverse=True)
@@ -973,9 +1017,16 @@ def create_comparison_chart(time_period, selected_stocks):
 
     for i, item in enumerate(perf):
         fig.add_trace(go.Scatter(
-            x=item['dates'], y=item['values'], name=item['name'],
+            x=item['dates'], y=item['values'],
+            name=item['name'],
             line=dict(color=item['color'], width=2.5), mode='lines',
-            hovertemplate=f"<b>{item['name']}</b><br>%{{x|%d %b %Y}}<br>%{{y:.1f}}<extra></extra>",
+            customdata=item['raw_prices'],
+            hovertemplate=(
+                f"<b>{item['name']}</b><br>"
+                "%{x|%d %b %Y}<br>"
+                "Index: %{y:.1f} &nbsp;·&nbsp; ₹%{customdata:,.0f}"
+                "<extra></extra>"
+            ),
         ))
         fig.add_trace(go.Scatter(
             x=[item['dates'][-1]], y=[item['end_y']],
@@ -984,21 +1035,27 @@ def create_comparison_chart(time_period, selected_stocks):
         ))
         fig.add_annotation(
             x=item['dates'][-1], y=label_pos[i],
-            text=f"<b>{item['name']}</b>  {item['performance']:+.1f}%",
+            text=(
+                f"<b>{item['name']}</b>  {item['performance']:+.1f}%<br>"
+                f"₹{item['start_price']:,.0f} → ₹{item['end_price']:,.0f}"
+            ),
             showarrow=False, xanchor='left', xshift=12,
-            font=dict(size=11, color=item['color']),
-            bgcolor='rgba(255,255,255,0.9)',
+            font=dict(size=10.5, color=item['color']),
+            bgcolor='rgba(255,255,255,0.92)',
             bordercolor=item['color'], borderwidth=1, borderpad=4,
         )
 
+    period_label = 'Custom Range' if use_custom else time_period
     fig.update_layout(
         title=dict(
             text=f'<span style="color:#0a2540;font-weight:700;font-size:17px">'
-                 f'Performance Comparison — {time_period} (Indexed to 100)</span>',
+                 f'Performance Comparison — {period_label} (Indexed to 100)</span>',
             font=dict(family='Inter'), x=0),
         template='plotly_white', height=520, hovermode='x unified', showlegend=False,
         plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=60, r=200, t=60, b=50), font=dict(family='Inter', color='#1a3a52'),
+        margin=dict(l=60, r=220, t=60, b=50), font=dict(family='Inter', color='#1a3a52'),
+        hoverlabel=dict(bgcolor='white', bordercolor='#cbd5e1',
+                        font=dict(family='Inter', size=12)),
     )
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
     fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
@@ -1207,6 +1264,8 @@ def nbfc_selector(tab_key: str, default_on=None) -> list:
 # ─── SESSION STATE ─────────────────────────────────────────────────────────────
 if 'time_period' not in st.session_state:
     st.session_state.time_period = '6M'
+if 'use_custom_date' not in st.session_state:
+    st.session_state.use_custom_date = False
 
 # ─── HEADER ────────────────────────────────────────────────────────────────────
 ist = pytz.timezone('Asia/Kolkata')
@@ -1304,18 +1363,25 @@ with tab1:
                 sel_mkt.append(name)
 
     st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
-    periods = ['1D', '1W', '1M', '3M', '6M', '1Y']
-    active  = st.session_state.time_period
-    btn_cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 4.5])
-    for i, p in enumerate(periods):
+
+    # ── Period buttons ────────────────────────────────────────────────────────
+    from datetime import date as _date
+    PERIODS      = ['1W', '1M', '3M', '6M', '1Y', '3Y', '5Y']
+    use_custom   = st.session_state.use_custom_date
+    active       = st.session_state.time_period
+    active_label = 'CUSTOM' if use_custom else active   # 'CUSTOM' means no button highlighted
+
+    btn_cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 3.5])
+    for i, p in enumerate(PERIODS):
         with btn_cols[i]:
             if st.button(p, key=f"pb_{p}", use_container_width=True):
-                st.session_state.time_period = p
+                st.session_state.time_period    = p
+                st.session_state.use_custom_date = False
                 st.rerun()
 
     components.html(f"""<script>
         function applyStyle() {{
-            var active = "{active}";
+            var active = "{active_label}";
             document.querySelectorAll('button').forEach(function(b) {{
                 var t = b.innerText.trim();
                 if (t === active) {{
@@ -1323,7 +1389,7 @@ with tab1:
                     b.style.setProperty('color','white','important');
                     b.style.setProperty('border-color','#0284c7','important');
                     b.style.setProperty('font-weight','700','important');
-                }} else if (['1D','1W','1M','3M','6M','1Y'].includes(t)) {{
+                }} else if (['1W','1M','3M','6M','1Y','3Y','5Y'].includes(t)) {{
                     b.style.removeProperty('background');
                     b.style.removeProperty('color');
                     b.style.removeProperty('border-color');
@@ -1334,18 +1400,59 @@ with tab1:
         applyStyle(); setTimeout(applyStyle,150); setTimeout(applyStyle,400);
     </script>""", height=0)
 
-    today      = datetime.now(pytz.timezone('Asia/Kolkata'))
-    days_back  = {'1D':1,'1W':7,'1M':30,'3M':90,'6M':180,'1Y':365}.get(active,180)
-    range_from = today - timedelta(days=days_back)
-    fmt_from   = range_from.strftime("%-d %b'%y")
-    fmt_to     = today.strftime("%-d %b'%y")
+    # ── Custom date picker ────────────────────────────────────────────────────
+    _today_date = _date.today()
+    _min_date   = _date(2021, 1, 1)
+    _default_start = _date(2024, 1, 1)
+
+    dc1, dc2, dc3, _ = st.columns([1.4, 1.4, 0.8, 4.4])
+    with dc1:
+        cd_start = st.date_input(
+            "From", value=_default_start,
+            min_value=_min_date, max_value=_today_date,
+            key="cd_start", label_visibility="visible",
+        )
+    with dc2:
+        cd_end = st.date_input(
+            "To", value=_today_date,
+            min_value=_min_date, max_value=_today_date,
+            key="cd_end", label_visibility="visible",
+        )
+    with dc3:
+        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+        if st.button("Apply", key="apply_custom", use_container_width=True):
+            if cd_start < cd_end:
+                st.session_state.use_custom_date = True
+                st.rerun()
+
+    # ── Render chart ─────────────────────────────────────────────────────────
+    today    = datetime.now(pytz.timezone('Asia/Kolkata'))
+    DAYS_MAP = {'1W': 7, '1M': 30, '3M': 90, '6M': 180,
+                '1Y': 365, '3Y': 3 * 365, '5Y': 5 * 365}
+
+    if use_custom:
+        fmt_from = cd_start.strftime("%-d %b'%y")
+        fmt_to   = cd_end.strftime("%-d %b'%y")
+    else:
+        days_back  = DAYS_MAP.get(active, 180)
+        range_from = today - timedelta(days=days_back)
+        fmt_from   = range_from.strftime("%-d %b'%y")
+        fmt_to     = today.strftime("%-d %b'%y")
 
     with st.spinner("Loading chart..."):
         try:
-            ch, _, _ = create_comparison_chart(active, sel_mkt)
+            if use_custom:
+                ch, _, _ = create_comparison_chart(
+                    'Custom', sel_mkt,
+                    start_date=cd_start, end_date=cd_end,
+                )
+            else:
+                ch, _, _ = create_comparison_chart(active, sel_mkt)
+
+            period_display = f"Custom Range" if use_custom else active
             ch.update_layout(title_text=(
                 f'<span style="color:#0a2540;font-weight:700;font-size:17px">'
-                f'Performance Comparison — {active} (Indexed to 100)</span>'
+                f'Performance Comparison — {period_display} (Indexed to 100)</span>'
                 f'<span style="color:#94a3b8;font-size:13px;font-weight:400;">'
                 f' &nbsp;·&nbsp; {fmt_from} – {fmt_to}</span>'
             ))
