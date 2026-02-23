@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import yfinance as yf
 import pytz
 from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS, METRIC_LABELS
+from nbfc_ai_data import NBFC_AI_INITIATIVES, FUNCTION_TAXONOMY
 
 # ─── PAGE CONFIG ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -116,6 +117,71 @@ st.markdown("""
     .rank-table td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; text-align: right; }
     .rank-table td:first-child { text-align: left; font-weight: 600; color: #0a2540; }
     .rank-table tr:hover td { background: #f8fafc; }
+
+    /* AI Bulletin */
+    .ai-nbfc-header {
+        background: white; border-left: 4px solid var(--nbfc-color, #0284c7);
+        padding: 10px 16px; border-radius: 5px; margin: 18px 0 6px 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .ai-nbfc-name {
+        font-size: 15px; font-weight: 700; color: #0a2540;
+    }
+    .ai-nbfc-count {
+        font-size: 11px; font-weight: 600; color: white;
+        background: var(--nbfc-color, #0284c7);
+        border-radius: 12px; padding: 2px 10px; letter-spacing: 0.03em;
+    }
+    .ai-impact {
+        font-size: 12px; color: #0a2540; font-weight: 500;
+        background: #f0f9ff; border-left: 3px solid #0284c7;
+        padding: 7px 12px; border-radius: 3px; margin: 8px 0;
+    }
+    .ai-desc {
+        font-size: 12.5px; color: #374151; line-height: 1.65;
+        margin: 8px 0;
+    }
+    .ai-func-tag {
+        display: inline-block; font-size: 10px; font-weight: 600;
+        letter-spacing: 0.04em; color: #0284c7;
+        background: #e0f2fe; border-radius: 10px;
+        padding: 2px 9px; margin: 2px 3px 2px 0;
+    }
+    .ai-meta-row {
+        display: flex; align-items: center; gap: 10px;
+        margin-top: 10px; padding-top: 8px; border-top: 1px solid #f1f5f9;
+        font-size: 11px; color: #64748b; flex-wrap: wrap;
+    }
+    .ai-date-badge {
+        font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+        color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 3px;
+    }
+    .ai-source-link {
+        font-size: 11px; color: #0284c7; text-decoration: none;
+    }
+    .ai-nbfc-badge {
+        display: inline-block; font-size: 10.5px; font-weight: 700;
+        color: white; border-radius: 4px; padding: 2px 9px;
+        letter-spacing: 0.02em;
+    }
+    .ai-stat-card {
+        background: white; border-radius: 5px; padding: 14px 18px;
+        border-top: 3px solid #0284c7; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    .ai-stat-num {
+        font-size: 28px; font-weight: 700; color: #0a2540;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .ai-stat-label {
+        font-size: 10.5px; font-weight: 600; color: #94a3b8;
+        text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px;
+    }
+    .ai-timeline-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        display: inline-block; margin-right: 6px; vertical-align: middle;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -1168,9 +1234,10 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─── TABS ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "Market", "Financials", "Asset Quality", "Capital & Leverage",
     "Profitability Ratios", "Valuation Metrics", "Deep Dive", "Rankings",
+    "AI Bulletin",
 ])
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1539,6 +1606,199 @@ with tab8:
     with hi_cols[3]:
         v = gnpa_s[best_gnpa][Q_IDX]
         st.markdown(highlight_card("Cleanest Book", best_gnpa, f"GNPA {v:.2f}%", "#8b5cf6"), unsafe_allow_html=True)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 9 — AI BULLETIN
+# ══════════════════════════════════════════════════════════════════════════════
+from datetime import datetime as _dt
+
+def _parse_ai_date(d: str):
+    """Parse 'DD Mon YYYY' → datetime for sorting. Falls back to epoch on error."""
+    try:
+        return _dt.strptime(d.strip(), "%d %b %Y")
+    except Exception:
+        return _dt(1970, 1, 1)
+
+def _render_initiative_card(nbfc: str, init: dict, show_nbfc_badge: bool = False):
+    """Render one initiative as a Streamlit expander with styled internals."""
+    label_prefix = f"[{nbfc}]  " if show_nbfc_badge else ""
+    with st.expander(f"{label_prefix}{init['title']}"):
+        # NBFC badge (only in cross-NBFC views)
+        if show_nbfc_badge:
+            color = COLORS.get(nbfc, '#0284c7')
+            st.markdown(
+                f'<span class="ai-nbfc-badge" style="background:{color};">{nbfc}</span>',
+                unsafe_allow_html=True,
+            )
+
+        # Impact line
+        st.markdown(
+            f'<div class="ai-impact">⚡ {init["impact"]}</div>',
+            unsafe_allow_html=True,
+        )
+
+        # Full description
+        st.markdown(
+            f'<div class="ai-desc">{init["description"]}</div>',
+            unsafe_allow_html=True,
+        )
+
+        # Function tags
+        tags_html = "".join(
+            f'<span class="ai-func-tag">{fn}</span>'
+            for fn in init.get("functions", [])
+        )
+        if tags_html:
+            st.markdown(tags_html, unsafe_allow_html=True)
+
+        # Meta row: date + source
+        src_name = init.get("source_name", "")
+        src_url  = init.get("source_url", "")
+        src_html = (
+            f'<a class="ai-source-link" href="{src_url}" target="_blank">↗ {src_name}</a>'
+            if src_url else src_name
+        )
+        st.markdown(
+            f'<div class="ai-meta-row">'
+            f'<span class="ai-date-badge">{init["date"]}</span>'
+            f'{src_html}'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+
+with tab9:
+    st.markdown("""
+        <div class="tab-intro">
+            <span class="tab-intro-title">AI Bulletin</span>
+            <span class="tab-intro-sub">51 AI initiatives · 9 NBFCs · Jan 2021 – Feb 2026 &nbsp;·&nbsp; Research compiled 23 Feb 2026</span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # ── Top stats banner ────────────────────────────────────────────────────
+    total_initiatives = sum(len(v) for v in NBFC_AI_INITIATIVES.values())
+    all_flat = [(nbfc, i) for nbfc, inits in NBFC_AI_INITIATIVES.items() for i in inits]
+    all_sorted_dates = sorted(all_flat, key=lambda x: _parse_ai_date(x[1]['date']))
+    earliest = all_sorted_dates[0][1]['date'] if all_sorted_dates else "—"
+    latest   = all_sorted_dates[-1][1]['date'] if all_sorted_dates else "—"
+    func_count = len(FUNCTION_TAXONOMY)
+
+    sc1, sc2, sc3, sc4 = st.columns(4)
+    for col, num, lbl, clr in [
+        (sc1, str(total_initiatives), "Total Initiatives", "#0284c7"),
+        (sc2, str(len(NBFC_AI_INITIATIVES)), "NBFCs Covered", "#10b981"),
+        (sc3, str(func_count), "Business Functions", "#8b5cf6"),
+        (sc4, "Jan '21 – Feb '26", "Date Range", "#f97316"),
+    ]:
+        with col:
+            st.markdown(
+                f'<div class="ai-stat-card" style="border-top-color:{clr};">'
+                f'<div class="ai-stat-num" style="color:{clr};">{num}</div>'
+                f'<div class="ai-stat-label">{lbl}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+    # ── Three sub-tabs ──────────────────────────────────────────────────────
+    ai_sub1, ai_sub2, ai_sub3 = st.tabs(["By NBFC", "By Function", "Timeline"])
+
+    # ── SUB-TAB 1: BY NBFC ─────────────────────────────────────────────────
+    with ai_sub1:
+        st.markdown(
+            '<div class="metric-note">All 51 initiatives grouped by NBFC · '
+            'Click any row to expand the full description, impact, and source.</div>',
+            unsafe_allow_html=True,
+        )
+        for nbfc, initiatives in NBFC_AI_INITIATIVES.items():
+            color = COLORS.get(nbfc, '#0284c7')
+            st.markdown(
+                f'<div class="ai-nbfc-header" style="--nbfc-color:{color};">'
+                f'<span class="ai-nbfc-name">{nbfc}</span>'
+                f'<span class="ai-nbfc-count">{len(initiatives)} initiative{"s" if len(initiatives) != 1 else ""}</span>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            for init in initiatives:
+                _render_initiative_card(nbfc, init, show_nbfc_badge=False)
+
+    # ── SUB-TAB 2: BY FUNCTION ─────────────────────────────────────────────
+    with ai_sub2:
+        # Count initiatives per function for the selector label
+        func_counts = {
+            fn: sum(1 for _, inits in NBFC_AI_INITIATIVES.items() for i in inits if fn in i.get('functions', []))
+            for fn in FUNCTION_TAXONOMY
+        }
+        func_options = [f"{fn}  ({func_counts[fn]})" for fn in FUNCTION_TAXONOMY]
+
+        selected_func_label = st.selectbox(
+            "Select a business function to filter all NBFC initiatives:",
+            options=func_options,
+            index=0,
+            key="ai_func_select",
+        )
+        selected_func = FUNCTION_TAXONOMY[func_options.index(selected_func_label)]
+
+        filtered = [
+            (nbfc, init)
+            for nbfc, inits in NBFC_AI_INITIATIVES.items()
+            for init in inits
+            if selected_func in init.get('functions', [])
+        ]
+
+        n = len(filtered)
+        nbfcs_in_view = sorted(set(nbfc for nbfc, _ in filtered))
+        st.markdown(
+            f'<div class="metric-note">'
+            f'<b>{n} initiative{"s" if n != 1 else ""}</b> tagged '
+            f'<b>{selected_func}</b> across '
+            f'<b>{len(nbfcs_in_view)} NBFC{"s" if len(nbfcs_in_view) != 1 else ""}</b>: '
+            f'{", ".join(nbfcs_in_view)}'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+        if not filtered:
+            st.info("No initiatives found for this function.")
+        else:
+            for nbfc, init in filtered:
+                _render_initiative_card(nbfc, init, show_nbfc_badge=True)
+
+    # ── SUB-TAB 3: TIMELINE ────────────────────────────────────────────────
+    with ai_sub3:
+        st.markdown(
+            '<div class="metric-note">All 51 initiatives sorted newest → oldest · '
+            'NBFC badge colour-coded · reveals the pace of AI adoption across the sector.</div>',
+            unsafe_allow_html=True,
+        )
+
+        timeline_items = sorted(
+            [(nbfc, init) for nbfc, inits in NBFC_AI_INITIATIVES.items() for init in inits],
+            key=lambda x: _parse_ai_date(x[1]['date']),
+            reverse=True,
+        )
+
+        current_year = None
+        for nbfc, init in timeline_items:
+            year = _parse_ai_date(init['date']).year
+            if year != current_year:
+                current_year = year
+                st.markdown(
+                    f'<span class="section-label">{year}</span>',
+                    unsafe_allow_html=True,
+                )
+            _render_initiative_card(nbfc, init, show_nbfc_badge=True)
+
+    st.markdown(
+        '<div class="metric-note" style="margin-top:14px;">'
+        'Sources: company websites, annual reports, BSE filings, earnings call transcripts, '
+        'Business Standard, Medianama, Microsoft News, Analytics India Magazine, and vendor case studies. '
+        'Compiled 23 Feb 2026.'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
 
 # ─── FOOTER ────────────────────────────────────────────────────────────────────
 st.markdown("""
