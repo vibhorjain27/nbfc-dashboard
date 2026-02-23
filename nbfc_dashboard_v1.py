@@ -330,6 +330,110 @@ def make_bar_chart(
                      linecolor='#cbd5e1', tickfont=dict(size=11, color='#475569'))
     return fig
 
+
+def make_yoy_chart(
+    metric: str,
+    selected: list,
+    title: str,
+    height: int = 380,
+):
+    """Line chart showing YoY growth for the last 4 quarters.
+
+    Pairs: Q4FY25/Q4FY24 · Q1FY26/Q1FY25 · Q2FY26/Q2FY25 · Q3FY26/Q3FY25
+    Growth is set to None when the base-year value is zero or negative
+    (e.g. loss quarters) to avoid meaningless / inverted percentages.
+    """
+    data = get_series(metric)
+
+    YOY_LABELS = ["Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26"]
+    YOY_PAIRS  = [(4, 0), (5, 1), (6, 2), (7, 3)]   # (current_idx, prior_year_idx)
+
+    series = []
+    for name in selected:
+        vals = data.get(name, [None] * 8)
+        growth = []
+        for cur_i, py_i in YOY_PAIRS:
+            cur = vals[cur_i]
+            py  = vals[py_i]
+            if cur is not None and py is not None and py > 0:
+                growth.append(round((cur - py) / py * 100, 1))
+            else:
+                growth.append(None)
+        confirmed = [g for g in growth if g is not None]
+        if not confirmed:
+            continue
+        last_g = next((g for g in reversed(growth) if g is not None), None)
+        series.append({
+            'name': name, 'growth': growth,
+            'last': last_g, 'color': COLORS[name],
+        })
+
+    # Sort descending so label order matches visual top→bottom
+    series.sort(key=lambda x: x['last'] if x['last'] is not None else -9999, reverse=True)
+
+    fig = go.Figure()
+    for s in series:
+        fig.add_trace(go.Scatter(
+            x=YOY_LABELS, y=s['growth'],
+            name=s['name'],
+            mode='lines+markers',
+            connectgaps=False,
+            line=dict(color=s['color'], width=2.5),
+            marker=dict(size=8, color=s['color']),
+            hovertemplate=f"<b>{s['name']}</b><br>%{{x}}<br>YoY: %{{y:+.1f}}%<extra></extra>",
+        ))
+
+    # Staggered right-side labels
+    label_y = [s['last'] for s in series]
+    all_vals = [g for s in series for g in s['growth'] if g is not None]
+    if all_vals:
+        y_range = max(all_vals) - min(all_vals) if len(all_vals) > 1 else 10
+        GAP = max(y_range * 0.14, 2.0)
+        for i in range(1, len(label_y)):
+            if label_y[i - 1] is not None and label_y[i] is not None:
+                if label_y[i - 1] - label_y[i] < GAP:
+                    label_y[i] = label_y[i - 1] - GAP
+        for i in range(len(label_y) - 2, -1, -1):
+            if label_y[i] is not None and label_y[i + 1] is not None:
+                if label_y[i] - label_y[i + 1] < GAP:
+                    label_y[i] = label_y[i + 1] + GAP
+        for i, s in enumerate(series):
+            if s['last'] is None or label_y[i] is None:
+                continue
+            sign = '+' if s['last'] >= 0 else ''
+            fig.add_annotation(
+                x=YOY_LABELS[-1], y=label_y[i],
+                text=f"<b>{s['name']}</b>  {sign}{s['last']:.1f}%",
+                showarrow=False, xanchor='left', xshift=12,
+                font=dict(size=10.5, color=s['color']),
+                bgcolor='rgba(255,255,255,0.95)',
+                bordercolor=s['color'], borderwidth=1, borderpad=3,
+            )
+
+    # y = 0 reference line
+    fig.add_hline(y=0, line_dash='dot', line_color='#94a3b8', line_width=1)
+
+    fig.update_layout(
+        title=dict(
+            text=f'<span style="color:#0a2540;font-weight:700;font-size:15px">{title}</span>',
+            font=dict(family='Inter'), x=0, xref='paper'),
+        yaxis_title='YoY Growth (%)',
+        template='plotly_white', height=height,
+        hovermode='x unified', showlegend=False,
+        plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=55, r=170, t=55, b=45),
+        font=dict(family='Inter', color='#1a3a52'),
+        hoverlabel=dict(bgcolor='white', bordercolor='#cbd5e1',
+                        font=dict(family='Inter', size=12)),
+    )
+    fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True,
+                     linecolor='#cbd5e1', tickfont=dict(size=11, color='#475569'))
+    fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True,
+                     linecolor='#cbd5e1', tickfont=dict(size=11, color='#475569'),
+                     ticksuffix='%')
+    return fig
+
+
 # ─── MARKET DATA ───────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600)
@@ -839,13 +943,24 @@ with tab2:
     sel2 = nbfc_selector('fin')
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-    # — AUM + PAT (bars, 2-col)
+    # — AUM: bar (left 60%) + YoY growth line (right 40%)
     st.markdown('<span class="section-label">Scale</span>', unsafe_allow_html=True)
-    c1, c2 = st.columns(2)
-    with c1:
-        st.plotly_chart(make_bar_chart('aum_cr', sel2, 'Assets Under Management (AUM)', '₹ Crore'), use_container_width=True, config={'displayModeBar': False})
-    with c2:
-        st.plotly_chart(make_bar_chart('pat_cr', sel2, 'Profit After Tax (PAT)', '₹ Crore'), use_container_width=True, config={'displayModeBar': False})
+    ca1, ca2 = st.columns([3, 2])
+    with ca1:
+        st.plotly_chart(make_bar_chart('aum_cr', sel2, 'Assets Under Management (AUM)', '₹ Crore'),
+                        use_container_width=True, config={'displayModeBar': False})
+    with ca2:
+        st.plotly_chart(make_yoy_chart('aum_cr', sel2, 'AUM — YoY Growth'),
+                        use_container_width=True, config={'displayModeBar': False})
+
+    # — PAT: bar (left 60%) + YoY growth line (right 40%)
+    cp1, cp2 = st.columns([3, 2])
+    with cp1:
+        st.plotly_chart(make_bar_chart('pat_cr', sel2, 'Profit After Tax (PAT)', '₹ Crore'),
+                        use_container_width=True, config={'displayModeBar': False})
+    with cp2:
+        st.plotly_chart(make_yoy_chart('pat_cr', sel2, 'PAT — YoY Growth'),
+                        use_container_width=True, config={'displayModeBar': False})
 
     # — NIM + CoB (full-width, stacked)
     st.markdown('<span class="section-label">Yield & Funding</span>', unsafe_allow_html=True)
