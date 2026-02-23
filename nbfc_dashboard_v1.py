@@ -358,8 +358,10 @@ def make_yoy_chart(
             py  = vals[py_i]
             if cur is not None and py is not None and py > 0:
                 growth.append(round((cur - py) / py * 100, 1))
+            elif cur is None or py is None:
+                growth.append(None)   # data missing → keep gap
             else:
-                growth.append(None)
+                growth.append(0)      # base ≤ 0 → 0% for line continuity
         confirmed = [g for g in growth if g is not None]
         if not confirmed:
             continue
@@ -459,8 +461,10 @@ def make_qoq_chart(
             pr  = vals[pr_i]
             if cur is not None and pr is not None and pr > 0:
                 growth.append(round((cur - pr) / pr * 100, 1))
+            elif cur is None or pr is None:
+                growth.append(None)   # data missing → keep gap
             else:
-                growth.append(None)
+                growth.append(0)      # base ≤ 0 → 0% for line continuity
         confirmed = [g for g in growth if g is not None]
         if not confirmed:
             continue
@@ -920,9 +924,9 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─── TABS ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "Market", "Financials", "Asset Quality", "Capital & Leverage",
-    "Deep Dive", "Rankings",
+    "Profitability Ratios", "Deep Dive", "Rankings",
 ])
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1035,8 +1039,8 @@ with tab1:
 with tab2:
     st.markdown("""
         <div class="tab-intro">
-            <span class="tab-intro-title">Growth & Profitability</span>
-            <span class="tab-intro-sub">Q4FY24 – Q3FY26 &nbsp;·&nbsp; 8 quarters &nbsp;·&nbsp; 9 NBFCs</span>
+            <span class="tab-intro-title">Growth & Scale</span>
+            <span class="tab-intro-sub">Q4FY24 – Q3FY26 &nbsp;·&nbsp; AUM · PAT · NIM &nbsp;·&nbsp; 8 quarters &nbsp;·&nbsp; 9 NBFCs</span>
         </div>
     """, unsafe_allow_html=True)
 
@@ -1066,22 +1070,10 @@ with tab2:
         st.plotly_chart(make_yoy_chart('pat_cr', sel2, 'PAT — YoY Growth'),
                         use_container_width=True, config={'displayModeBar': False})
 
-    # — NIM + CoB (full-width, stacked)
-    st.markdown('<span class="section-label">Yield & Funding</span>', unsafe_allow_html=True)
+    # — NIM (full-width)
+    st.markdown('<span class="section-label">Yield</span>', unsafe_allow_html=True)
     st.plotly_chart(make_trend_chart('nim_pct', sel2, 'Net Interest Margin (NIM)', 'NIM (%)'),
                      use_container_width=True, config={'displayModeBar': False})
-    st.plotly_chart(make_trend_chart('cost_of_borrowing_pct', sel2, 'Cost of Borrowing', 'CoB (%)',
-                     lower_is_better=True),
-                     use_container_width=True, config={'displayModeBar': False})
-
-    # — ROA + ROE (full-width, stacked)
-    st.markdown('<span class="section-label">Returns</span>', unsafe_allow_html=True)
-    st.plotly_chart(make_trend_chart('roa_pct', sel2, 'Return on Assets (ROA)', 'ROA (%)'),
-                     use_container_width=True, config={'displayModeBar': False})
-    st.plotly_chart(make_trend_chart('roe_pct', sel2, 'Return on Equity (ROE)', 'ROE (%)'),
-                     use_container_width=True, config={'displayModeBar': False})
-
-    st.markdown('<div class="metric-note">Data sourced from Screener.in investor presentations. Entries marked ~ are estimates from adjacent quarters or rating reports.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 3 — ASSET QUALITY
@@ -1119,12 +1111,16 @@ with tab4:
     st.markdown("""
         <div class="tab-intro">
             <span class="tab-intro-title">Capital Structure & Leverage</span>
-            <span class="tab-intro-sub">Q4FY24 – Q3FY26 &nbsp;·&nbsp; D/E · CAR · BVPS</span>
+            <span class="tab-intro-sub">Q4FY24 – Q3FY26 &nbsp;·&nbsp; CoB · D/E · CAR · BVPS</span>
         </div>
     """, unsafe_allow_html=True)
 
     sel4 = nbfc_selector('cap')
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    st.plotly_chart(make_trend_chart('cost_of_borrowing_pct', sel4, 'Cost of Borrowing', 'CoB (%)',
+                     lower_is_better=True),
+                     use_container_width=True, config={'displayModeBar': False})
 
     st.plotly_chart(make_trend_chart('d_e_ratio', sel4, 'Debt / Equity Ratio', 'D/E (×)',
                      fmt='ratio', lower_is_better=True),
@@ -1140,9 +1136,28 @@ with tab4:
     st.markdown('<div class="metric-note">D/E (Debt-to-Equity): lower = less levered. CAR: higher = better capitalized (RBI minimum = 15%). BVPS shows net worth per share growth.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 5 — DEEP DIVE (Per-NBFC full profile)
+# TAB 5 — PROFITABILITY RATIOS
 # ══════════════════════════════════════════════════════════════════════════════
 with tab5:
+    st.markdown("""
+        <div class="tab-intro">
+            <span class="tab-intro-title">Profitability Ratios</span>
+            <span class="tab-intro-sub">Q4FY24 – Q3FY26 &nbsp;·&nbsp; ROA · ROE &nbsp;·&nbsp; 8 quarters &nbsp;·&nbsp; 9 NBFCs</span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    sel5 = nbfc_selector('prof')
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    st.plotly_chart(make_trend_chart('roa_pct', sel5, 'Return on Assets (ROA)', 'ROA (%)'),
+                     use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(make_trend_chart('roe_pct', sel5, 'Return on Equity (ROE)', 'ROE (%)'),
+                     use_container_width=True, config={'displayModeBar': False})
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 6 — DEEP DIVE (Per-NBFC full profile)
+# ══════════════════════════════════════════════════════════════════════════════
+with tab6:
     st.markdown("""
         <div class="tab-intro">
             <span class="tab-intro-title">Company Deep Dive</span>
@@ -1164,9 +1179,9 @@ with tab5:
     st.markdown('<div class="metric-note">Gaps in charts = metric not disclosed for that quarter. Refer to individual company investor presentations for full notes.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 6 — RANKINGS (Q3FY26 scorecard)
+# TAB 7 — RANKINGS (Q3FY26 scorecard)
 # ══════════════════════════════════════════════════════════════════════════════
-with tab6:
+with tab7:
     st.markdown("""
         <div class="tab-intro">
             <span class="tab-intro-title">Peer Scorecard — Q3 FY26</span>
