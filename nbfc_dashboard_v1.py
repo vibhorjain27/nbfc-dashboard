@@ -186,7 +186,7 @@ def make_trend_chart(
     selected: list,
     title: str,
     ylabel: str,
-    fmt: str = 'pct',       # 'pct' | 'cr' | 'ratio'
+    fmt: str = 'pct',       # 'pct' | 'cr' | 'ratio' | 'inr'
     note: str = None,
     height: int = 420,
     lower_is_better: bool = False,
@@ -215,6 +215,9 @@ def make_trend_chart(
     if fmt == 'cr':
         hover_tmpl = lambda n: f"<b>{n}</b>  ₹%{{y:,.0f}} Cr<extra></extra>"
         val_str_fn = lambda v: f"₹{v:,.0f} Cr"
+    elif fmt == 'inr':
+        hover_tmpl = lambda n: f"<b>{n}</b>  ₹%{{y:,.1f}}<extra></extra>"
+        val_str_fn = lambda v: f"₹{v:,.1f}"
     elif fmt == 'ratio':
         hover_tmpl = lambda n: f"<b>{n}</b>  %{{y:.2f}}x<extra></extra>"
         val_str_fn = lambda v: f"{v:.2f}x"
@@ -535,6 +538,141 @@ def make_qoq_chart(
     fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True,
                      linecolor='#cbd5e1', tickfont=dict(size=11, color='#475569'),
                      ticksuffix='%')
+    return fig
+
+
+def make_pb_chart(selected: list, height: int = 520):
+    """Daily P/B ratio chart: 2-year daily price ÷ most recent quarterly BVPS.
+
+    Quarter-end → BVPS index mapping:
+      Q4FY24=0  Q1FY25=1  Q2FY25=2  Q3FY25=3
+      Q4FY25=4  Q1FY26=5  Q2FY26=6  Q3FY26=7
+
+    BVPS steps up at each quarter-end date and stays flat until the next one.
+    """
+    bvps_data = get_series('bvps_inr')
+
+    # (quarter-end date, BVPS index) — sorted ascending so we can binary-search
+    QUARTER_ENDS = [
+        (pd.Timestamp('2024-03-31').date(), 0),
+        (pd.Timestamp('2024-06-30').date(), 1),
+        (pd.Timestamp('2024-09-30').date(), 2),
+        (pd.Timestamp('2024-12-31').date(), 3),
+        (pd.Timestamp('2025-03-31').date(), 4),
+        (pd.Timestamp('2025-06-30').date(), 5),
+        (pd.Timestamp('2025-09-30').date(), 6),
+        (pd.Timestamp('2025-12-31').date(), 7),
+    ]
+
+    fig = go.Figure()
+    series = []
+
+    for name in selected:
+        bvps_vals = bvps_data.get(name, [None] * 8)
+        symbol = NBFCS[name]
+
+        try:
+            hist = fetch_stock_data(symbol, period='2y')
+            if hist is None or hist.empty:
+                continue
+
+            dates, pb_vals = [], []
+            for dt, row in hist.iterrows():
+                try:
+                    price = float(row['Close'])
+                    if price <= 0:
+                        continue
+                    date_only = pd.Timestamp(dt).date()
+
+                    # Find the most recent quarter-end that has passed
+                    bvps = None
+                    for qend, idx in reversed(QUARTER_ENDS):
+                        if date_only >= qend:
+                            bv = bvps_vals[idx]
+                            if bv is not None and bv > 0:
+                                bvps = bv
+                            break
+
+                    if bvps is None:
+                        continue
+
+                    dates.append(pd.Timestamp(dt))
+                    pb_vals.append(round(price / bvps, 2))
+                except Exception:
+                    continue
+
+            if not dates:
+                continue
+
+            last_pb = pb_vals[-1]
+            series.append({
+                'name': name, 'dates': dates, 'pb': pb_vals,
+                'last': last_pb, 'color': COLORS[name],
+            })
+        except Exception:
+            continue
+
+    # Sort descending by latest P/B so labels match visual top→bottom
+    series.sort(key=lambda x: x['last'] if x['last'] is not None else 0, reverse=True)
+
+    for s in series:
+        fig.add_trace(go.Scatter(
+            x=s['dates'], y=s['pb'],
+            name=s['name'],
+            mode='lines',
+            line=dict(color=s['color'], width=2),
+            hovertemplate=(
+                f"<b>{s['name']}</b><br>"
+                "%{x|%d %b %Y}<br>"
+                "P/B: %{y:.2f}x<extra></extra>"
+            ),
+        ))
+
+    # Staggered right-side labels
+    if series:
+        label_y = [s['last'] for s in series]
+        all_vals = [v for s in series for v in s['pb'] if v is not None]
+        if all_vals:
+            y_range = max(all_vals) - min(all_vals) if len(all_vals) > 1 else 1
+            GAP = max(y_range * 0.08, 0.12)
+            for i in range(1, len(label_y)):
+                if label_y[i - 1] - label_y[i] < GAP:
+                    label_y[i] = label_y[i - 1] - GAP
+            for i in range(len(label_y) - 2, -1, -1):
+                if label_y[i] - label_y[i + 1] < GAP:
+                    label_y[i] = label_y[i + 1] + GAP
+            for i, s in enumerate(series):
+                fig.add_annotation(
+                    x=s['dates'][-1], y=label_y[i],
+                    text=f"<b>{s['name']}</b>  {s['last']:.2f}x",
+                    showarrow=False, xanchor='left', xshift=12,
+                    font=dict(size=10.5, color=s['color']),
+                    bgcolor='rgba(255,255,255,0.95)',
+                    bordercolor=s['color'], borderwidth=1, borderpad=3,
+                )
+
+    # P/B = 1 reference line
+    fig.add_hline(y=1, line_dash='dot', line_color='#94a3b8', line_width=1)
+
+    fig.update_layout(
+        title=dict(
+            text='<span style="color:#0a2540;font-weight:700;font-size:15px">'
+                 'Price-to-Book (P/B) Ratio — 2Y Daily</span>',
+            font=dict(family='Inter'), x=0, xref='paper'),
+        yaxis_title='P/B Ratio (×)',
+        template='plotly_white', height=height,
+        hovermode='x unified', showlegend=False,
+        plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=55, r=200, t=55, b=45),
+        font=dict(family='Inter', color='#1a3a52'),
+        hoverlabel=dict(bgcolor='white', bordercolor='#cbd5e1',
+                        font=dict(family='Inter', size=12)),
+    )
+    fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True,
+                     linecolor='#cbd5e1', tickfont=dict(size=11, color='#475569'))
+    fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True,
+                     linecolor='#cbd5e1', tickfont=dict(size=11, color='#475569'),
+                     ticksuffix='x')
     return fig
 
 
@@ -924,9 +1062,9 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─── TABS ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "Market", "Financials", "Asset Quality", "Capital & Leverage",
-    "Profitability Ratios", "Deep Dive", "Rankings",
+    "Profitability Ratios", "Valuation Metrics", "Deep Dive", "Rankings",
 ])
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1130,7 +1268,7 @@ with tab4:
                      use_container_width=True, config={'displayModeBar': False})
 
     st.plotly_chart(make_trend_chart('bvps_inr', sel4, 'Book Value Per Share (BVPS)',
-                     'BVPS (₹)', fmt='cr', height=380),
+                     'BVPS (₹)', fmt='inr', height=380),
                      use_container_width=True, config={'displayModeBar': False})
 
     st.markdown('<div class="metric-note">D/E (Debt-to-Equity): lower = less levered. CAR: higher = better capitalized (RBI minimum = 15%). BVPS shows net worth per share growth.</div>', unsafe_allow_html=True)
@@ -1155,9 +1293,35 @@ with tab5:
                      use_container_width=True, config={'displayModeBar': False})
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 6 — DEEP DIVE (Per-NBFC full profile)
+# TAB 6 — VALUATION METRICS
 # ══════════════════════════════════════════════════════════════════════════════
 with tab6:
+    st.markdown("""
+        <div class="tab-intro">
+            <span class="tab-intro-title">Valuation Metrics</span>
+            <span class="tab-intro-sub">Q4FY24 – Q3FY26 &nbsp;·&nbsp; BVPS · P/B Ratio &nbsp;·&nbsp; Daily prices over quarterly book value</span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    sel6 = nbfc_selector('val')
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    st.markdown('<span class="section-label">Book Value Per Share (BVPS) <span class="section-label-sub">₹ per share · quarterly</span></span>', unsafe_allow_html=True)
+    st.plotly_chart(make_trend_chart('bvps_inr', sel6, 'Book Value Per Share (BVPS)',
+                     'BVPS (₹)', fmt='inr', height=380),
+                     use_container_width=True, config={'displayModeBar': False})
+
+    st.markdown('<span class="section-label">Price-to-Book Ratio <span class="section-label-sub">Daily NSE closing price ÷ latest quarterly BVPS</span></span>', unsafe_allow_html=True)
+    with st.spinner("Fetching 2-year price history for P/B calculation..."):
+        st.plotly_chart(make_pb_chart(sel6, height=520),
+                        use_container_width=True, config={'displayModeBar': False})
+
+    st.markdown('<div class="metric-note">P/B = Daily NSE closing price ÷ most recently reported quarterly BVPS. BVPS steps up at each quarter-end (Q4FY24–Q3FY26). Dotted line at P/B = 1 (book value floor). Lower P/B may indicate undervaluation relative to peers.</div>', unsafe_allow_html=True)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 7 — DEEP DIVE (Per-NBFC full profile)
+# ══════════════════════════════════════════════════════════════════════════════
+with tab7:
     st.markdown("""
         <div class="tab-intro">
             <span class="tab-intro-title">Company Deep Dive</span>
@@ -1179,9 +1343,9 @@ with tab6:
     st.markdown('<div class="metric-note">Gaps in charts = metric not disclosed for that quarter. Refer to individual company investor presentations for full notes.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 7 — RANKINGS (Q3FY26 scorecard)
+# TAB 8 — RANKINGS (Q3FY26 scorecard)
 # ══════════════════════════════════════════════════════════════════════════════
-with tab7:
+with tab8:
     st.markdown("""
         <div class="tab-intro">
             <span class="tab-intro-title">Peer Scorecard — Q3 FY26</span>
