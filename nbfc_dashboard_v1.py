@@ -1006,7 +1006,12 @@ def create_comparison_chart(time_period, selected_stocks, start_date=None, end_d
         return fig, None, None
 
     all_vals = [v for item in perf for v in item['values']]
-    GAP = max(0.5, min(4.0, (max(all_vals) - min(all_vals)) * 0.15))
+    y_range  = (max(all_vals) - min(all_vals)) if len(all_vals) > 1 else 20
+    # GAP must be a meaningful fraction of the actual y-range.
+    # The old min(4.0, ...) cap caused labels to pile up on indexed charts
+    # (where values run 100–450) while being fine on pct charts (0–100).
+    GAP = max(4.0, y_range * 0.13)
+
     label_pos = [item['end_y'] for item in perf]
     for i in range(1, len(label_pos)):
         if label_pos[i - 1] - label_pos[i] < GAP:
@@ -1057,8 +1062,14 @@ def create_comparison_chart(time_period, selected_stocks, start_date=None, end_d
         hoverlabel=dict(bgcolor='white', bordercolor='#cbd5e1',
                         font=dict(family='Inter', size=12)),
     )
+    # Expand y-axis so labels pushed outside the data range remain visible
+    pad     = y_range * 0.06
+    y_lo    = min(min(all_vals), min(label_pos)) - pad
+    y_hi    = max(max(all_vals), max(label_pos)) + pad
+
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
-    fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
+    fig.update_yaxes(range=[y_lo, y_hi],
+                     showgrid=True, gridcolor='#f1f5f9', showline=True, linecolor='#cbd5e1')
     return fig, perf[0]['dates'][0], perf[0]['dates'][-1]
 
 # ─── RANKINGS TABLE ────────────────────────────────────────────────────────────
