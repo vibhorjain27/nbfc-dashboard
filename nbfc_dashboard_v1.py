@@ -1267,11 +1267,7 @@ with tab4:
                      'CAR (%)'),
                      use_container_width=True, config={'displayModeBar': False}, key="cap_car")
 
-    st.plotly_chart(make_trend_chart('bvps_inr', sel4, 'Book Value Per Share (BVPS)',
-                     'BVPS (₹)', fmt='inr', height=380),
-                     use_container_width=True, config={'displayModeBar': False}, key="cap_bvps")
-
-    st.markdown('<div class="metric-note">D/E (Debt-to-Equity): lower = less levered. CAR: higher = better capitalized (RBI minimum = 15%). BVPS shows net worth per share growth.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="metric-note">D/E (Debt-to-Equity): lower = less levered. CAR: higher = better capitalized (RBI minimum = 15%).</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 5 — PROFITABILITY RATIOS
@@ -1306,17 +1302,17 @@ with tab6:
     sel6 = nbfc_selector('val')
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-    st.markdown('<span class="section-label">Book Value Per Share (BVPS) <span class="section-label-sub">₹ per share · quarterly</span></span>', unsafe_allow_html=True)
-    st.plotly_chart(make_trend_chart('bvps_inr', sel6, 'Book Value Per Share (BVPS)',
-                     'BVPS (₹)', fmt='inr', height=380),
-                     use_container_width=True, config={'displayModeBar': False}, key="val_bvps")
-
     st.markdown('<span class="section-label">Price-to-Book Ratio <span class="section-label-sub">Daily NSE closing price ÷ latest quarterly BVPS</span></span>', unsafe_allow_html=True)
     with st.spinner("Fetching 2-year price history for P/B calculation..."):
         st.plotly_chart(make_pb_chart(sel6, height=520),
                         use_container_width=True, config={'displayModeBar': False}, key="val_pb")
 
-    st.markdown('<div class="metric-note">P/B = Daily NSE closing price ÷ most recently reported quarterly BVPS. BVPS steps up at each quarter-end (Q4FY24–Q3FY26). Dotted line at P/B = 1 (book value floor). Lower P/B may indicate undervaluation relative to peers.</div>', unsafe_allow_html=True)
+    st.markdown('<span class="section-label">Book Value Per Share (BVPS) <span class="section-label-sub">₹ per share · quarterly — absolute reference</span></span>', unsafe_allow_html=True)
+    st.plotly_chart(make_trend_chart('bvps_inr', sel6, 'Book Value Per Share (BVPS)',
+                     'BVPS (₹)', fmt='inr', height=380),
+                     use_container_width=True, config={'displayModeBar': False}, key="val_bvps")
+
+    st.markdown('<div class="metric-note">P/B = Daily NSE closing price ÷ most recently reported quarterly BVPS. BVPS steps up at each quarter-end (Q4FY24–Q3FY26). Dotted line at P/B = 1 (book value floor). Lower P/B may indicate undervaluation relative to peers. BVPS chart below shows the absolute book values underpinning each P/B reading.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 7 — DEEP DIVE (Per-NBFC full profile)
