@@ -1167,7 +1167,7 @@ with tab1:
                 f'<span style="color:#94a3b8;font-size:13px;font-weight:400;">'
                 f' &nbsp;·&nbsp; {fmt_from} – {fmt_to}</span>'
             ))
-            st.plotly_chart(ch, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(ch, use_container_width=True, config={'displayModeBar': False}, key="mkt_comparison")
         except Exception as e:
             st.error(f"Chart error: {e}")
 
@@ -1188,30 +1188,30 @@ with tab2:
     # — AUM: full-width bar, then QoQ + YoY side-by-side below
     st.markdown('<span class="section-label">Scale</span>', unsafe_allow_html=True)
     st.plotly_chart(make_bar_chart('aum_cr', sel2, 'Assets Under Management (AUM)', '₹ Crore'),
-                    use_container_width=True, config={'displayModeBar': False})
+                    use_container_width=True, config={'displayModeBar': False}, key="fin_aum_bar")
     ca1, ca2 = st.columns(2)
     with ca1:
         st.plotly_chart(make_qoq_chart('aum_cr', sel2, 'AUM — QoQ Growth'),
-                        use_container_width=True, config={'displayModeBar': False})
+                        use_container_width=True, config={'displayModeBar': False}, key="fin_aum_qoq")
     with ca2:
         st.plotly_chart(make_yoy_chart('aum_cr', sel2, 'AUM — YoY Growth'),
-                        use_container_width=True, config={'displayModeBar': False})
+                        use_container_width=True, config={'displayModeBar': False}, key="fin_aum_yoy")
 
     # — PAT: full-width bar, then QoQ + YoY side-by-side below
     st.plotly_chart(make_bar_chart('pat_cr', sel2, 'Profit After Tax (PAT)', '₹ Crore'),
-                    use_container_width=True, config={'displayModeBar': False})
+                    use_container_width=True, config={'displayModeBar': False}, key="fin_pat_bar")
     cp1, cp2 = st.columns(2)
     with cp1:
         st.plotly_chart(make_qoq_chart('pat_cr', sel2, 'PAT — QoQ Growth'),
-                        use_container_width=True, config={'displayModeBar': False})
+                        use_container_width=True, config={'displayModeBar': False}, key="fin_pat_qoq")
     with cp2:
         st.plotly_chart(make_yoy_chart('pat_cr', sel2, 'PAT — YoY Growth'),
-                        use_container_width=True, config={'displayModeBar': False})
+                        use_container_width=True, config={'displayModeBar': False}, key="fin_pat_yoy")
 
     # — NIM (full-width)
     st.markdown('<span class="section-label">Yield</span>', unsafe_allow_html=True)
     st.plotly_chart(make_trend_chart('nim_pct', sel2, 'Net Interest Margin (NIM)', 'NIM (%)'),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="fin_nim")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 3 — ASSET QUALITY
@@ -1230,15 +1230,15 @@ with tab3:
     # GNPA + NNPA full-width
     st.plotly_chart(make_trend_chart('gnpa_pct', sel3, 'Gross NPA (GNPA)', 'GNPA (%)',
                      lower_is_better=True),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="aq_gnpa")
     st.plotly_chart(make_trend_chart('nnpa_pct', sel3, 'Net NPA (NNPA)', 'NNPA (%)',
                      lower_is_better=True),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="aq_nnpa")
 
     # PCR full width
     st.plotly_chart(make_trend_chart('pcr_pct', sel3, 'Provision Coverage Ratio (PCR)',
                      'PCR (%)', height=380),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="aq_pcr")
 
     st.markdown('<div class="metric-note">Lower GNPA/NNPA = better credit quality. Higher PCR = more conservative provisioning.</div>', unsafe_allow_html=True)
 
@@ -1258,18 +1258,18 @@ with tab4:
 
     st.plotly_chart(make_trend_chart('cost_of_borrowing_pct', sel4, 'Cost of Borrowing', 'CoB (%)',
                      lower_is_better=True),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="cap_cob")
 
     st.plotly_chart(make_trend_chart('d_e_ratio', sel4, 'Debt / Equity Ratio', 'D/E (×)',
                      fmt='ratio', lower_is_better=True),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="cap_de")
     st.plotly_chart(make_trend_chart('car_pct', sel4, 'Capital Adequacy Ratio (CAR / CRAR)',
                      'CAR (%)'),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="cap_car")
 
     st.plotly_chart(make_trend_chart('bvps_inr', sel4, 'Book Value Per Share (BVPS)',
                      'BVPS (₹)', fmt='inr', height=380),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="cap_bvps")
 
     st.markdown('<div class="metric-note">D/E (Debt-to-Equity): lower = less levered. CAR: higher = better capitalized (RBI minimum = 15%). BVPS shows net worth per share growth.</div>', unsafe_allow_html=True)
 
@@ -1288,9 +1288,9 @@ with tab5:
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     st.plotly_chart(make_trend_chart('roa_pct', sel5, 'Return on Assets (ROA)', 'ROA (%)'),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="prof_roa")
     st.plotly_chart(make_trend_chart('roe_pct', sel5, 'Return on Equity (ROE)', 'ROE (%)'),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="prof_roe")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 6 — VALUATION METRICS
@@ -1309,12 +1309,12 @@ with tab6:
     st.markdown('<span class="section-label">Book Value Per Share (BVPS) <span class="section-label-sub">₹ per share · quarterly</span></span>', unsafe_allow_html=True)
     st.plotly_chart(make_trend_chart('bvps_inr', sel6, 'Book Value Per Share (BVPS)',
                      'BVPS (₹)', fmt='inr', height=380),
-                     use_container_width=True, config={'displayModeBar': False})
+                     use_container_width=True, config={'displayModeBar': False}, key="val_bvps")
 
     st.markdown('<span class="section-label">Price-to-Book Ratio <span class="section-label-sub">Daily NSE closing price ÷ latest quarterly BVPS</span></span>', unsafe_allow_html=True)
     with st.spinner("Fetching 2-year price history for P/B calculation..."):
         st.plotly_chart(make_pb_chart(sel6, height=520),
-                        use_container_width=True, config={'displayModeBar': False})
+                        use_container_width=True, config={'displayModeBar': False}, key="val_pb")
 
     st.markdown('<div class="metric-note">P/B = Daily NSE closing price ÷ most recently reported quarterly BVPS. BVPS steps up at each quarter-end (Q4FY24–Q3FY26). Dotted line at P/B = 1 (book value floor). Lower P/B may indicate undervaluation relative to peers.</div>', unsafe_allow_html=True)
 
@@ -1338,7 +1338,7 @@ with tab7:
     )
     with st.spinner(f"Rendering {chosen} profile..."):
         st.plotly_chart(make_deep_dive(chosen),
-                        use_container_width=True, config={'displayModeBar': False})
+                        use_container_width=True, config={'displayModeBar': False}, key="dd_main")
 
     st.markdown('<div class="metric-note">Gaps in charts = metric not disclosed for that quarter. Refer to individual company investor presentations for full notes.</div>', unsafe_allow_html=True)
 
@@ -1354,7 +1354,7 @@ with tab8:
     """, unsafe_allow_html=True)
 
     st.plotly_chart(build_rankings_table(),
-                    use_container_width=True, config={'displayModeBar': False})
+                    use_container_width=True, config={'displayModeBar': False}, key="rank_table")
 
     st.markdown("""
         <div class="metric-note">
