@@ -2106,55 +2106,124 @@ with tab10:
 
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 
-    # ── Section A: Ownership Trend — all 4 categories as lines ──────────────
+    # ── Section A: Ownership Trend — collision-aware data labels ────────────
     st.markdown(
         '<span class="section-label">Ownership Trend '
         f'<span class="section-label-sub">{sh_sel} · Promoter / FII / DII / Public · Q4FY24 – Q3FY26</span></span>',
         unsafe_allow_html=True,
     )
 
-    # Text position per category to avoid label collisions:
-    # FII (highest, ~47-54%) → labels above
-    # Promoter (~25%) → labels below (pushes into Promoter-DII gap from above)
-    # DII (rising 15→21%) → labels above (pushes into Promoter-DII gap from below)
-    # Public (lowest, ~5-6%) → labels below
-    _cat_textpos = {
-        "FII":      "top center",
-        "Promoter": "bottom center",
-        "DII":      "top center",
-        "Public":   "bottom center",
-    }
+    # ── Collision detection for data labels ───────────────────────────────────
+    # Strategy: pre-compute each label's screen-pixel position, detect pairwise
+    # collisions within the same x-column, then iteratively push labels apart.
+    # Displaced labels get a thin connector line (showarrow=True, arrowhead=0)
+    # pointing back to their data point.
 
+    CHART_H  = 340          # px — chart drawing area height
+    Y_MIN, Y_MAX = -3, 63   # axis range
+    Y_RANGE  = Y_MAX - Y_MIN
+    LABEL_H  = 16           # approximate label height in screen px
+    LABEL_PAD = 3           # minimum gap between adjacent labels
+    REQUIRED  = LABEL_H + LABEL_PAD
+
+    def _screen_y(data_val):
+        """Data value → screen y in px (0 = top of plot area)."""
+        return (1.0 - (data_val - Y_MIN) / Y_RANGE) * CHART_H
+
+    # Default pixel offsets from data point to label center.
+    # Negative = up on screen (above the data point). Positive = below.
+    _default_ay = {"FII": -14, "Promoter": 14, "DII": -14, "Public": 14}
+
+    # Build a mutable grid: ann_grid[qi] = list of label dicts (one per visible category)
+    ann_grid = []
+    for qi in range(len(SH_QUARTERS)):
+        col_labels = []
+        for cat in ["FII", "Promoter", "DII", "Public"]:
+            val = cat_pct[cat][qi]
+            if val is None:
+                continue
+            col_labels.append({
+                "cat":  cat,
+                "y":    val,
+                "ay":   float(_default_ay[cat]),
+                "col":  CATEGORY_COLORS[cat],
+                "text": f"{val:.1f}%",
+            })
+        ann_grid.append(col_labels)
+
+    # Iterative collision resolution.
+    # KEY INSIGHT: labels must be sorted by their LABEL screen position, not
+    # by data-y.  A "below" label (ay > 0) on a higher line can visually land
+    # above an "above" label (ay < 0) on a lower line — the labels cross.
+    # Sorting by label screen position catches this case.  Each pass re-sorts
+    # so cascading adjustments propagate correctly.
+    for col_labels in ann_grid:
+        for _ in range(8):
+            col_labels.sort(key=lambda e: _screen_y(e["y"]) + e["ay"])
+            moved = False
+            for i in range(len(col_labels) - 1):
+                upper = col_labels[i]    # higher on screen  (smaller screen_y)
+                lower = col_labels[i+1]  # lower  on screen  (larger  screen_y)
+                u_s = _screen_y(upper["y"]) + upper["ay"]
+                l_s = _screen_y(lower["y"]) + lower["ay"]
+                gap = l_s - u_s
+                if gap < REQUIRED:
+                    push = (REQUIRED - gap) / 2.0 + 1.0
+                    upper["ay"] -= push   # further up   on screen
+                    lower["ay"] += push   # further down on screen
+                    moved = True
+            if not moved:
+                break
+
+    # Build Plotly annotation list from resolved positions
+    plotly_annotations = []
+    for qi, col_labels in enumerate(ann_grid):
+        for spec in col_labels:
+            default_ay = float(_default_ay[spec["cat"]])
+            displaced  = abs(spec["ay"] - default_ay) > 2.5
+            plotly_annotations.append(dict(
+                x=SH_QUARTERS[qi],
+                y=spec["y"],
+                text=spec["text"],
+                showarrow=displaced,
+                ax=0,
+                ay=spec["ay"],
+                arrowhead=0,
+                arrowwidth=0.9,
+                arrowcolor=spec["col"],
+                opacity=0.85,
+                font=dict(size=10, color=spec["col"], family="JetBrains Mono"),
+                xanchor="center",
+                yanchor="middle",
+                bgcolor="rgba(255,255,255,0.7)",
+                borderpad=1,
+            ))
+
+    # ── Draw the figure ───────────────────────────────────────────────────────
     fig_line = go.Figure()
     for cat in ["FII", "Promoter", "DII", "Public"]:
-        vals      = cat_pct[cat]
-        col       = CATEGORY_COLORS[cat]
-        textpos   = _cat_textpos[cat]
-        text_vals = [f"{v:.1f}%" if v is not None else "" for v in vals]
-
+        vals = cat_pct[cat]
+        col  = CATEGORY_COLORS[cat]
         fig_line.add_trace(go.Scatter(
             x=SH_QUARTERS,
             y=vals,
-            mode="lines+markers+text",
+            mode="lines+markers",
             name=cat,
             line=dict(color=col, width=2.5),
             marker=dict(size=6, color=col),
-            text=text_vals,
-            textposition=textpos,
-            textfont=dict(size=10, color=col, family="JetBrains Mono"),
             hovertemplate=f"<b>{cat}</b><br>%{{x}}: %{{y:.2f}}%<extra></extra>",
             connectgaps=False,
         ))
 
     fig_line.update_layout(
-        height=320,
-        margin=dict(l=0, r=20, t=28, b=0),
+        annotations=plotly_annotations,
+        height=CHART_H,
+        margin=dict(l=0, r=20, t=32, b=0),
         paper_bgcolor="white",
         plot_bgcolor="white",
         legend=dict(
-            orientation="h", y=1.09, x=0.5, xanchor="center",
+            orientation="h", y=1.10, x=0.5, xanchor="center",
             font=dict(size=11, family="Inter"), bgcolor="rgba(0,0,0,0)",
-            traceorder="normal",
         ),
         xaxis=dict(
             tickfont=dict(size=10.5, family="JetBrains Mono"),
@@ -2162,7 +2231,7 @@ with tab10:
         ),
         yaxis=dict(
             tickfont=dict(size=10), gridcolor="#f1f5f9",
-            ticksuffix="%", range=[-2, 62],
+            ticksuffix="%", range=[Y_MIN, Y_MAX],
         ),
         hoverlabel=dict(bgcolor="white", font_size=12),
     )
