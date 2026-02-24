@@ -237,9 +237,9 @@ NBFC_TIMESERIES = {
         "roe_pct":               [15.0,   15.5,   16.00,  15.41,  15.75,  15.07,  15.40,  16.33 ],  # Q4FY24-Q1FY25,Q3FY25 ~
         "cost_of_borrowing_pct": [9.08,   9.10,   9.06,   9.00,   8.96,   8.87,   8.83,   8.69  ],  # from image
         "d_e_ratio":             [4.30,   4.1,    3.99,   4.06,   4.16,   4.15,   3.88,   4.05  ],  # Q1FY25 ~
-        "car_pct":               [20.30,  20.30,  20.16,  21.00,  20.66,  20.79,  20.68,  20.27 ],  # screener.in; Q1FY25 ~20.30
-        "t1_pct":                [None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed separately
-        "t2_pct":                [None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed separately
+        "car_pct":               [20.30,  20.29,  20.16,  21.00,  20.66,  20.79,  20.68,  20.27 ],  # BSE filing (Q4FY25/Q3FY26 investor pres); Q1FY25 corrected
+        "t1_pct":                [19.55,  19.47,  19.36,  20.34,  20.03,  20.16,  19.98,  19.66 ],  # BSE filing (Q4FY25/Q3FY26 investor pres)
+        "t2_pct":                [0.75,   0.82,   0.80,   0.66,   0.63,   0.63,   0.70,   0.61  ],  # BSE filing (Q4FY25/Q3FY26 investor pres)
         "bvps_inr":              [260,    272,    277,    292,    299,    311,    321,    330   ],  # Q4FY24-Q1FY25 ~
     },
     "Chola Finance": {
