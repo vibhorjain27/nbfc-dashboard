@@ -206,8 +206,8 @@ NBFC_TIMESERIES = {
         "cost_of_borrowing_pct": [8.17,   8.16,   8.10,   8.06,   8.07,   8.04,   7.69,   7.65  ],
         "d_e_ratio":             [1.86,   2.05,   2.26,   2.65,   3.19,   3.72,   3.64,   4.25  ],  # screener.in
         "car_pct":               [33.80,  31.57,  29.22,  25.89,  22.94,  20.55,  20.85,  18.17 ],  # screener.in
-        "t1_pct":                [None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed
-        "t2_pct":                [None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed
+        "t1_pct":                [32.28,  30.09,  None,   None,   None,   None,   None,   None  ],  # screener.in; Q2FY25 onward not disclosed
+        "t2_pct":                [1.52,   1.48,   None,   None,   None,   None,   None,   None  ],  # screener.in; Q2FY25 onward not disclosed
         "bvps_inr":              [105.03, 108.21, 103.74, 103.15, 105.12, 106.12, 121.66, 123.75],
     },
     "Bajaj Finance": {
@@ -222,8 +222,8 @@ NBFC_TIMESERIES = {
         "cost_of_borrowing_pct": [7.86,   7.94,   7.97,   7.96,   7.99,   7.79,   7.52,   7.45  ],
         "d_e_ratio":             [4.90,   4.90,   4.90,   4.90,   4.90,   4.70,   4.70,   4.75  ],  # screener.in (Q3FY26 = 4.7–4.8 range → 4.75)
         "car_pct":               [22.52,  21.65,  21.69,  21.57,  21.93,  21.96,  21.23,  21.45 ],  # screener.in
-        "t1_pct":                [None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed separately
-        "t2_pct":                [None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed separately
+        "t1_pct":                [21.51,  20.73,  20.90,  20.79,  21.09,  21.19,  20.60,  20.60 ],  # screener.in
+        "t2_pct":                [1.01,   0.92,   0.79,   0.78,   0.84,   0.77,   0.63,   0.85  ],  # screener.in; Q2FY26 derived (CRAR−T1)
         "bvps_inr":              [150,    152,    155,    158,    160,    162,    165,    170   ],  # estimates (~)
     },
     "Shriram Finance": {
