@@ -182,6 +182,30 @@ st.markdown("""
         width: 10px; height: 10px; border-radius: 50%;
         display: inline-block; margin-right: 6px; vertical-align: middle;
     }
+    /* AI Table — flat always-visible initiative cards */
+    .ai-row-card {
+        background: white; border-radius: 6px; padding: 14px 18px;
+        margin-bottom: 10px; border-left: 4px solid var(--nbfc-color, #0284c7);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .ai-row-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 7px;
+    }
+    .ai-row-title {
+        font-size: 14px; font-weight: 700; color: #0a2540;
+        margin-bottom: 7px; line-height: 1.4;
+    }
+    .ai-row-desc {
+        font-size: 12px; color: #374151; line-height: 1.65;
+        margin: 8px 0 10px 0;
+    }
+    .ai-row-footer {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        flex-wrap: wrap; gap: 6px;
+        border-top: 1px solid #f1f5f9; padding-top: 8px; margin-top: 4px;
+    }
+    .ai-row-tags { display: flex; flex-wrap: wrap; gap: 4px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -1363,10 +1387,10 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─── TABS ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
     "Market", "Financials", "Asset Quality", "Capital & Leverage",
     "Profitability Ratios", "Valuation Metrics", "Deep Dive", "Rankings",
-    "AI Bulletin",
+    "AI Bulletin", "AI Table",
 ])
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1966,6 +1990,98 @@ with tab9:
                     unsafe_allow_html=True,
                 )
             _render_initiative_card(nbfc, init, show_nbfc_badge=True)
+
+    st.markdown(
+        '<div class="metric-note" style="margin-top:14px;">'
+        'Sources: company websites, annual reports, BSE filings, earnings call transcripts, '
+        'Business Standard, Medianama, Microsoft News, Analytics India Magazine, and vendor case studies. '
+        'Compiled 23 Feb 2026.'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 10 — AI TABLE (flat always-visible card list, no clicking required)
+# ══════════════════════════════════════════════════════════════════════════════
+with tab10:
+    st.markdown("""
+        <div class="tab-intro">
+            <span class="tab-intro-title">AI Initiative Table</span>
+            <span class="tab-intro-sub">All 51 initiatives fully visible · no clicking required · filter and sort below</span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # ── Filter + sort controls ───────────────────────────────────────────────
+    fc1, fc2, fc3 = st.columns([2, 2, 1])
+    with fc1:
+        tbl_nbfc_opts = ["All NBFCs"] + list(NBFC_AI_INITIATIVES.keys())
+        tbl_nbfc = st.selectbox("Filter by NBFC", tbl_nbfc_opts,
+                                index=0, key="tbl_nbfc_filter")
+    with fc2:
+        tbl_func_opts = ["All Functions"] + FUNCTION_TAXONOMY
+        tbl_func = st.selectbox("Filter by Function", tbl_func_opts,
+                                index=0, key="tbl_func_filter")
+    with fc3:
+        tbl_sort = st.selectbox("Sort by", ["Newest first", "Oldest first", "NBFC", "Title"],
+                                index=0, key="tbl_sort")
+
+    # ── Build filtered + sorted list ─────────────────────────────────────────
+    tbl_items = [
+        (nbfc, init)
+        for nbfc, inits in NBFC_AI_INITIATIVES.items()
+        for init in inits
+        if (tbl_nbfc == "All NBFCs" or nbfc == tbl_nbfc)
+        and (tbl_func == "All Functions" or tbl_func in init.get("functions", []))
+    ]
+    if tbl_sort == "Newest first":
+        tbl_items.sort(key=lambda x: _parse_ai_date(x[1]["date"]), reverse=True)
+    elif tbl_sort == "Oldest first":
+        tbl_items.sort(key=lambda x: _parse_ai_date(x[1]["date"]))
+    elif tbl_sort == "NBFC":
+        tbl_items.sort(key=lambda x: x[0])
+    else:
+        tbl_items.sort(key=lambda x: x[1]["title"])
+
+    st.markdown(
+        f'<div class="metric-note"><b>{len(tbl_items)}</b> initiative'
+        f'{"s" if len(tbl_items) != 1 else ""} shown</div>',
+        unsafe_allow_html=True,
+    )
+
+    # ── Render flat cards ────────────────────────────────────────────────────
+    for nbfc, init in tbl_items:
+        color = COLORS.get(nbfc, "#0284c7")
+        tags_html = "".join(
+            f'<span class="ai-func-tag">{fn}</span>'
+            for fn in init.get("functions", [])
+        )
+        src_url  = init.get("source_url", "")
+        src_name = init.get("source_name", "")
+        src_html = (
+            f'<a class="ai-source-link" href="{src_url}" target="_blank">↗ {src_name}</a>'
+            if src_url else f'<span style="color:#94a3b8">{src_name}</span>'
+        )
+        st.markdown(
+            f'<div class="ai-row-card" style="--nbfc-color:{color};">'
+            # header: NBFC badge + date
+            f'  <div class="ai-row-header">'
+            f'    <span class="ai-nbfc-badge" style="background:{color};">{nbfc}</span>'
+            f'    <span class="ai-date-badge">{init["date"]}</span>'
+            f'  </div>'
+            # title
+            f'  <div class="ai-row-title">{init["title"]}</div>'
+            # impact callout
+            f'  <div class="ai-impact">⚡ {init["impact"]}</div>'
+            # full description
+            f'  <div class="ai-row-desc">{init["description"]}</div>'
+            # footer: function tags + source link
+            f'  <div class="ai-row-footer">'
+            f'    <div class="ai-row-tags">{tags_html}</div>'
+            f'    {src_html}'
+            f'  </div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
     st.markdown(
         '<div class="metric-note" style="margin-top:14px;">'
