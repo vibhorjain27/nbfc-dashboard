@@ -1215,7 +1215,7 @@ def build_rankings_table():
 # ─── DEEP DIVE MINI CHARTS ─────────────────────────────────────────────────────
 
 def make_deep_dive(nbfc_disp: str):
-    """4×3 grid of mini line charts for all 12 metrics for one NBFC."""
+    """5×3 grid of mini line charts for all 14 metrics for one NBFC."""
     cache = CACHE_KEY[nbfc_disp]
     metrics_grid = [
         ('aum_cr',                'AUM (₹ Cr)',          'cr'   ),
@@ -1230,11 +1230,13 @@ def make_deep_dive(nbfc_disp: str):
         ('d_e_ratio',             'D/E Ratio',           'ratio'),
         ('car_pct',               'CAR %',               'pct'  ),
         ('bvps_inr',              'BVPS (₹)',            'bvps' ),
+        ('t1_pct',                'Tier 1 Capital %',    'pct'  ),
+        ('t2_pct',                'Tier 2 Capital %',    'pct'  ),
     ]
     fig = make_subplots(
-        rows=4, cols=3,
-        subplot_titles=[m[1] for m in metrics_grid],
-        vertical_spacing=0.12, horizontal_spacing=0.07,
+        rows=5, cols=3,
+        subplot_titles=[m[1] for m in metrics_grid] + ['', ''],  # pad to 15 titles
+        vertical_spacing=0.10, horizontal_spacing=0.07,
     )
     color = COLORS[nbfc_disp]
 
@@ -1315,7 +1317,7 @@ def make_deep_dive(nbfc_disp: str):
             ), row=row, col=col)
 
     fig.update_layout(
-        height=820,
+        height=1020,
         title=dict(
             text=f'<span style="color:#0a2540;font-weight:700;font-size:16px">'
                  f'{nbfc_disp} — All Metrics Q4FY24 → Q3FY26</span>',
@@ -1662,7 +1664,7 @@ with tab4:
     st.markdown("""
         <div class="tab-intro">
             <span class="tab-intro-title">Capital Structure & Leverage</span>
-            <span class="tab-intro-sub">Q4FY24 – Q3FY26 &nbsp;·&nbsp; CoB · D/E · CAR · BVPS</span>
+            <span class="tab-intro-sub">Q4FY24 – Q3FY26 &nbsp;·&nbsp; CoB · D/E · CAR · Tier 1 · Tier 2</span>
         </div>
     """, unsafe_allow_html=True)
 
@@ -1676,11 +1678,22 @@ with tab4:
     st.plotly_chart(make_trend_chart('d_e_ratio', sel4, 'Debt / Equity Ratio', 'D/E (×)',
                      fmt='ratio', lower_is_better=True),
                      use_container_width=True, config={'displayModeBar': False}, key="cap_de")
+
     st.plotly_chart(make_trend_chart('car_pct', sel4, 'Capital Adequacy Ratio (CAR / CRAR)',
                      'CAR (%)'),
                      use_container_width=True, config={'displayModeBar': False}, key="cap_car")
 
-    st.markdown('<div class="metric-note">D/E (Debt-to-Equity): lower = less levered. CAR: higher = better capitalized (RBI minimum = 15%).</div>', unsafe_allow_html=True)
+    st.plotly_chart(make_trend_chart('t1_pct', sel4, 'Tier 1 Capital Ratio',
+                     'Tier 1 (%)',
+                     note='Chola · AB Capital · L&T Finance only — others not disclosed separately'),
+                     use_container_width=True, config={'displayModeBar': False}, key="cap_t1")
+
+    st.plotly_chart(make_trend_chart('t2_pct', sel4, 'Tier 2 Capital Ratio',
+                     'Tier 2 (%)',
+                     note='Chola · AB Capital · L&T Finance only — others not disclosed separately'),
+                     use_container_width=True, config={'displayModeBar': False}, key="cap_t2")
+
+    st.markdown('<div class="metric-note">D/E: lower = less levered. CAR: higher = better capitalised (RBI minimum 15%). Tier 1 = core equity capital; Tier 2 = supplementary capital. T1/T2 available for Chola, AB Capital, and L&T Finance only.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 5 — PROFITABILITY RATIOS
@@ -1734,7 +1747,7 @@ with tab7:
     st.markdown("""
         <div class="tab-intro">
             <span class="tab-intro-title">Company Deep Dive</span>
-            <span class="tab-intro-sub">Select an NBFC to view all 12 metrics across 8 quarters</span>
+            <span class="tab-intro-sub">Select an NBFC to view all 14 metrics across 8 quarters · Tier 1 &amp; Tier 2 where disclosed</span>
         </div>
     """, unsafe_allow_html=True)
 
