@@ -1214,6 +1214,28 @@ def make_deep_dive(nbfc_disp: str):
     )
     color = COLORS[nbfc_disp]
 
+    def _fmt(v, fmt):
+        """Format a single value for the end-of-line label."""
+        if v is None:
+            return ''
+        if fmt == 'cr':
+            if v >= 1_00_000:
+                return f'₹{v / 1_00_000:.1f}L Cr'
+            elif v >= 1_000:
+                return f'₹{v / 1_000:.0f}K Cr'
+            else:
+                return f'₹{v:.0f} Cr'
+        if fmt == 'pct':
+            return f'{v:.1f}%'
+        if fmt == 'ratio':
+            return f'{v:.2f}x'
+        if fmt == 'bvps':
+            return f'₹{v:,.0f}'
+        return f'{v:.1f}'
+
+    # Collect data-legend annotations to add after subplot-title font update
+    pending_annotations = []
+
     for idx, (metric, label, fmt) in enumerate(metrics_grid):
         row = idx // 3 + 1
         col = idx %  3 + 1
@@ -1221,15 +1243,46 @@ def make_deep_dive(nbfc_disp: str):
         has_data = any(v is not None for v in vals)
 
         if has_data:
+            # Index of the last non-None point → that gets the callout legend
+            last_idx = next(
+                (i for i in range(len(vals) - 1, -1, -1) if vals[i] is not None),
+                None,
+            )
+            # Larger marker at the last data point to anchor the callout
+            marker_sizes = [8 if i == last_idx else 5 for i in range(len(vals))]
             fig.add_trace(go.Scatter(
                 x=Q_LABELS, y=vals,
                 mode='lines+markers',
                 connectgaps=False,
                 line=dict(color=color, width=2),
-                marker=dict(size=5, color=color),
+                marker=dict(size=marker_sizes, color=color),
                 showlegend=False,
                 hovertemplate=f"<b>{label}</b><br>%{{x}}<br>%{{y}}<extra></extra>",
             ), row=row, col=col)
+
+            # Build xref/yref for this subplot's axes
+            axis_num = idx + 1
+            xref = 'x' if axis_num == 1 else f'x{axis_num}'
+            yref = 'y' if axis_num == 1 else f'y{axis_num}'
+
+            pending_annotations.append(dict(
+                x=Q_LABELS[last_idx],
+                y=vals[last_idx],
+                text=f"<b>{_fmt(vals[last_idx], fmt)}</b>",
+                showarrow=True,
+                arrowhead=0,
+                arrowcolor=color,
+                arrowwidth=1,
+                ax=0,
+                ay=-24,
+                xref=xref,
+                yref=yref,
+                font=dict(size=9, color=color, family='Inter'),
+                bgcolor='rgba(255,255,255,0.95)',
+                bordercolor=color,
+                borderwidth=1,
+                borderpad=3,
+            ))
         else:
             fig.add_trace(go.Scatter(
                 x=Q_LABELS, y=[None] * 8,
@@ -1250,10 +1303,16 @@ def make_deep_dive(nbfc_disp: str):
         margin=dict(l=50, r=30, t=70, b=40),
         font=dict(family='Inter', size=11, color='#475569'),
     )
+    # Update subplot title font (these are the first 12 annotations)
     fig.update_annotations(font_size=11.5)
     fig.update_xaxes(showgrid=True, gridcolor='#f1f5f9', tickfont=dict(size=9),
                      tickangle=45)
     fig.update_yaxes(showgrid=True, gridcolor='#f1f5f9', tickfont=dict(size=9))
+
+    # Add data-legend callouts after title-font update so they keep size=9
+    for ann in pending_annotations:
+        fig.add_annotation(**ann)
+
     return fig
 
 # ─── NBFC SELECTOR WIDGET ─────────────────────────────────────────────────────
