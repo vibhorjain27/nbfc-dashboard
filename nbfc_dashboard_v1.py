@@ -2077,14 +2077,14 @@ with tab10:
             return d, f'<span style="color:#64748b;font-size:11px;">→ flat</span>'
         arrow = "▲" if d > 0 else "▼"
         col   = "#16a34a" if d > 0 else "#dc2626"
-        return d, f'<span style="color:{col};font-size:11px;">{arrow} {abs(d):.2f}pp</span>'
+        return d, f'<span style="color:{col};font-size:11px;">{arrow} {abs(d):.2f}%</span>'
 
     st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
     # ── Summary cards (latest quarter vs base quarter) ────────────────────────
     st.markdown(
         '<span class="section-label">Q3FY26 Snapshot '
-        '<span class="section-label-sub">vs Q4FY24 baseline · percentage-point change</span></span>',
+        '<span class="section-label-sub">vs Q4FY24 baseline · % change</span></span>',
         unsafe_allow_html=True,
     )
     card_cats = ["Promoter", "FII", "DII", "Public"]
@@ -2106,115 +2106,75 @@ with tab10:
 
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 
-    # ── Section A: Ownership Mix — Stacked 100% bar ───────────────────────────
+    # ── Section A: Ownership Trend — all 4 categories as lines ──────────────
     st.markdown(
-        '<span class="section-label">Ownership Mix '
-        f'<span class="section-label-sub">{sh_sel} · stacked 100% · Q4FY24 – Q3FY26</span></span>',
+        '<span class="section-label">Ownership Trend '
+        f'<span class="section-label-sub">{sh_sel} · Promoter / FII / DII / Public · Q4FY24 – Q3FY26</span></span>',
         unsafe_allow_html=True,
     )
 
-    fig_stack = go.Figure()
-    for cat in ["Promoter", "FII", "DII", "Public"]:
-        vals = cat_pct[cat]
-        fig_stack.add_trace(go.Bar(
-            name=cat,
+    # Text position per category to avoid label collisions:
+    # FII (highest, ~47-54%) → labels above
+    # Promoter (~25%) → labels below (pushes into Promoter-DII gap from above)
+    # DII (rising 15→21%) → labels above (pushes into Promoter-DII gap from below)
+    # Public (lowest, ~5-6%) → labels below
+    _cat_textpos = {
+        "FII":      "top center",
+        "Promoter": "bottom center",
+        "DII":      "top center",
+        "Public":   "bottom center",
+    }
+
+    fig_line = go.Figure()
+    for cat in ["FII", "Promoter", "DII", "Public"]:
+        vals      = cat_pct[cat]
+        col       = CATEGORY_COLORS[cat]
+        textpos   = _cat_textpos[cat]
+        text_vals = [f"{v:.1f}%" if v is not None else "" for v in vals]
+
+        fig_line.add_trace(go.Scatter(
             x=SH_QUARTERS,
             y=vals,
-            marker_color=CATEGORY_COLORS[cat],
+            mode="lines+markers+text",
+            name=cat,
+            line=dict(color=col, width=2.5),
+            marker=dict(size=6, color=col),
+            text=text_vals,
+            textposition=textpos,
+            textfont=dict(size=10, color=col, family="JetBrains Mono"),
             hovertemplate=f"<b>{cat}</b><br>%{{x}}: %{{y:.2f}}%<extra></extra>",
+            connectgaps=False,
         ))
 
-    fig_stack.update_layout(
-        barmode="stack",
-        height=280,
-        margin=dict(l=0, r=0, t=20, b=0),
+    fig_line.update_layout(
+        height=320,
+        margin=dict(l=0, r=20, t=28, b=0),
         paper_bgcolor="white",
         plot_bgcolor="white",
         legend=dict(
-            orientation="h", y=1.08, x=0.5, xanchor="center",
-            font=dict(size=11), bgcolor="rgba(0,0,0,0)",
+            orientation="h", y=1.09, x=0.5, xanchor="center",
+            font=dict(size=11, family="Inter"), bgcolor="rgba(0,0,0,0)",
+            traceorder="normal",
         ),
         xaxis=dict(
             tickfont=dict(size=10.5, family="JetBrains Mono"),
             gridcolor="#f1f5f9", linecolor="#e2e8f0",
         ),
         yaxis=dict(
-            title="% of shares", tickfont=dict(size=10),
-            gridcolor="#f1f5f9", range=[0, 100],
-            ticksuffix="%",
+            tickfont=dict(size=10), gridcolor="#f1f5f9",
+            ticksuffix="%", range=[-2, 62],
         ),
         hoverlabel=dict(bgcolor="white", font_size=12),
     )
-    st.plotly_chart(fig_stack, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(fig_line, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
-    # ── Section B: FII vs DII Trend across NBFCs with data ───────────────────
+    # ── Section B: Named Shareholders ≥1% ─────────────────────────────────────
     st.markdown(
-        '<span class="section-label">FII & DII Trends '
-        '<span class="section-label-sub">All NBFCs with shareholding data · Q4FY24 – Q3FY26</span></span>',
-        unsafe_allow_html=True,
-    )
-
-    tc1, tc2 = st.columns(2, gap="small")
-
-    def _sh_trend_fig(category: str, ylabel: str) -> go.Figure:
-        fig = go.Figure()
-        for nbfc_name, d in SHAREHOLDING.items():
-            vals = d["category_pct"][category]
-            col  = COLORS.get(nbfc_name, "#0284c7")
-            # annotate last point
-            last_v = sh_latest(vals)
-            last_i = next((i for i in range(len(vals) - 1, -1, -1) if vals[i] is not None), None)
-            fig.add_trace(go.Scatter(
-                x=SH_QUARTERS,
-                y=vals,
-                mode="lines+markers",
-                name=nbfc_name,
-                line=dict(color=col, width=2),
-                marker=dict(size=5, color=col),
-                hovertemplate=f"<b>{nbfc_name}</b><br>%{{x}}: %{{y:.2f}}%<extra></extra>",
-                connectgaps=False,
-            ))
-            if last_v is not None and last_i is not None:
-                fig.add_annotation(
-                    x=SH_QUARTERS[last_i], y=last_v,
-                    text=f" {last_v:.1f}%",
-                    showarrow=False, xanchor="left",
-                    font=dict(size=10, color=col),
-                )
-        fig.update_layout(
-            height=240,
-            margin=dict(l=0, r=50, t=20, b=0),
-            paper_bgcolor="white", plot_bgcolor="white",
-            showlegend=len(SHAREHOLDING) > 1,
-            legend=dict(font=dict(size=10), bgcolor="rgba(0,0,0,0)"),
-            xaxis=dict(tickfont=dict(size=10, family="JetBrains Mono"),
-                       gridcolor="#f1f5f9", linecolor="#e2e8f0"),
-            yaxis=dict(title=ylabel, tickfont=dict(size=10),
-                       gridcolor="#f1f5f9", ticksuffix="%"),
-            hoverlabel=dict(bgcolor="white", font_size=12),
-        )
-        return fig
-
-    with tc1:
-        st.plotly_chart(
-            _sh_trend_fig("FII", "FII %"),
-            use_container_width=True, config={"displayModeBar": False},
-        )
-    with tc2:
-        st.plotly_chart(
-            _sh_trend_fig("DII", "DII %"),
-            use_container_width=True, config={"displayModeBar": False},
-        )
-
-    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
-
-    # ── Section C: Named Shareholders ≥1% ─────────────────────────────────────
-    st.markdown(
-        '<span class="section-label">Named Shareholders ≥1% '
-        f'<span class="section-label-sub">{sh_sel} · quarterly BSE filing · '
-        'green = building · red = reducing · ● = new entry · ○ = exited</span></span>',
+        '<span class="section-label">≥1% Shareholders '
+        f'<span class="section-label-sub">{sh_sel} · Q4FY24 – Q3FY26 · '
+        'green = building · red = reducing · ● = new entry · ○ = exited next quarter</span></span>',
         unsafe_allow_html=True,
     )
 
@@ -2292,18 +2252,25 @@ with tab10:
                 if val is not None:
                     prev_val = val
 
-            # Trend sparkline text: first→last
-            f_v, l_v = sh_first(pct_list), sh_latest(pct_list)
-            if f_v is not None and l_v is not None:
+            # Trend column:
+            # · Active holder  → latest% vs first% in the window
+            # · Exited holder  → 0 vs last known% (they went to zero)
+            f_v = sh_first(pct_list)
+            l_v = sh_latest(pct_list)
+            if f_v is None:
+                trend_html = "—"
+            elif is_exited:
+                # position dropped to zero; show the full drawdown from last known
+                d = 0 - l_v   # always negative
+                trend_html = f'<span class="sh-cell-dn">▼ {abs(d):.2f}% → exited</span>'
+            else:
                 d = l_v - f_v
                 if d > 0.04:
-                    trend_html = f'<span class="sh-cell-up">▲ {abs(d):.2f}pp</span>'
+                    trend_html = f'<span class="sh-cell-up">▲ {abs(d):.2f}%</span>'
                 elif d < -0.04:
-                    trend_html = f'<span class="sh-cell-dn">▼ {abs(d):.2f}pp</span>'
+                    trend_html = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%</span>'
                 else:
                     trend_html = '<span class="sh-cell-flat">→ flat</span>'
-            else:
-                trend_html = "—"
 
             badge_html = (
                 f'<span class="sh-cat-badge" '
