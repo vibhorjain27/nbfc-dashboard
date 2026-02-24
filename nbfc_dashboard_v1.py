@@ -8,6 +8,7 @@ import yfinance as yf
 import pytz
 from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS, METRIC_LABELS
 from nbfc_ai_data import NBFC_AI_INITIATIVES, FUNCTION_TAXONOMY
+from shareholding_data import SHAREHOLDING, SH_QUARTERS, CATEGORY_COLORS, ENTITY_CATEGORY_COLORS
 
 # ─── PAGE CONFIG ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -206,6 +207,63 @@ st.markdown("""
         border-top: 1px solid #f1f5f9; padding-top: 8px; margin-top: 4px;
     }
     .ai-row-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    /* ── Shareholding Tab ──────────────────────────────────────────────────── */
+    .sh-table {
+        border-collapse: collapse; width: 100%;
+        font-size: 12px; font-family: 'Inter', sans-serif;
+    }
+    .sh-table th {
+        background: #0a2540; color: white; padding: 7px 10px;
+        text-align: right; font-size: 10.5px; font-weight: 600;
+        letter-spacing: 0.04em; white-space: nowrap;
+    }
+    .sh-table th.sh-th-left  { text-align: left; }
+    .sh-table th.sh-th-badge { text-align: center; width: 90px; }
+    .sh-table td {
+        padding: 6px 10px; border-bottom: 1px solid #f1f5f9;
+        text-align: right; white-space: nowrap;
+        font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    }
+    .sh-table td.sh-td-name {
+        text-align: left; font-family: 'Inter', sans-serif;
+        font-size: 12px; font-weight: 600; color: #0a2540;
+        max-width: 200px;
+    }
+    .sh-table td.sh-td-cat  { text-align: center; padding: 4px 8px; }
+    .sh-table tr:hover td   { background: #f8fafc; }
+    .sh-cat-badge {
+        display: inline-block; font-size: 10px; font-weight: 700;
+        letter-spacing: 0.03em; color: white; border-radius: 10px;
+        padding: 2px 9px; white-space: nowrap;
+    }
+    .sh-cell-up   { color: #16a34a; }
+    .sh-cell-dn   { color: #dc2626; }
+    .sh-cell-flat { color: #64748b; }
+    .sh-cell-nil  { color: #cbd5e1; }
+    .sh-entry-dot { color: #16a34a; font-size: 9px; vertical-align: super; margin-left: 1px; }
+    .sh-exit-dot  { color: #dc2626; font-size: 9px; vertical-align: super; margin-left: 1px; }
+    .sh-group-hdr td {
+        background: #f1f5f9; font-size: 10.5px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.07em;
+        color: #475569; padding: 5px 10px; border-bottom: 1px solid #e2e8f0;
+    }
+    .sh-summary-card {
+        background: white; border-radius: 5px; padding: 14px 18px;
+        border-top: 3px solid #0284c7; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    .sh-summary-num {
+        font-size: 24px; font-weight: 700; color: #0a2540;
+        font-family: 'JetBrains Mono', monospace; line-height: 1.1;
+    }
+    .sh-summary-label {
+        font-size: 10px; font-weight: 600; color: #94a3b8;
+        text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px;
+    }
+    .sh-summary-delta {
+        font-size: 11px; font-weight: 600; margin-top: 3px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -1391,10 +1449,10 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─── TABS ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
     "Market", "Financials", "Asset Quality", "Capital & Leverage",
     "Profitability Ratios", "Valuation Metrics", "Deep Dive", "Rankings",
-    "AI Bulletin",
+    "AI Bulletin", "Shareholding",
 ])
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1965,6 +2023,311 @@ with tab9:
         'Sources: company websites, annual reports, BSE filings, earnings call transcripts, '
         'Business Standard, Medianama, Microsoft News, Analytics India Magazine, and vendor case studies. '
         'Compiled 23 Feb 2026.'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 10 — SHAREHOLDING PATTERN
+# ══════════════════════════════════════════════════════════════════════════════
+with tab10:
+    st.markdown("""
+        <div class="tab-intro">
+            <span class="tab-intro-title">Shareholding Pattern</span>
+            <span class="tab-intro-sub">
+                BSE quarterly filings · Q4FY24 – Q3FY26 (8 quarters) · Named shareholders ≥1%
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # ── NBFC selector (independent) ──────────────────────────────────────────
+    available_sh = list(SHAREHOLDING.keys())
+    sh_sel = st.selectbox(
+        "Select NBFC",
+        available_sh,
+        index=0,
+        key="sh_nbfc_sel",
+    )
+    sh_data   = SHAREHOLDING[sh_sel]
+    cat_pct   = sh_data["category_pct"]          # {category: [8 values]}
+    entities  = sh_data["named_entities"]         # list of dicts
+    nbfc_col  = COLORS.get(sh_sel, "#0284c7")
+
+    # ── Helper: latest non-None value in a list ───────────────────────────────
+    def sh_latest(lst):
+        for v in reversed(lst):
+            if v is not None:
+                return v
+        return None
+
+    def sh_first(lst):
+        for v in lst:
+            if v is not None:
+                return v
+        return None
+
+    def sh_delta_str(lst):
+        """Return (delta_float, html_span) comparing latest vs first non-None."""
+        f, l = sh_first(lst), sh_latest(lst)
+        if f is None or l is None:
+            return 0, ""
+        d = l - f
+        if abs(d) < 0.05:
+            return d, f'<span style="color:#64748b;font-size:11px;">→ flat</span>'
+        arrow = "▲" if d > 0 else "▼"
+        col   = "#16a34a" if d > 0 else "#dc2626"
+        return d, f'<span style="color:{col};font-size:11px;">{arrow} {abs(d):.2f}pp</span>'
+
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+
+    # ── Summary cards (latest quarter vs base quarter) ────────────────────────
+    st.markdown(
+        '<span class="section-label">Q3FY26 Snapshot '
+        '<span class="section-label-sub">vs Q4FY24 baseline · percentage-point change</span></span>',
+        unsafe_allow_html=True,
+    )
+    card_cats = ["Promoter", "FII", "DII", "Public"]
+    card_cols = st.columns(4, gap="small")
+    for ci, cat in enumerate(card_cats):
+        vals = cat_pct[cat]
+        latest_v = sh_latest(vals)
+        _, delta_html = sh_delta_str(vals)
+        border_col = CATEGORY_COLORS[cat]
+        with card_cols[ci]:
+            st.markdown(
+                f'<div class="sh-summary-card" style="border-top-color:{border_col};">'
+                f'  <div class="sh-summary-num">{latest_v:.2f}%</div>'
+                f'  <div class="sh-summary-label">{cat}</div>'
+                f'  <div class="sh-summary-delta">{delta_html}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+    # ── Section A: Ownership Mix — Stacked 100% bar ───────────────────────────
+    st.markdown(
+        '<span class="section-label">Ownership Mix '
+        f'<span class="section-label-sub">{sh_sel} · stacked 100% · Q4FY24 – Q3FY26</span></span>',
+        unsafe_allow_html=True,
+    )
+
+    fig_stack = go.Figure()
+    for cat in ["Promoter", "FII", "DII", "Public"]:
+        vals = cat_pct[cat]
+        fig_stack.add_trace(go.Bar(
+            name=cat,
+            x=SH_QUARTERS,
+            y=vals,
+            marker_color=CATEGORY_COLORS[cat],
+            hovertemplate=f"<b>{cat}</b><br>%{{x}}: %{{y:.2f}}%<extra></extra>",
+        ))
+
+    fig_stack.update_layout(
+        barmode="stack",
+        height=280,
+        margin=dict(l=0, r=0, t=20, b=0),
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        legend=dict(
+            orientation="h", y=1.08, x=0.5, xanchor="center",
+            font=dict(size=11), bgcolor="rgba(0,0,0,0)",
+        ),
+        xaxis=dict(
+            tickfont=dict(size=10.5, family="JetBrains Mono"),
+            gridcolor="#f1f5f9", linecolor="#e2e8f0",
+        ),
+        yaxis=dict(
+            title="% of shares", tickfont=dict(size=10),
+            gridcolor="#f1f5f9", range=[0, 100],
+            ticksuffix="%",
+        ),
+        hoverlabel=dict(bgcolor="white", font_size=12),
+    )
+    st.plotly_chart(fig_stack, use_container_width=True, config={"displayModeBar": False})
+
+    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+
+    # ── Section B: FII vs DII Trend across NBFCs with data ───────────────────
+    st.markdown(
+        '<span class="section-label">FII & DII Trends '
+        '<span class="section-label-sub">All NBFCs with shareholding data · Q4FY24 – Q3FY26</span></span>',
+        unsafe_allow_html=True,
+    )
+
+    tc1, tc2 = st.columns(2, gap="small")
+
+    def _sh_trend_fig(category: str, ylabel: str) -> go.Figure:
+        fig = go.Figure()
+        for nbfc_name, d in SHAREHOLDING.items():
+            vals = d["category_pct"][category]
+            col  = COLORS.get(nbfc_name, "#0284c7")
+            # annotate last point
+            last_v = sh_latest(vals)
+            last_i = next((i for i in range(len(vals) - 1, -1, -1) if vals[i] is not None), None)
+            fig.add_trace(go.Scatter(
+                x=SH_QUARTERS,
+                y=vals,
+                mode="lines+markers",
+                name=nbfc_name,
+                line=dict(color=col, width=2),
+                marker=dict(size=5, color=col),
+                hovertemplate=f"<b>{nbfc_name}</b><br>%{{x}}: %{{y:.2f}}%<extra></extra>",
+                connectgaps=False,
+            ))
+            if last_v is not None and last_i is not None:
+                fig.add_annotation(
+                    x=SH_QUARTERS[last_i], y=last_v,
+                    text=f" {last_v:.1f}%",
+                    showarrow=False, xanchor="left",
+                    font=dict(size=10, color=col),
+                )
+        fig.update_layout(
+            height=240,
+            margin=dict(l=0, r=50, t=20, b=0),
+            paper_bgcolor="white", plot_bgcolor="white",
+            showlegend=len(SHAREHOLDING) > 1,
+            legend=dict(font=dict(size=10), bgcolor="rgba(0,0,0,0)"),
+            xaxis=dict(tickfont=dict(size=10, family="JetBrains Mono"),
+                       gridcolor="#f1f5f9", linecolor="#e2e8f0"),
+            yaxis=dict(title=ylabel, tickfont=dict(size=10),
+                       gridcolor="#f1f5f9", ticksuffix="%"),
+            hoverlabel=dict(bgcolor="white", font_size=12),
+        )
+        return fig
+
+    with tc1:
+        st.plotly_chart(
+            _sh_trend_fig("FII", "FII %"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+    with tc2:
+        st.plotly_chart(
+            _sh_trend_fig("DII", "DII %"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+
+    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+
+    # ── Section C: Named Shareholders ≥1% ─────────────────────────────────────
+    st.markdown(
+        '<span class="section-label">Named Shareholders ≥1% '
+        f'<span class="section-label-sub">{sh_sel} · quarterly BSE filing · '
+        'green = building · red = reducing · ● = new entry · ○ = exited</span></span>',
+        unsafe_allow_html=True,
+    )
+
+    # Group entities by category
+    cat_order = ["Promoter", "FII", "DII – MF", "DII – Insurance", "DII – Pension", "DII – Other"]
+    grouped: dict[str, list] = {c: [] for c in cat_order}
+    for ent in entities:
+        c = ent["category"]
+        if c not in grouped:
+            grouped[c] = []
+        grouped[c].append(ent)
+
+    def _cell_html(val, prev_val, is_first_appearance: bool, is_last_appearance: bool) -> str:
+        """Render one table cell value with colour and entry/exit marker."""
+        if val is None:
+            return '<td class="sh-cell-nil">—</td>'
+        v_str = f"{val:.2f}%"
+        # Entry/exit markers (superscript dots)
+        marker = ""
+        if is_first_appearance:
+            marker = '<span class="sh-entry-dot">●</span>'
+        elif is_last_appearance:
+            marker = '<span class="sh-exit-dot">○</span>'
+        # Colour by direction vs previous non-None value
+        if prev_val is None:
+            cls = "sh-cell-flat"
+        elif val > prev_val + 0.04:
+            cls = "sh-cell-up"
+        elif val < prev_val - 0.04:
+            cls = "sh-cell-dn"
+        else:
+            cls = "sh-cell-flat"
+        return f'<td class="{cls}">{v_str}{marker}</td>'
+
+    # Build HTML table
+    q_headers = "".join(f"<th>{q}</th>" for q in SH_QUARTERS)
+    table_html = (
+        '<table class="sh-table">'
+        '<thead><tr>'
+        '  <th class="sh-th-left">Shareholder</th>'
+        '  <th class="sh-th-badge">Category</th>'
+        f' {q_headers}'
+        '  <th>Trend</th>'
+        '</tr></thead>'
+        '<tbody>'
+    )
+
+    for cat in cat_order:
+        rows = grouped.get(cat, [])
+        if not rows:
+            continue
+        badge_col = ENTITY_CATEGORY_COLORS.get(cat, "#64748b")
+        # Group header row
+        table_html += (
+            f'<tr class="sh-group-hdr"><td colspan="{2 + len(SH_QUARTERS) + 1}">{cat}</td></tr>'
+        )
+        # Sort within group by latest non-None value descending
+        rows_sorted = sorted(rows, key=lambda e: sh_latest(e["pct"]) or 0, reverse=True)
+        for ent in rows_sorted:
+            pct_list = ent["pct"]
+            n = len(SH_QUARTERS)
+            # Determine first and last appearance indices
+            appearances = [i for i, v in enumerate(pct_list) if v is not None]
+            first_app_i = appearances[0] if appearances else -1
+            last_app_i  = appearances[-1] if appearances else -1
+            # Is last appearance before the final quarter? → exiting
+            is_exited = last_app_i < n - 1
+
+            cells_html = ""
+            prev_val = None
+            for qi, val in enumerate(pct_list):
+                is_first = (qi == first_app_i) and (first_app_i > 0)   # new in this window
+                is_last  = is_exited and (qi == last_app_i)
+                cells_html += _cell_html(val, prev_val, is_first, is_last)
+                if val is not None:
+                    prev_val = val
+
+            # Trend sparkline text: first→last
+            f_v, l_v = sh_first(pct_list), sh_latest(pct_list)
+            if f_v is not None and l_v is not None:
+                d = l_v - f_v
+                if d > 0.04:
+                    trend_html = f'<span class="sh-cell-up">▲ {abs(d):.2f}pp</span>'
+                elif d < -0.04:
+                    trend_html = f'<span class="sh-cell-dn">▼ {abs(d):.2f}pp</span>'
+                else:
+                    trend_html = '<span class="sh-cell-flat">→ flat</span>'
+            else:
+                trend_html = "—"
+
+            badge_html = (
+                f'<span class="sh-cat-badge" '
+                f'style="background:{badge_col};">{cat}</span>'
+            )
+            table_html += (
+                f'<tr>'
+                f'<td class="sh-td-name">{ent["name"]}</td>'
+                f'<td class="sh-td-cat">{badge_html}</td>'
+                f'{cells_html}'
+                f'<td class="sh-cell-flat" style="font-size:10.5px;">{trend_html}</td>'
+                f'</tr>'
+            )
+
+    table_html += "</tbody></table>"
+    st.markdown(table_html, unsafe_allow_html=True)
+
+    # Legend note
+    st.markdown(
+        '<div class="metric-note" style="margin-top:10px;">'
+        '<b>●</b> = new entry this window &nbsp;·&nbsp; '
+        '<b>○</b> = position exited after this quarter &nbsp;·&nbsp; '
+        'Colour shows direction vs prior quarter &nbsp;·&nbsp; '
+        'Threshold: ≥1% of paid-up capital as per BSE quarterly filing'
         '</div>',
         unsafe_allow_html=True,
     )
