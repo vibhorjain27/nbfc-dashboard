@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor
 import yfinance as yf
 import pytz
 from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS, METRIC_LABELS
@@ -835,7 +836,7 @@ def make_pb_chart(selected: list, height: int = 520):
 
 # ─── MARKET DATA ───────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600, persist="disk")
 def fetch_stock_data(symbol, period='1y'):
     try:
         return yf.Ticker(symbol).history(period=period)
@@ -843,7 +844,7 @@ def fetch_stock_data(symbol, period='1y'):
         return None
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600, persist="disk")
 def fetch_stock_data_range(symbol, start_str, end_str):
     """Fetch daily OHLCV between start_str and end_str ('YYYY-MM-DD')."""
     try:
@@ -852,17 +853,22 @@ def fetch_stock_data_range(symbol, start_str, end_str):
         return None
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=3600, persist="disk")
 def fetch_shares_outstanding():
     """Returns {symbol: shares_outstanding} for all NBFCs, cached 1 hr."""
-    result = {}
-    for name, symbol in NBFCS.items():
+    def _fetch_one(args):
+        name, symbol = args
         try:
             shares = yf.Ticker(symbol).fast_info.shares
-            if shares and shares > 0:
-                result[symbol] = int(shares)
+            return symbol, int(shares) if shares and shares > 0 else None
         except Exception:
-            pass
+            return symbol, None
+
+    result = {}
+    with ThreadPoolExecutor(max_workers=len(NBFCS)) as ex:
+        for symbol, shares in ex.map(_fetch_one, NBFCS.items()):
+            if shares:
+                result[symbol] = shares
     return result
 
 
@@ -1003,13 +1009,17 @@ def _fetch_all_prices():
         except Exception:
             continue
 
-    # Enrich with current market cap from fast_info
-    for symbol in list(rows.keys()):
+    # Enrich with current market cap — fetch all 9 in parallel
+    def _fetch_mc(sym):
         try:
-            mc = yf.Ticker(symbol).fast_info.market_cap
-            rows[symbol]['market_cap'] = int(mc) if mc and mc > 0 else None
+            mc = yf.Ticker(sym).fast_info.market_cap
+            return sym, int(mc) if mc and mc > 0 else None
         except Exception:
-            rows[symbol]['market_cap'] = None
+            return sym, None
+
+    with ThreadPoolExecutor(max_workers=len(rows)) as ex:
+        for sym, mc in ex.map(_fetch_mc, list(rows.keys())):
+            rows[sym]['market_cap'] = mc
 
     # Return in NBFCS display order
     return [rows[s] for s in symbols if s in rows]
