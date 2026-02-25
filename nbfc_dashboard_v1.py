@@ -9,7 +9,7 @@ import yfinance as yf
 import pytz
 from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS, METRIC_LABELS
 from nbfc_ai_data import NBFC_AI_INITIATIVES, FUNCTION_TAXONOMY
-from shareholding_data import SHAREHOLDING, SH_QUARTERS, CATEGORY_COLORS, ENTITY_CATEGORY_COLORS
+from shareholding_data import SHAREHOLDING, SH_QUARTERS, CATEGORY_COLORS, ENTITY_CATEGORY_COLORS, ENTITY_BADGE_TEXT_COLORS
 
 # ─── PAGE CONFIG ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -2270,6 +2270,7 @@ with tab10:
     def _entity_rows(cat, rows_list):
         html = ""
         badge_col   = ENTITY_CATEGORY_COLORS.get(cat, "#64748b")
+        badge_txt   = ENTITY_BADGE_TEXT_COLORS.get(cat, "white")
         rows_sorted = sorted(rows_list, key=lambda e: sh_latest(e["pct"]) or 0, reverse=True)
         n = len(SH_QUARTERS)
         for ent in rows_sorted:
@@ -2300,7 +2301,7 @@ with tab10:
                     trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%</span>'
                 else:
                     trend = '<span class="sh-cell-flat">→ flat</span>'
-            badge = f'<span class="sh-cat-badge" style="background:{badge_col};">{cat}</span>'
+            badge = f'<span class="sh-cat-badge" style="background:{badge_col};color:{badge_txt};">{cat}</span>'
             html += (
                 f'<tr>'
                 f'<td class="sh-td-name">{ent["name"]}</td>'

@@ -16,14 +16,20 @@ CATEGORY_COLORS = {
     "Public":   "#94a3b8",   # slate
 }
 
-# Named-entity category badge colours
+# Named-entity category badge colours (background)
 ENTITY_CATEGORY_COLORS = {
     "Promoter":          "#10b981",
     "FII":               "#0284c7",
-    "DII – MF":          "#f59e0b",
-    "DII – Insurance":   "#ef4444",
+    "DII – MF":          "#fde68a",   # pastel honey amber
+    "DII – Insurance":   "#fecdd3",   # pastel rose  (warm, not alarming)
     "DII – Pension":     "#8b5cf6",
     "DII – Other":       "#64748b",
+}
+
+# Override text colour for badges whose background is too light for white text
+ENTITY_BADGE_TEXT_COLORS = {
+    "DII – MF":        "#78350f",   # amber-900
+    "DII – Insurance": "#9f1239",   # rose-900
 }
 
 SHAREHOLDING = {
