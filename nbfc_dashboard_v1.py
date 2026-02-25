@@ -248,6 +248,7 @@ st.markdown("""
         background: #f1f5f9; font-size: 10.5px; font-weight: 700;
         text-transform: uppercase; letter-spacing: 0.07em;
         color: #475569; padding: 5px 10px; border-bottom: 1px solid #e2e8f0;
+        text-align: left !important;
     }
     .sh-summary-card {
         background: white; border-radius: 5px; padding: 14px 18px;
