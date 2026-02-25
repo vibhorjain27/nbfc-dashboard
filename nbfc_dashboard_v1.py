@@ -2051,20 +2051,9 @@ with tab10:
         </div>
     """, unsafe_allow_html=True)
 
-    # ── NBFC selector (independent) ──────────────────────────────────────────
     available_sh = list(SHAREHOLDING.keys())
-    sh_sel = st.selectbox(
-        "Select NBFC",
-        available_sh,
-        index=0,
-        key="sh_nbfc_sel",
-    )
-    sh_data   = SHAREHOLDING[sh_sel]
-    cat_pct   = sh_data["category_pct"]          # {category: [8 values]}
-    entities  = sh_data["named_entities"]         # list of dicts
-    nbfc_col  = COLORS.get(sh_sel, "#0284c7")
 
-    # ── Helper: latest non-None value in a list ───────────────────────────────
+    # ── Shared helpers ────────────────────────────────────────────────────────
     def sh_latest(lst):
         for v in reversed(lst):
             if v is not None:
@@ -2078,206 +2067,25 @@ with tab10:
         return None
 
     def sh_delta_str(lst):
-        """Return (delta_float, html_span) comparing latest vs first non-None."""
         f, l = sh_first(lst), sh_latest(lst)
         if f is None or l is None:
             return 0, ""
         d = l - f
         if abs(d) < 0.05:
-            return d, f'<span style="color:#64748b;font-size:11px;">→ flat</span>'
+            return d, '<span style="color:#64748b;font-size:11px;">→ flat</span>'
         arrow = "▲" if d > 0 else "▼"
         col   = "#16a34a" if d > 0 else "#dc2626"
         return d, f'<span style="color:{col};font-size:11px;">{arrow} {abs(d):.2f}%</span>'
 
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
-
-    # ── Summary cards (latest quarter vs base quarter) ────────────────────────
-    st.markdown(
-        '<span class="section-label">Q3FY26 Snapshot '
-        '<span class="section-label-sub">vs Q4FY24 baseline · % change</span></span>',
-        unsafe_allow_html=True,
-    )
-    card_cats = ["Promoter", "FII", "DII", "Public"]
-    card_cols = st.columns(4, gap="small")
-    for ci, cat in enumerate(card_cats):
-        vals = cat_pct[cat]
-        latest_v = sh_latest(vals)
-        _, delta_html = sh_delta_str(vals)
-        border_col = CATEGORY_COLORS[cat]
-        with card_cols[ci]:
-            st.markdown(
-                f'<div class="sh-summary-card" style="border-top-color:{border_col};">'
-                f'  <div class="sh-summary-num">{latest_v:.2f}%</div>'
-                f'  <div class="sh-summary-label">{cat}</div>'
-                f'  <div class="sh-summary-delta">{delta_html}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
-
-    # ── Section A: Ownership Trend — collision-aware data labels ────────────
-    st.markdown(
-        '<span class="section-label">Ownership Trend '
-        f'<span class="section-label-sub">{sh_sel} · Promoter / FII / DII / Public · Q4FY24 – Q3FY26</span></span>',
-        unsafe_allow_html=True,
-    )
-
-    # ── Collision detection for data labels ───────────────────────────────────
-    # Strategy: pre-compute each label's screen-pixel position, detect pairwise
-    # collisions within the same x-column, then iteratively push labels apart.
-    # Displaced labels get a thin connector line (showarrow=True, arrowhead=0)
-    # pointing back to their data point.
-
-    CHART_H  = 340          # px — chart drawing area height
-    Y_MIN, Y_MAX = -3, 63   # axis range
-    Y_RANGE  = Y_MAX - Y_MIN
-    LABEL_H  = 16           # approximate label height in screen px
-    LABEL_PAD = 3           # minimum gap between adjacent labels
-    REQUIRED  = LABEL_H + LABEL_PAD
-
-    def _screen_y(data_val):
-        """Data value → screen y in px (0 = top of plot area)."""
-        return (1.0 - (data_val - Y_MIN) / Y_RANGE) * CHART_H
-
-    # Default pixel offsets from data point to label center.
-    # Negative = up on screen (above the data point). Positive = below.
-    _default_ay = {"FII": -14, "Promoter": 14, "DII": -14, "Public": 14}
-
-    # Build a mutable grid: ann_grid[qi] = list of label dicts (one per visible category)
-    ann_grid = []
-    for qi in range(len(SH_QUARTERS)):
-        col_labels = []
-        for cat in ["FII", "Promoter", "DII", "Public"]:
-            val = cat_pct[cat][qi]
-            if val is None:
-                continue
-            col_labels.append({
-                "cat":  cat,
-                "y":    val,
-                "ay":   float(_default_ay[cat]),
-                "col":  CATEGORY_COLORS[cat],
-                "text": f"{val:.1f}%",
-            })
-        ann_grid.append(col_labels)
-
-    # Iterative collision resolution.
-    # KEY INSIGHT: labels must be sorted by their LABEL screen position, not
-    # by data-y.  A "below" label (ay > 0) on a higher line can visually land
-    # above an "above" label (ay < 0) on a lower line — the labels cross.
-    # Sorting by label screen position catches this case.  Each pass re-sorts
-    # so cascading adjustments propagate correctly.
-    for col_labels in ann_grid:
-        for _ in range(8):
-            col_labels.sort(key=lambda e: _screen_y(e["y"]) + e["ay"])
-            moved = False
-            for i in range(len(col_labels) - 1):
-                upper = col_labels[i]    # higher on screen  (smaller screen_y)
-                lower = col_labels[i+1]  # lower  on screen  (larger  screen_y)
-                u_s = _screen_y(upper["y"]) + upper["ay"]
-                l_s = _screen_y(lower["y"]) + lower["ay"]
-                gap = l_s - u_s
-                if gap < REQUIRED:
-                    push = (REQUIRED - gap) / 2.0 + 1.0
-                    upper["ay"] -= push   # further up   on screen
-                    lower["ay"] += push   # further down on screen
-                    moved = True
-            if not moved:
-                break
-
-    # Build Plotly annotation list from resolved positions
-    plotly_annotations = []
-    for qi, col_labels in enumerate(ann_grid):
-        for spec in col_labels:
-            default_ay = float(_default_ay[spec["cat"]])
-            displaced  = abs(spec["ay"] - default_ay) > 2.5
-            plotly_annotations.append(dict(
-                x=SH_QUARTERS[qi],
-                y=spec["y"],
-                text=spec["text"],
-                showarrow=displaced,
-                ax=0,
-                ay=spec["ay"],
-                arrowhead=0,
-                arrowwidth=0.9,
-                arrowcolor=spec["col"],
-                opacity=0.85,
-                font=dict(size=10, color=spec["col"], family="JetBrains Mono"),
-                xanchor="center",
-                yanchor="middle",
-                bgcolor="rgba(255,255,255,0.7)",
-                borderpad=1,
-            ))
-
-    # ── Draw the figure ───────────────────────────────────────────────────────
-    fig_line = go.Figure()
-    for cat in ["FII", "Promoter", "DII", "Public"]:
-        vals = cat_pct[cat]
-        col  = CATEGORY_COLORS[cat]
-        fig_line.add_trace(go.Scatter(
-            x=SH_QUARTERS,
-            y=vals,
-            mode="lines+markers",
-            name=cat,
-            line=dict(color=col, width=2.5),
-            marker=dict(size=6, color=col),
-            hovertemplate=f"<b>{cat}</b><br>%{{x}}: %{{y:.2f}}%<extra></extra>",
-            connectgaps=False,
-        ))
-
-    fig_line.update_layout(
-        annotations=plotly_annotations,
-        height=CHART_H,
-        margin=dict(l=0, r=20, t=32, b=0),
-        paper_bgcolor="white",
-        plot_bgcolor="white",
-        legend=dict(
-            orientation="h", y=1.10, x=0.5, xanchor="center",
-            font=dict(size=11, family="Inter"), bgcolor="rgba(0,0,0,0)",
-        ),
-        xaxis=dict(
-            tickfont=dict(size=10.5, family="JetBrains Mono"),
-            gridcolor="#f1f5f9", linecolor="#e2e8f0",
-        ),
-        yaxis=dict(
-            tickfont=dict(size=10), gridcolor="#f1f5f9",
-            ticksuffix="%", range=[Y_MIN, Y_MAX],
-        ),
-        hoverlabel=dict(bgcolor="white", font_size=12),
-    )
-    st.plotly_chart(fig_line, use_container_width=True, config={"displayModeBar": False})
-
-    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
-
-    # ── Section B: Named Shareholders ≥1% ─────────────────────────────────────
-    st.markdown(
-        '<span class="section-label">≥1% Shareholders '
-        f'<span class="section-label-sub">{sh_sel} · Q4FY24 – Q3FY26 · '
-        'green = building · red = reducing · ● = new entry · ○ = exited next quarter</span></span>',
-        unsafe_allow_html=True,
-    )
-
-    # Group entities by category
-    cat_order = ["Promoter", "FII", "DII – MF", "DII – Insurance", "DII – Pension", "DII – Other"]
-    grouped: dict[str, list] = {c: [] for c in cat_order}
-    for ent in entities:
-        c = ent["category"]
-        if c not in grouped:
-            grouped[c] = []
-        grouped[c].append(ent)
-
-    def _cell_html(val, prev_val, is_first_appearance: bool, is_last_appearance: bool) -> str:
-        """Render one table cell value with colour and entry/exit marker."""
+    def _cell_html(val, prev_val, is_first_app, is_last_app):
         if val is None:
             return '<td class="sh-cell-nil">—</td>'
-        v_str = f"{val:.2f}%"
-        # Entry/exit markers (superscript dots)
+        v_str  = f"{val:.2f}%"
         marker = ""
-        if is_first_appearance:
+        if is_first_app:
             marker = '<span class="sh-entry-dot">●</span>'
-        elif is_last_appearance:
+        elif is_last_app:
             marker = '<span class="sh-exit-dot">○</span>'
-        # Colour by direction vs previous non-None value
         if prev_val is None:
             cls = "sh-cell-flat"
         elif val > prev_val + 0.04:
@@ -2288,92 +2096,275 @@ with tab10:
             cls = "sh-cell-flat"
         return f'<td class="{cls}">{v_str}{marker}</td>'
 
-    # Build HTML table
+    def _total_row(label, vals_list, bg):
+        """Category total row — values from cat_pct (includes sub-1% holders)."""
+        cells, prev = "", None
+        for val in vals_list:
+            if val is None:
+                cells += '<td class="sh-cell-nil" style="font-weight:700;">—</td>'
+            else:
+                if prev is None:
+                    cls = "sh-cell-flat"
+                elif val > prev + 0.04:
+                    cls = "sh-cell-up"
+                elif val < prev - 0.04:
+                    cls = "sh-cell-dn"
+                else:
+                    cls = "sh-cell-flat"
+                cells += (
+                    f'<td class="{cls}" style="font-weight:700;background:{bg};">'
+                    f'{val:.2f}%</td>'
+                )
+                prev = val
+        fv, lv = sh_first(vals_list), sh_latest(vals_list)
+        if fv is not None and lv is not None:
+            d = lv - fv
+            if d > 0.04:
+                trend = f'<span class="sh-cell-up">▲ {abs(d):.2f}%</span>'
+            elif d < -0.04:
+                trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%</span>'
+            else:
+                trend = '<span class="sh-cell-flat">→ flat</span>'
+        else:
+            trend = "—"
+        return (
+            f'<tr style="background:{bg};">'
+            f'<td class="sh-td-name" style="font-weight:700;color:#0a2540;">'
+            f'{label}</td>'
+            f'<td></td>'
+            f'{cells}'
+            f'<td style="font-size:10.5px;">{trend}</td>'
+            f'</tr>'
+        )
+
+    TOTAL_BG = {
+        "Promoter": "#d1fae5",   # emerald tint
+        "FII":      "#e0f2fe",   # sky tint
+        "DII":      "#ffedd5",   # orange tint
+        "Public":   "#f1f5f9",   # slate tint
+    }
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION 1 — Q3FY26 Cross-NBFC Snapshot
+    # ══════════════════════════════════════════════════════════════════════════
+    st.markdown(
+        '<span class="section-label">Q3FY26 Snapshot — All NBFCs '
+        '<span class="section-label-sub">Current quarter shareholding · % of paid-up capital</span></span>',
+        unsafe_allow_html=True,
+    )
+
+    Q3_IDX = len(SH_QUARTERS) - 1
+    cross = [
+        {
+            "name": nbfc_name,
+            **{c: d["category_pct"][c][Q3_IDX] for c in ["Promoter", "FII", "DII", "Public"]},
+        }
+        for nbfc_name, d in SHAREHOLDING.items()
+    ]
+    cross.sort(key=lambda x: x["Promoter"], reverse=True)
+
+    # Per-column min/max for shade intensity
+    _cc = ["Promoter", "FII", "DII", "Public"]
+    _col_min = {c: min(r[c] for r in cross) for c in _cc}
+    _col_max = {c: max(r[c] for r in cross) for c in _cc}
+
+    def _cross_cell(val, cat):
+        rng = _col_max[cat] - _col_min[cat]
+        intensity = (val - _col_min[cat]) / rng if rng > 0 else 0.5
+        h = CATEGORY_COLORS[cat].lstrip("#")
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        alpha = 0.07 + intensity * 0.23
+        fw = "700" if intensity > 0.65 else "400"
+        return (
+            f'<td style="text-align:right;font-family:\'JetBrains Mono\',monospace;'
+            f'font-size:12px;font-weight:{fw};padding:7px 14px;'
+            f'background:rgba({r},{g},{b},{alpha:.2f});'
+            f'border-bottom:1px solid #f1f5f9;">{val:.2f}%</td>'
+        )
+
+    # Column header colours for cross-NBFC table
+    _hdr_bg = {
+        "Promoter": "#059669",   # emerald-600
+        "FII":      "#0284c7",   # sky-600
+        "DII":      "#ea580c",   # orange-600
+        "Public":   "#64748b",   # slate-500
+    }
+    cross_html = (
+        '<table class="sh-table"><thead><tr>'
+        '  <th class="sh-th-left" style="width:220px;">NBFC</th>'
+        + "".join(
+            f'<th style="background:{_hdr_bg[c]};text-align:right;">{c}</th>'
+            for c in _cc
+        )
+        + '</tr></thead><tbody>'
+    )
+    for row in cross:
+        dot_col = COLORS.get(row["name"], "#0284c7")
+        name_td = (
+            f'<td class="sh-td-name">'
+            f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;'
+            f'background:{dot_col};margin-right:7px;vertical-align:middle;"></span>'
+            f'{row["name"]}</td>'
+        )
+        cross_html += "<tr>" + name_td + "".join(_cross_cell(row[c], c) for c in _cc) + "</tr>"
+    cross_html += "</tbody></table>"
+    st.markdown(cross_html, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION 2 — NBFC Selector (all options visible, single-select)
+    # ══════════════════════════════════════════════════════════════════════════
+    st.markdown(
+        '<span class="section-label">Select NBFC '
+        '<span class="section-label-sub">Detailed 8-quarter view below</span></span>',
+        unsafe_allow_html=True,
+    )
+    sh_sel = st.radio(
+        "NBFC",
+        available_sh,
+        horizontal=True,
+        key="sh_nbfc_sel",
+        label_visibility="collapsed",
+    )
+
+    sh_data  = SHAREHOLDING[sh_sel]
+    cat_pct  = sh_data["category_pct"]
+    entities = sh_data["named_entities"]
+
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+
+    # ── Summary cards (Q3FY26 vs Q4FY24) ─────────────────────────────────────
+    card_cols = st.columns(4, gap="small")
+    for ci, cat in enumerate(["Promoter", "FII", "DII", "Public"]):
+        vals     = cat_pct[cat]
+        latest_v = sh_latest(vals)
+        _, delta_html = sh_delta_str(vals)
+        with card_cols[ci]:
+            st.markdown(
+                f'<div class="sh-summary-card" style="border-top-color:{CATEGORY_COLORS[cat]};">'
+                f'  <div class="sh-summary-num">{latest_v:.2f}%</div>'
+                f'  <div class="sh-summary-label">{cat}</div>'
+                f'  <div class="sh-summary-delta">{delta_html}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION 3 — ≥1% Shareholders Table (with category total rows)
+    # ══════════════════════════════════════════════════════════════════════════
+    st.markdown(
+        '<span class="section-label">≥1% Shareholders '
+        f'<span class="section-label-sub">{sh_sel} · Q4FY24 – Q3FY26 · '
+        'green = building · red = reducing · ● = new entry · ○ = exited · '
+        'shaded rows = category totals (all holders including sub-1%)</span></span>',
+        unsafe_allow_html=True,
+    )
+
+    # Collect entities into groups (handles any category name dynamically)
+    grouped: dict[str, list] = {}
+    for ent in entities:
+        grouped.setdefault(ent["category"], []).append(ent)
+
+    DII_CATS = ["DII – MF", "DII – Insurance", "DII – Pension", "DII – Other"]
+
+    def _entity_rows(cat, rows_list):
+        html = ""
+        badge_col   = ENTITY_CATEGORY_COLORS.get(cat, "#64748b")
+        rows_sorted = sorted(rows_list, key=lambda e: sh_latest(e["pct"]) or 0, reverse=True)
+        n = len(SH_QUARTERS)
+        for ent in rows_sorted:
+            pl = ent["pct"]
+            apps        = [j for j, v in enumerate(pl) if v is not None]
+            first_app_i = apps[0] if apps else -1
+            last_app_i  = apps[-1] if apps else -1
+            is_exited   = last_app_i < n - 1
+            cells, prev = "", None
+            for qi, val in enumerate(pl):
+                cells += _cell_html(
+                    val, prev,
+                    (qi == first_app_i and first_app_i > 0),
+                    (is_exited and qi == last_app_i),
+                )
+                if val is not None:
+                    prev = val
+            fv, lv = sh_first(pl), sh_latest(pl)
+            if fv is None:
+                trend = "—"
+            elif is_exited:
+                trend = f'<span class="sh-cell-dn">▼ {abs(0 - lv):.2f}% → exited</span>'
+            else:
+                d = lv - fv
+                if d > 0.04:
+                    trend = f'<span class="sh-cell-up">▲ {abs(d):.2f}%</span>'
+                elif d < -0.04:
+                    trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%</span>'
+                else:
+                    trend = '<span class="sh-cell-flat">→ flat</span>'
+            badge = f'<span class="sh-cat-badge" style="background:{badge_col};">{cat}</span>'
+            html += (
+                f'<tr>'
+                f'<td class="sh-td-name">{ent["name"]}</td>'
+                f'<td class="sh-td-cat">{badge}</td>'
+                f'{cells}'
+                f'<td class="sh-cell-flat" style="font-size:10.5px;">{trend}</td>'
+                f'</tr>'
+            )
+        return html
+
+    def _group_hdr(label):
+        return (
+            f'<tr class="sh-group-hdr">'
+            f'<td colspan="{2 + len(SH_QUARTERS) + 1}">{label}</td>'
+            f'</tr>'
+        )
+
     q_headers = "".join(f"<th>{q}</th>" for q in SH_QUARTERS)
     table_html = (
-        '<table class="sh-table">'
-        '<thead><tr>'
+        '<table class="sh-table"><thead><tr>'
         '  <th class="sh-th-left">Shareholder</th>'
         '  <th class="sh-th-badge">Category</th>'
         f' {q_headers}'
         '  <th>Trend</th>'
-        '</tr></thead>'
-        '<tbody>'
+        '</tr></thead><tbody>'
     )
 
-    for cat in cat_order:
-        rows = grouped.get(cat, [])
-        if not rows:
-            continue
-        badge_col = ENTITY_CATEGORY_COLORS.get(cat, "#64748b")
-        # Group header row
-        table_html += (
-            f'<tr class="sh-group-hdr"><td colspan="{2 + len(SH_QUARTERS) + 1}">{cat}</td></tr>'
-        )
-        # Sort within group by latest non-None value descending
-        rows_sorted = sorted(rows, key=lambda e: sh_latest(e["pct"]) or 0, reverse=True)
-        for ent in rows_sorted:
-            pct_list = ent["pct"]
-            n = len(SH_QUARTERS)
-            # Determine first and last appearance indices
-            appearances = [i for i, v in enumerate(pct_list) if v is not None]
-            first_app_i = appearances[0] if appearances else -1
-            last_app_i  = appearances[-1] if appearances else -1
-            # Is last appearance before the final quarter? → exiting
-            is_exited = last_app_i < n - 1
+    # ── Promoter ─────────────────────────────────────────────────────────────
+    if grouped.get("Promoter"):
+        table_html += _group_hdr("Promoter")
+        table_html += _entity_rows("Promoter", grouped["Promoter"])
+    table_html += _total_row("Promoter Total", cat_pct["Promoter"], TOTAL_BG["Promoter"])
 
-            cells_html = ""
-            prev_val = None
-            for qi, val in enumerate(pct_list):
-                is_first = (qi == first_app_i) and (first_app_i > 0)   # new in this window
-                is_last  = is_exited and (qi == last_app_i)
-                cells_html += _cell_html(val, prev_val, is_first, is_last)
-                if val is not None:
-                    prev_val = val
+    # ── FII ──────────────────────────────────────────────────────────────────
+    if grouped.get("FII"):
+        table_html += _group_hdr("FII / FPI")
+        table_html += _entity_rows("FII", grouped["FII"])
+    table_html += _total_row("FII Total", cat_pct["FII"], TOTAL_BG["FII"])
 
-            # Trend column:
-            # · Active holder  → latest% vs first% in the window
-            # · Exited holder  → 0 vs last known% (they went to zero)
-            f_v = sh_first(pct_list)
-            l_v = sh_latest(pct_list)
-            if f_v is None:
-                trend_html = "—"
-            elif is_exited:
-                # position dropped to zero; show the full drawdown from last known
-                d = 0 - l_v   # always negative
-                trend_html = f'<span class="sh-cell-dn">▼ {abs(d):.2f}% → exited</span>'
-            else:
-                d = l_v - f_v
-                if d > 0.04:
-                    trend_html = f'<span class="sh-cell-up">▲ {abs(d):.2f}%</span>'
-                elif d < -0.04:
-                    trend_html = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%</span>'
-                else:
-                    trend_html = '<span class="sh-cell-flat">→ flat</span>'
+    # ── DII sub-categories (all roll up to DII Total) ─────────────────────
+    for dii_cat in DII_CATS:
+        if grouped.get(dii_cat):
+            table_html += _group_hdr(dii_cat)
+            table_html += _entity_rows(dii_cat, grouped[dii_cat])
+    table_html += _total_row("DII Total", cat_pct["DII"], TOTAL_BG["DII"])
 
-            badge_html = (
-                f'<span class="sh-cat-badge" '
-                f'style="background:{badge_col};">{cat}</span>'
-            )
-            table_html += (
-                f'<tr>'
-                f'<td class="sh-td-name">{ent["name"]}</td>'
-                f'<td class="sh-td-cat">{badge_html}</td>'
-                f'{cells_html}'
-                f'<td class="sh-cell-flat" style="font-size:10.5px;">{trend_html}</td>'
-                f'</tr>'
-            )
+    # ── Public ───────────────────────────────────────────────────────────────
+    if grouped.get("Public"):
+        table_html += _group_hdr("Public")
+        table_html += _entity_rows("Public", grouped["Public"])
+    table_html += _total_row("Public Total", cat_pct["Public"], TOTAL_BG["Public"])
 
     table_html += "</tbody></table>"
     st.markdown(table_html, unsafe_allow_html=True)
 
-    # Legend note
     st.markdown(
         '<div class="metric-note" style="margin-top:10px;">'
         '<b>●</b> = new entry this window &nbsp;·&nbsp; '
         '<b>○</b> = position exited after this quarter &nbsp;·&nbsp; '
-        'Colour shows direction vs prior quarter &nbsp;·&nbsp; '
-        'Threshold: ≥1% of paid-up capital as per BSE quarterly filing'
+        'Cell colour = direction vs prior quarter &nbsp;·&nbsp; '
+        'Shaded total rows include all holders (named + sub-1%)'
         '</div>',
         unsafe_allow_html=True,
     )
