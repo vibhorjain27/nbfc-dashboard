@@ -229,7 +229,8 @@ st.markdown("""
     .sh-table td.sh-td-name {
         text-align: left; font-family: 'Inter', sans-serif;
         font-size: 12px; font-weight: 600; color: #0a2540;
-        max-width: 200px;
+        max-width: 200px; overflow: hidden;
+        text-overflow: ellipsis; white-space: nowrap;
     }
     .sh-table td.sh-td-cat  { text-align: center; padding: 4px 8px; }
     .sh-table tr:hover td   { background: #f8fafc; }
