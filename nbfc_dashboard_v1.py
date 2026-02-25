@@ -244,12 +244,7 @@ st.markdown("""
     .sh-cell-nil  { color: #cbd5e1; }
     .sh-entry-dot { color: #16a34a; font-size: 9px; vertical-align: super; margin-left: 1px; }
     .sh-exit-dot  { color: #dc2626; font-size: 9px; vertical-align: super; margin-left: 1px; }
-    .sh-group-hdr td {
-        background: #f1f5f9; font-size: 10.5px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.07em;
-        color: #475569; padding: 5px 10px; border-bottom: 1px solid #e2e8f0;
-        text-align: left !important;
-    }
+    /* sh-group-hdr intentionally removed – styles are now fully inline */
     .sh-summary-card {
         background: white; border-radius: 5px; padding: 14px 18px;
         border-top: 3px solid #0284c7; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -2316,12 +2311,19 @@ with tab10:
         return html
 
     def _group_hdr(label):
-        # No colspan — label goes in column 1, rest are empty cells.
-        # This avoids all CSS cascade / Streamlit iframe override issues.
-        empty_cells = "<td></td>" * (1 + len(SH_QUARTERS) + 1)  # Category + quarters + Trend
+        # Pure inline styles — zero dependency on any CSS class so the cascade
+        # can never override alignment.  Label text lives in column-1 cell only.
+        _lbl = (
+            "background:#f1f5f9;font-size:10.5px;font-weight:700;"
+            "text-transform:uppercase;letter-spacing:0.07em;"
+            "color:#475569;padding:5px 10px;border-bottom:1px solid #e2e8f0;"
+            "text-align:left;"
+        )
+        _empty = "background:#f1f5f9;border-bottom:1px solid #e2e8f0;padding:5px 10px;"
+        empty_cells = f'<td style="{_empty}"></td>' * (1 + len(SH_QUARTERS) + 1)
         return (
-            f'<tr class="sh-group-hdr">'
-            f'<td style="text-align:left !important;padding-left:10px;">{label}</td>'
+            f'<tr>'
+            f'<td style="{_lbl}">{label}</td>'
             f'{empty_cells}'
             f'</tr>'
         )
