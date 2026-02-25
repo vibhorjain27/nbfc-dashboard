@@ -2318,7 +2318,7 @@ with tab10:
     def _group_hdr(label):
         return (
             f'<tr class="sh-group-hdr">'
-            f'<td colspan="{2 + len(SH_QUARTERS) + 1}">{label}</td>'
+            f'<td colspan="{2 + len(SH_QUARTERS) + 1}" style="text-align:left;">{label}</td>'
             f'</tr>'
         )
 
