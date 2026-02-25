@@ -294,6 +294,184 @@ SHAREHOLDING = {
         ],
     },
 
-    # ── PLACEHOLDER — add after URLs are provided ──────────────────────────────
-    # etc.
+    # ── CHOLAMANDALAM FINANCE ───────────────────────────────────────────────────
+    # BSE code 511243 · NSE: CHOLAFIN · Murugappa Group NBFC
+    # Source: NSE corporate-share-holdings API (fetched Feb 2026)
+    "Cholamandalam Finance": {
+
+        "category_pct": {
+            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
+            "Promoter": [50.35,  50.33,  50.24,  49.93,  49.92,  49.90,  49.88,  49.72],
+            "FII":      [26.00,  26.62,  27.18,  27.43,  28.23,  27.96,  26.85,  26.55],
+            "DII":      [17.04,  16.86,  16.58,  16.10,  15.49,  16.06,  17.27,  17.55],
+            "Public":   [ 6.61,   6.19,   6.01,   6.54,   6.36,   6.08,   6.00,   6.17],
+        },
+
+        # Named shareholders ≥1% at any point across the 8 quarters.
+        # None = below 1% threshold / not separately disclosed that quarter.
+        "named_entities": [
+
+            # ── Promoter Group ──────────────────────────────────────────────────
+            {
+                "name":     "Cholamandalam Financial Holdings Ltd",
+                "category": "Promoter",
+                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
+                "pct": [44.39,  44.38,  44.37,  44.35,  44.34,  44.33,  44.32,  44.18],
+            },
+            {
+                "name":     "Ambadi Investments Limited",
+                "category": "Promoter",
+                "pct": [ 4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.00],
+            },
+
+            # ── FII ─────────────────────────────────────────────────────────────
+            {
+                "name":     "New World Fund Inc (Capital Group)",
+                "category": "FII",
+                "pct": [ 1.71,   1.90,   1.94,   2.02,   1.86,   1.72,   1.72,   1.71],
+            },
+            {
+                "name":     "Smallcap World Fund, Inc (Capital Group)",
+                "category": "FII",
+                "pct": [ 1.44,   1.38,   1.38,   1.34,   1.31,   1.29,   1.29,   1.07],
+            },
+            {
+                "name":     "Government Pension Fund Global (Norges)",
+                "category": "FII",
+                "pct": [ 1.19,   1.24,   1.07,   1.63,   1.39,   1.09,   1.12,   1.06],
+            },
+            {
+                "name":     "EuroPacific Growth Fund (Capital Group)",
+                "category": "FII",
+                "pct": [ 1.01,   1.15,   1.15,   None,   None,   None,   None,   None],
+            },
+
+            # ── DII – Mutual Funds ──────────────────────────────────────────────
+            {
+                "name":     "Axis Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ 3.98,   3.86,   3.43,   2.57,   2.39,   2.23,   2.04,   1.93],
+            },
+            {
+                "name":     "SBI Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ 1.57,   2.02,   1.82,   1.54,   1.62,   1.50,   1.39,   1.22],
+            },
+            {
+                "name":     "HDFC Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ 1.23,   1.21,   1.22,   1.33,   1.25,   1.12,   None,   None],
+            },
+            {
+                "name":     "Aditya Birla Sun Life Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ 1.15,   1.09,   1.00,   1.03,   1.02,   None,   None,   None],
+            },
+            {
+                "name":     "Canara Robeco Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ None,   1.08,   1.24,   1.13,   None,   None,   None,   None],
+            },
+            {
+                "name":     "Invesco India Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   1.01,   1.20,   1.21],
+            },
+            {
+                "name":     "Motilal Oswal Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   1.14,   1.15,   1.08],
+            },
+            {
+                "name":     "Kotak Mahindra Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.16],
+            },
+
+            # ── DII – Pension / NPS ─────────────────────────────────────────────
+            {
+                "name":     "NPS Trust (SBI Pension Fund)",
+                "category": "DII – Pension",
+                "pct": [ None,   None,   None,   None,   None,   1.31,   1.31,   2.56],
+            },
+        ],
+    },
+
+    # ── L&T FINANCE ────────────────────────────────────────────────────────────
+    # BSE code 533519 · NSE: LTF · L&T Group NBFC
+    # Source: NSE corporate-share-holdings API (fetched Feb 2026)
+    "L&T Finance": {
+
+        "category_pct": {
+            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
+            "Promoter": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03],
+            "FII":      [11.05,   7.33,   6.73,   5.30,   5.48,   6.19,   6.41,   6.66],
+            "DII":      [ 8.70,  11.64,  12.33,  12.17,  13.29,  14.11,  14.32,  15.33],
+            "Public":   [14.40,  14.65,  14.65,  16.27,  15.00,  13.54,  13.17,  11.98],
+        },
+
+        "named_entities": [
+
+            # ── Promoter Group ──────────────────────────────────────────────────
+            {
+                "name":     "Larsen and Toubro Limited",
+                "category": "Promoter",
+                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
+                "pct": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03],
+            },
+
+            # ── FII ─────────────────────────────────────────────────────────────
+            # BNP Paribas held via ODI (Offshore Derivative Instrument);
+            # exited after Q4FY24 — coincided with broader FII unwind from ~11% to ~7%.
+            {
+                "name":     "BNP Paribas Financial Markets (ODI)",
+                "category": "FII",
+                "pct": [ 2.43,   None,   None,   None,   None,   None,   None,   None],
+            },
+
+            # ── DII – Mutual Funds ──────────────────────────────────────────────
+            {
+                "name":     "Mirae Asset Large & Midcap Fund",
+                "category": "DII – MF",
+                "pct": [ None,   1.74,   2.57,   2.88,   3.46,   3.47,   2.88,   1.80],
+            },
+            {
+                "name":     "Invesco India Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ None,   1.23,   1.07,   1.17,   1.29,   1.65,   1.72,   1.75],
+            },
+            {
+                "name":     "Kotak Midcap Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   None,   1.31,   1.80],
+            },
+            {
+                "name":     "Axis Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   None,   1.10,   1.29],
+            },
+            {
+                "name":     "Motilal Oswal Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.63],
+            },
+
+            # ── DII – Insurance ─────────────────────────────────────────────────
+            {
+                "name":     "Life Insurance Corporation Of India",
+                "category": "DII – Insurance",
+                "pct": [ 1.94,   1.94,   1.94,   2.07,   2.28,   1.70,   None,   None],
+            },
+            {
+                "name":     "ICICI Prudential Life Insurance",
+                "category": "DII – Insurance",
+                "pct": [ 1.51,   1.50,   1.46,   1.44,   1.44,   1.47,   None,   1.17],
+            },
+            {
+                "name":     "Tata AIA Life Insurance",
+                "category": "DII – Insurance",
+                "pct": [ None,   None,   None,   1.46,   1.54,   1.58,   None,   None],
+            },
+        ],
+    },
 }
