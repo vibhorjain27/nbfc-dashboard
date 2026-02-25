@@ -1,0 +1,14 @@
+[server]
+# Don't restart the app on every file save during development
+runOnSave = false
+
+# Raise the max upload limit (default 200 MB) — no harm leaving it generous
+maxUploadSize = 50
+
+[browser]
+# No telemetry pings on startup
+gatherUsageStats = false
+
+[client]
+# Show a friendly "please wait" toolbar message instead of the blank spinner
+showSidebarNavigation = false
