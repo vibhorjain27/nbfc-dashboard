@@ -137,8 +137,163 @@ SHAREHOLDING = {
         ],
     },
 
+    # ── POONAWALLA FINCORP ─────────────────────────────────────────────────────
+    # BSE code 524000 · NSE: POONAWALLA
+    # Source: Screener.in quarterly shareholding pattern (fetched Feb 2026)
+    # "Others" (warrants/ESOPs ~0.52–0.66%) merged into Public.
+    "Poonawalla Fincorp": {
+
+        "category_pct": {
+            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
+            "Promoter": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95],
+            "FII":      [ 7.76,   7.85,   7.72,   8.19,   9.99,  10.76,  10.56,  10.61],
+            "DII":      [ 5.81,   6.77,   9.63,  11.82,  11.12,  12.26,  12.28,  12.22],
+            "Public":   [24.31,  23.30,  20.77,  17.63,  16.36,  14.51,  13.20,  13.21],
+        },
+
+        "named_entities": [
+
+            # ── Promoter Group ──────────────────────────────────────────────────
+            {
+                "name":     "Rising Sun Holdings Pvt Ltd",
+                "category": "Promoter",
+                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
+                "pct": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95],
+            },
+
+            # ── FII ─────────────────────────────────────────────────────────────
+            {
+                "name":     "Amansa Holdings Private Limited",
+                "category": "FII",
+                "pct": [ 2.20,   2.05,   2.07,   1.95,   1.95,   1.92,   1.75,   1.51],
+            },
+            {
+                "name":     "Bank Muscat India Fund",
+                "category": "FII",
+                "pct": [ 1.13,   1.13,   1.13,   1.13,   1.13,   1.12,   1.08,   1.08],
+            },
+            {
+                "name":     "Franklin Templeton Investment Funds – Franklin India Fund",
+                "category": "FII",
+                "pct": [ None,   None,   None,   None,   None,   1.19,   1.14,   1.14],
+            },
+
+            # ── DII – Mutual Funds ──────────────────────────────────────────────
+            {
+                "name":     "Kotak Mahindra Trustee Co Ltd A/C Kotak Multicap Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   2.43,   2.81,   3.34,   4.24,   4.17],
+            },
+            {
+                "name":     "Quant Mutual Fund – Quant Mid Cap Fund",
+                "category": "DII – MF",
+                "pct": [ 1.91,   1.91,   1.90,   1.90,   None,   None,   None,   None],
+            },
+            {
+                "name":     "Bandhan Value Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   1.05,   1.13,   1.23],
+            },
+            {
+                "name":     "Bandhan Sterling Value Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   1.06,   None,   1.02,   None,   None,   None],
+            },
+
+            # ── DII – Insurance ─────────────────────────────────────────────────
+            {
+                "name":     "Life Insurance Corporation Of India",
+                "category": "DII – Insurance",
+                "pct": [ None,   1.47,   1.80,   1.97,   2.93,   3.21,   3.08,   3.07],
+            },
+            {
+                "name":     "SBI Life Insurance Co. Ltd",
+                "category": "DII – Insurance",
+                "pct": [ None,   None,   2.66,   2.66,   2.44,   2.53,   1.80,   1.56],
+            },
+
+            # ── Public ──────────────────────────────────────────────────────────
+            # Mayank Poddar appears under two separate demat accounts in BSE filings;
+            # combined % shown here.
+            {
+                "name":     "Mayank Poddar",
+                "category": "Public",
+                "pct": [ 2.12,   2.12,   2.12,   2.12,   2.12,   2.12,   1.06,   1.06],
+            },
+        ],
+    },
+
+    # ── BAJAJ FINANCE ──────────────────────────────────────────────────────────
+    # BSE code 500034 · NSE: BAJFINANCE
+    # Source: Screener.in quarterly shareholding pattern (fetched Feb 2026)
+    # Government (NPS Trust 0.07–0.08%) merged into DII.
+    # "Others" (ESOPs ~0.03–0.16%) merged into Public.
+    "Bajaj Finance": {
+
+        "category_pct": {
+            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
+            "Promoter": [54.69,  54.70,  54.70,  54.70,  54.73,  54.73,  54.67,  54.70],
+            "FII":      [20.55,  21.08,  20.81,  20.79,  21.45,  21.71,  21.97,  21.49],
+            "DII":      [14.40,  14.32,  15.10,  15.16,  14.86,  14.60,  14.47,  14.94],
+            "Public":   [10.35,   9.91,   9.41,   9.36,   8.94,   8.95,   8.90,   8.87],
+        },
+
+        "named_entities": [
+
+            # ── Promoter Group ──────────────────────────────────────────────────
+            {
+                "name":     "Bajaj Finserv Limited",
+                "category": "Promoter",
+                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
+                "pct": [51.34,  51.34,  51.34,  51.34,  51.39,  51.39,  51.32,  51.32],
+            },
+            {
+                "name":     "Maharashtra Scooters Limited",
+                "category": "Promoter",
+                "pct": [ 3.07,   3.07,   3.07,   3.07,   3.05,   3.05,   3.05,   3.05],
+            },
+
+            # ── FII ─────────────────────────────────────────────────────────────
+            # Government of Singapore tracked as two accounts in BSE filing; combined here.
+            {
+                "name":     "Government of Singapore (GIC)",
+                "category": "FII",
+                "pct": [ 3.41,   3.31,   3.08,   3.03,   2.55,   2.42,   2.50,   2.16],
+            },
+
+            # ── DII – Mutual Funds ──────────────────────────────────────────────
+            {
+                "name":     "SBI Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ 3.06,   2.76,   2.61,   2.53,   2.37,   2.04,   1.98,   2.31],
+            },
+            {
+                "name":     "Axis Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ 1.64,   1.40,   1.32,   1.04,   1.07,   1.08,   1.05,   None],
+            },
+            {
+                "name":     "UTI Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ 1.05,   1.05,   1.06,   1.03,   None,   1.13,   1.14,   1.13],
+            },
+
+            # ── DII – Insurance ─────────────────────────────────────────────────
+            {
+                "name":     "Life Insurance Corporation Of India",
+                "category": "DII – Insurance",
+                "pct": [ 1.51,   1.93,   2.49,   2.84,   2.77,   2.62,   2.35,   2.38],
+            },
+
+            # ── DII – Pension / NPS ─────────────────────────────────────────────
+            {
+                "name":     "NPS Trust",
+                "category": "DII – Pension",
+                "pct": [ None,   None,   None,   None,   None,   None,   1.07,   1.37],
+            },
+        ],
+    },
+
     # ── PLACEHOLDER — add after URLs are provided ──────────────────────────────
-    # "Bajaj Finance": { ... },
-    # "Poonawalla Fincorp": { ... },
     # etc.
 }
