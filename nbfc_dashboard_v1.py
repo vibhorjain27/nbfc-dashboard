@@ -2316,9 +2316,13 @@ with tab10:
         return html
 
     def _group_hdr(label):
+        # No colspan — label goes in column 1, rest are empty cells.
+        # This avoids all CSS cascade / Streamlit iframe override issues.
+        empty_cells = "<td></td>" * (1 + len(SH_QUARTERS) + 1)  # Category + quarters + Trend
         return (
             f'<tr class="sh-group-hdr">'
-            f'<td colspan="{2 + len(SH_QUARTERS) + 1}" style="text-align:left;">{label}</td>'
+            f'<td style="text-align:left !important;padding-left:10px;">{label}</td>'
+            f'{empty_cells}'
             f'</tr>'
         )
 
