@@ -1422,6 +1422,56 @@ def nbfc_selector(tab_key: str, default_on=None) -> list:
                 selected.append(name)
     return selected
 
+# ─── AUTO-REFRESH ON RETURN AFTER IDLE ────────────────────────────────────────
+# Inject a 0-height JS snippet (inside a component iframe).
+# It tracks last-activity in localStorage and triggers window.location.reload()
+# when the user returns to the tab after ≥5 min of inactivity.
+# Resetting localStorage BEFORE the reload prevents an infinite-reload loop.
+components.html("""
+<script>
+(function () {
+    'use strict';
+    var THRESHOLD = 5 * 60 * 1000;        // 5 minutes in ms
+    var KEY       = 'nbfc_last_active';
+
+    // All DOM work targets the PARENT window — this script runs inside a
+    // sandboxed component <iframe> so window.parent is the real Streamlit page.
+    var win = window.parent;
+    var doc = win.document;
+
+    function touch() {
+        win.localStorage.setItem(KEY, String(Date.now()));
+    }
+
+    // Keep lastActive fresh on any user interaction
+    ['mousemove', 'click', 'keydown', 'scroll', 'touchstart'].forEach(function (e) {
+        doc.addEventListener(e, touch, { passive: true, capture: true });
+    });
+
+    function checkAndReload() {
+        var raw = win.localStorage.getItem(KEY);
+        if (!raw) { touch(); return; }
+        if (Date.now() - parseInt(raw, 10) > THRESHOLD) {
+            // Reset timestamp BEFORE reloading so the fresh page sees elapsed ≈ 0
+            win.localStorage.setItem(KEY, String(Date.now()));
+            win.location.reload(true);
+        }
+    }
+
+    // Fires when the user switches back to this browser tab
+    doc.addEventListener('visibilitychange', function () {
+        if (!doc.hidden) { checkAndReload(); }
+    });
+
+    // Fires when the browser window itself regains focus (Alt-Tab, etc.)
+    win.addEventListener('focus', checkAndReload);
+
+    // Seed storage on very first visit
+    if (!win.localStorage.getItem(KEY)) { touch(); }
+})();
+</script>
+""", height=0)
+
 # ─── SESSION STATE ─────────────────────────────────────────────────────────────
 if 'time_period' not in st.session_state:
     st.session_state.time_period = '6M'
@@ -1466,7 +1516,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
 # TAB 1 — MARKET
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.markdown('<span class="section-label">Stock Prices <span class="section-label-sub">Live NSE · refreshes every 5 min</span></span>', unsafe_allow_html=True)
+    st.markdown('<span class="section-label">Stock Prices <span class="section-label-sub">Live NSE · auto-refreshes after 5 min idle</span></span>', unsafe_allow_html=True)
 
     with st.spinner("Fetching live prices..."):
         stocks = get_current_prices()
@@ -1512,6 +1562,15 @@ with tab1:
                         </div>
                     """, unsafe_allow_html=True)
             st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+
+        _ts  = st.session_state.get('_prices_ts', 0)
+        _min = int((datetime.now().timestamp() - _ts) / 60) if _ts else None
+        _lbl = ("just now" if _min == 0 else f"{_min} min ago") if _min is not None else "—"
+        st.markdown(
+            f'<div style="text-align:right;font-size:11px;color:#94a3b8;margin-top:2px;">'
+            f'↻ fetched {_lbl}</div>',
+            unsafe_allow_html=True,
+        )
 
     st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
     st.markdown('<span class="section-label">Performance Comparison <span class="section-label-sub">Indexed to 100 · select stocks and period below</span></span>', unsafe_allow_html=True)
