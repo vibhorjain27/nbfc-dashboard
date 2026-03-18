@@ -92,42 +92,6 @@ body{
   color:var(--text-gold);
   border:1px solid var(--border-gold);
 }
-/* SELECTOR */
-#nbfc-selector{
-  padding:8px 20px;
-  background:var(--bg-base);
-  border-bottom:1px solid var(--border-dim);
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-}
-.selector-label{
-  font-size:11px;color:var(--text-muted);
-  font-family:var(--font-mono);
-  white-space:nowrap;
-}
-.nbfc-check{
-  display:flex;align-items:center;gap:5px;
-  cursor:pointer;padding:3px 8px;
-  border-radius:4px;
-  border:1px solid transparent;
-  transition:all 0.15s;
-}
-.nbfc-check:hover{background:var(--bg-raised)}
-.nbfc-check input{display:none}
-.nbfc-dot{
-  width:8px;height:8px;border-radius:50%;
-  flex-shrink:0;
-  opacity:0.4;
-  transition:opacity 0.15s;
-}
-.nbfc-check.checked .nbfc-dot{opacity:1}
-.nbfc-check.checked{
-  background:var(--bg-raised);
-  border-color:var(--border-dim);
-}
-.nbfc-check-label{
-  font-size:11px;color:var(--text-secondary);
-  user-select:none;
-}
 /* MAIN */
 #main{padding:24px 20px;max-width:1400px;margin:0 auto}
 .tab-content{display:none}
@@ -546,10 +510,6 @@ body{
   </div>
 </div>
 
-<!-- NBFC SELECTOR -->
-<div id="nbfc-selector" id="nbfc-selector-bar">
-  <span class="selector-label">FILTER NBFCs:</span>
-</div>
 
 <!-- MAIN CONTENT -->
 <div id="main">
@@ -680,21 +640,7 @@ body{
 
 <!-- TAB: DEEP DIVE -->
 <div id="tab-deepdive" class="tab-content">
-  <div class="dd-select-wrap">
-    <label style="font-size:12px;color:var(--text-muted);margin-right:10px;font-family:var(--font-mono)">SELECT NBFC:</label>
-    <select class="dd-select" id="dd-nbfc-select" onchange="renderDeepDive()">
-      <option value="Bajaj Finance">Bajaj Finance</option>
-      <option value="Shriram Finance">Shriram Finance</option>
-      <option value="Chola Finance">Cholamandalam Finance</option>
-      <option value="Muthoot Finance">Muthoot Finance</option>
-      <option value="Aditya Birla Capital">Aditya Birla Capital</option>
-      <option value="Mahindra Finance">Mahindra Finance</option>
-      <option value="L&T Finance">L&T Finance</option>
-      <option value="Piramal Finance">Piramal Finance</option>
-      <option value="Poonawalla Fincorp">Poonawalla Fincorp</option>
-    </select>
-  </div>
-  <div class="sparkline-grid" id="sparkline-grid"></div>
+  <div id="sparkline-all-nbfcs"></div>
 </div>
 
 <!-- TAB: RANKINGS -->
@@ -767,31 +713,7 @@ body{
   </div>
   <div class="section">
     <div class="section-title">Detailed View — 8-Quarter Trend</div>
-    <select class="sh-nbfc-select" id="sh-detail-nbfc" onchange="renderSHDetail()">
-      <option value="Shriram Finance">Shriram Finance</option>
-      <option value="Poonawalla Fincorp">Poonawalla Fincorp</option>
-      <option value="Bajaj Finance">Bajaj Finance</option>
-      <option value="Cholamandalam Finance">Cholamandalam Finance</option>
-      <option value="L&T Finance">L&T Finance</option>
-    </select>
-    <div class="chart-wrap" style="margin-bottom:16px">
-      <div class="chart-title">Shareholding Category Trend (Stacked Bar)</div>
-      <canvas id="chart-sh-stacked" height="300"></canvas>
-    </div>
-    <div class="entity-table-wrap">
-      <table class="entity-table">
-        <thead>
-          <tr>
-            <th>Shareholder</th>
-            <th>Category</th>
-            <th>Q4FY24</th><th>Q1FY25</th><th>Q2FY25</th><th>Q3FY25</th>
-            <th>Q4FY25</th><th>Q1FY26</th><th>Q2FY26</th><th>Q3FY26</th>
-            <th>Trend</th>
-          </tr>
-        </thead>
-        <tbody id="entity-tbody"></tbody>
-      </table>
-    </div>
+    <div id="sh-detail-all"></div>
   </div>
 </div>
 
@@ -1004,34 +926,7 @@ const ALL_NBFCS = [
   "Poonawalla Fincorp","Bajaj Finance","Shriram Finance","Chola Finance",
   "Aditya Birla Capital","Mahindra Finance","L&T Finance","Piramal Finance","Muthoot Finance"
 ];
-const DEFAULT_SELECTED = ["Bajaj Finance","Shriram Finance","L&T Finance"];
-let selectedNBFCs = new Set(DEFAULT_SELECTED);
-
-// ── NBFC SELECTOR ─────────────────────────────────────────────────────────────
-function buildSelector() {
-  const bar = document.getElementById('nbfc-selector');
-  ALL_NBFCS.forEach(name => {
-    const displayName = DISPLAY_NAMES[name] || name;
-    const color = nbfcColor(name);
-    const isChecked = selectedNBFCs.has(name);
-    const el = document.createElement('label');
-    el.className = 'nbfc-check' + (isChecked ? ' checked' : '');
-    el.innerHTML = `<input type="checkbox" ${isChecked ? 'checked' : ''} value="${name}">
-      <span class="nbfc-dot" style="background:${color}"></span>
-      <span class="nbfc-check-label">${displayName}</span>`;
-    el.querySelector('input').addEventListener('change', function() {
-      if (this.checked) {
-        selectedNBFCs.add(name);
-        el.classList.add('checked');
-      } else {
-        selectedNBFCs.delete(name);
-        el.classList.remove('checked');
-      }
-      rebuildAllCharts();
-    });
-    bar.appendChild(el);
-  });
-}
+const selectedNBFCs = new Set(ALL_NBFCS);
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
 let activeTab = 'market';
@@ -1347,61 +1242,74 @@ const METRICS_META = [
 const ddSparkCharts = {};
 
 function renderDeepDive() {
-  const sel = document.getElementById('dd-nbfc-select');
-  if (!sel) return;
-  const nbfc = sel.value;
-  const ts = NBFC_TIMESERIES[nbfc];
-  const grid = document.getElementById('sparkline-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
+  const container = document.getElementById('sparkline-all-nbfcs');
+  if (!container) return;
+  container.innerHTML = '';
   Object.values(ddSparkCharts).forEach(c => c && c.destroy());
-  const color = nbfcColor(nbfc);
 
-  METRICS_META.forEach(m => {
-    const data = ts ? ts[m.key] : [];
-    const validData = data.filter(v => v != null);
-    const latest = validData.length > 0 ? validData[validData.length - 1] : null;
-    const card = document.createElement('div');
-    card.className = 'spark-card';
-    const latestStr = latest != null ? (m.unit === '₹Cr' ? latest.toLocaleString('en-IN') : latest.toFixed(m.unit === '₹' ? (latest >= 100 ? 0 : 2) : 2)) : '—';
-    const canvasId = 'spark-' + nbfc.replace(/\s/g,'') + '-' + m.key;
-    card.innerHTML = `
-      <div class="spark-metric">${m.label}</div>
-      <div style="display:flex;align-items:baseline;gap:4px">
-        <span class="spark-value">${latestStr}</span>
-        <span class="spark-unit">${m.unit}</span>
-      </div>
-      <div class="spark-canvas-wrap"><canvas id="${canvasId}"></canvas></div>`;
-    grid.appendChild(card);
-    requestAnimationFrame(() => {
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      ddSparkCharts[canvasId] = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: QUARTERS,
-          datasets: [{
-            data: data,
-            borderColor: color,
-            backgroundColor: hexToRgba(color.length===7?color:'#888', 0.15),
-            borderWidth: 1.5,
-            pointRadius: 0,
-            tension: 0.3,
-            fill: true,
-            spanGaps: false,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: false,
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          scales: {
-            x: { display: false },
-            y: { display: false }
+  ALL_NBFCS.forEach(nbfc => {
+    const ts = NBFC_TIMESERIES[nbfc];
+    const color = nbfcColor(nbfc);
+    const displayName = DISPLAY_NAMES[nbfc] || nbfc;
+
+    const section = document.createElement('div');
+    section.className = 'section';
+    section.innerHTML = `<div class="section-title" style="display:flex;align-items:center;gap:8px">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color}"></span>
+      ${displayName}
+    </div>`;
+
+    const grid = document.createElement('div');
+    grid.className = 'sparkline-grid';
+    section.appendChild(grid);
+    container.appendChild(section);
+
+    METRICS_META.forEach(m => {
+      const data = ts ? ts[m.key] : [];
+      const validData = data.filter(v => v != null);
+      const latest = validData.length > 0 ? validData[validData.length - 1] : null;
+      const card = document.createElement('div');
+      card.className = 'spark-card';
+      const latestStr = latest != null ? (m.unit === '₹Cr' ? latest.toLocaleString('en-IN') : latest.toFixed(m.unit === '₹' ? (latest >= 100 ? 0 : 2) : 2)) : '—';
+      const canvasId = 'spark-' + nbfc.replace(/\s/g,'') + '-' + m.key;
+      card.innerHTML = `
+        <div class="spark-metric">${m.label}</div>
+        <div style="display:flex;align-items:baseline;gap:4px">
+          <span class="spark-value">${latestStr}</span>
+          <span class="spark-unit">${m.unit}</span>
+        </div>
+        <div class="spark-canvas-wrap"><canvas id="${canvasId}"></canvas></div>`;
+      grid.appendChild(card);
+      requestAnimationFrame(() => {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ddSparkCharts[canvasId] = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: QUARTERS,
+            datasets: [{
+              data: data,
+              borderColor: color,
+              backgroundColor: hexToRgba(color.length===7?color:'#888', 0.15),
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.3,
+              fill: true,
+              spanGaps: false,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: {
+              x: { display: false },
+              y: { display: false }
+            }
           }
-        }
+        });
       });
     });
   });
@@ -1764,80 +1672,108 @@ function buildShareholdingSnapshot() {
   });
 }
 
-let shStackedChart = null;
+const shStackedCharts = {};
 
 function renderSHDetail() {
-  const sel = document.getElementById('sh-detail-nbfc');
-  if (!sel) return;
-  const nbfc = sel.value;
-  const data = SHAREHOLDING[nbfc];
-  if (!data) return;
+  const container = document.getElementById('sh-detail-all');
+  if (!container) return;
+  container.innerHTML = '';
+  Object.values(shStackedCharts).forEach(c => c && c.destroy());
 
-  // Stacked bar chart
-  if (shStackedChart) { shStackedChart.destroy(); shStackedChart = null; }
-  const canvas = document.getElementById('chart-sh-stacked');
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    shStackedChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: SH_QUARTERS,
-        datasets: [
-          {label:'Promoter',data:data.category_pct.Promoter,backgroundColor:'rgba(16,185,129,0.7)',borderColor:'#10b981',borderWidth:1,borderRadius:2},
-          {label:'FII',data:data.category_pct.FII,backgroundColor:'rgba(2,132,199,0.7)',borderColor:'#0284c7',borderWidth:1,borderRadius:2},
-          {label:'DII',data:data.category_pct.DII,backgroundColor:'rgba(249,115,22,0.7)',borderColor:'#f97316',borderWidth:1,borderRadius:2},
-          {label:'Public',data:data.category_pct.Public,backgroundColor:'rgba(148,163,184,0.5)',borderColor:'#94a3b8',borderWidth:1,borderRadius:2},
-        ]
-      },
-      options: {
-        responsive:true,maintainAspectRatio:false,
-        scales: {
-          x:{stacked:true,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#4A5980',font:{size:10,family:'Space Mono'}},border:{color:'rgba(255,255,255,0.06)'}},
-          y:{stacked:true,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#4A5980',font:{size:10,family:'Space Mono'},callback:v=>v+'%'},max:100,border:{color:'rgba(255,255,255,0.06)'}},
+  Object.keys(SHAREHOLDING).forEach(nbfc => {
+    const data = SHAREHOLDING[nbfc];
+    if (!data) return;
+    const color = nbfcColor(nbfc);
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-bottom:32px';
+    const nbfcLabel = document.createElement('div');
+    nbfcLabel.style.cssText = `font-family:var(--font-mono);font-size:12px;color:${color};letter-spacing:0.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px`;
+    nbfcLabel.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color}"></span>${nbfc}`;
+    wrap.appendChild(nbfcLabel);
+
+    const canvasId = 'chart-sh-stacked-' + nbfc.replace(/\s/g,'');
+    const chartWrap = document.createElement('div');
+    chartWrap.className = 'chart-wrap';
+    chartWrap.style.marginBottom = '12px';
+    chartWrap.innerHTML = `<canvas id="${canvasId}" height="260"></canvas>`;
+    wrap.appendChild(chartWrap);
+    container.appendChild(wrap);
+
+    requestAnimationFrame(() => {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      shStackedCharts[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: SH_QUARTERS,
+          datasets: [
+            {label:'Promoter',data:data.category_pct.Promoter,backgroundColor:'rgba(16,185,129,0.7)',borderColor:'#10b981',borderWidth:1,borderRadius:2},
+            {label:'FII',data:data.category_pct.FII,backgroundColor:'rgba(2,132,199,0.7)',borderColor:'#0284c7',borderWidth:1,borderRadius:2},
+            {label:'DII',data:data.category_pct.DII,backgroundColor:'rgba(249,115,22,0.7)',borderColor:'#f97316',borderWidth:1,borderRadius:2},
+            {label:'Public',data:data.category_pct.Public,backgroundColor:'rgba(148,163,184,0.5)',borderColor:'#94a3b8',borderWidth:1,borderRadius:2},
+          ]
         },
-        plugins:{
-          legend:{labels:{color:'#8B9EC7',font:{size:11,family:'Sora'},boxWidth:12}},
-          tooltip:{
-            backgroundColor:'rgba(13,21,38,0.95)',titleColor:'#F0F4FF',bodyColor:'#8B9EC7',
-            borderColor:'rgba(212,175,55,0.2)',borderWidth:1,
-            callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`}
+        options: {
+          responsive:true,maintainAspectRatio:false,
+          scales: {
+            x:{stacked:true,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#4A5980',font:{size:10,family:'Space Mono'}},border:{color:'rgba(255,255,255,0.06)'}},
+            y:{stacked:true,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#4A5980',font:{size:10,family:'Space Mono'},callback:v=>v+'%'},max:100,border:{color:'rgba(255,255,255,0.06)'}},
+          },
+          plugins:{
+            legend:{labels:{color:'#8B9EC7',font:{size:11,family:'Sora'},boxWidth:12}},
+            tooltip:{
+              backgroundColor:'rgba(13,21,38,0.95)',titleColor:'#F0F4FF',bodyColor:'#8B9EC7',
+              borderColor:'rgba(212,175,55,0.2)',borderWidth:1,
+              callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`}
+            }
           }
         }
-      }
+      });
     });
-  }
 
-  // Named entities table
-  const tbody = document.getElementById('entity-tbody');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  data.named_entities.forEach(ent => {
-    const catColor = ENTITY_CAT_COLORS[ent.category] || '#888';
-    const catText = ENTITY_CAT_TEXT[ent.category] || '#fff';
-    const first = ent.pct.find(v => v != null);
-    const last = [...ent.pct].reverse().find(v => v != null);
-    const trend = first == null || last == null ? '' : last > first ? '▲' : last < first ? '▼' : '→';
-    const trendCls = last > first ? 'val-up' : last < first ? 'val-down' : 'val-flat';
-    const cells = ent.pct.map((v, i) => {
-      if (v == null) return '<td style="color:var(--text-muted)">—</td>';
-      const prev = i > 0 ? ent.pct.slice(0, i).reverse().find(x => x != null) : null;
-      const cls = prev == null ? '' : v > prev ? 'val-up' : v < prev ? 'val-down' : '';
-      return `<td class="${cls}">${v.toFixed(2)}%</td>`;
-    }).join('');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${ent.name}</td>
-      <td><span class="cat-badge" style="background:${catColor};color:${catText}">${ent.category}</span></td>
-      ${cells}
-      <td class="${trendCls}" style="font-weight:700">${trend}</td>`;
-    tbody.appendChild(tr);
+    // Named entities table
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'entity-table-wrap';
+    const table = document.createElement('table');
+    table.className = 'entity-table';
+    table.innerHTML = `<thead><tr>
+      <th>Shareholder</th><th>Category</th>
+      <th>Q4FY24</th><th>Q1FY25</th><th>Q2FY25</th><th>Q3FY25</th>
+      <th>Q4FY25</th><th>Q1FY26</th><th>Q2FY26</th><th>Q3FY26</th>
+      <th>Trend</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    data.named_entities.forEach(ent => {
+      const catColor = ENTITY_CAT_COLORS[ent.category] || '#888';
+      const catText = ENTITY_CAT_TEXT[ent.category] || '#fff';
+      const first = ent.pct.find(v => v != null);
+      const last = [...ent.pct].reverse().find(v => v != null);
+      const trend = first == null || last == null ? '' : last > first ? '▲' : last < first ? '▼' : '→';
+      const trendCls = last > first ? 'val-up' : last < first ? 'val-down' : 'val-flat';
+      const cells = ent.pct.map((v, i) => {
+        if (v == null) return '<td style="color:var(--text-muted)">—</td>';
+        const prev = i > 0 ? ent.pct.slice(0, i).reverse().find(x => x != null) : null;
+        const cls = prev == null ? '' : v > prev ? 'val-up' : v < prev ? 'val-down' : '';
+        return `<td class="${cls}">${v.toFixed(2)}%</td>`;
+      }).join('');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${ent.name}</td>
+        <td><span class="cat-badge" style="background:${catColor};color:${catText}">${ent.category}</span></td>
+        ${cells}
+        <td class="${trendCls}" style="font-weight:700">${trend}</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    tableWrap.appendChild(table);
+    wrap.appendChild(tableWrap);
   });
 }
 </script>
 <script>
 // ── INIT ON DOM READY ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
-  buildSelector();
   // Init market tab (default active)
   tabInitialized['market'] = true;
   initTabCharts('market');
@@ -1996,36 +1932,33 @@ function initTabCharts(tabId) {
 function _origRenderDeepDive() {}
 const _origDD = renderDeepDive;
 
-// Override: after rendering sparklines, add QoQ change badges
+// Override: after rendering sparklines, add QoQ change badges for all NBFCs
 const _ddRender = function() {
   _origDD();
   setTimeout(() => {
-    const sel = document.getElementById('dd-nbfc-select');
-    if (!sel) return;
-    const nbfc = sel.value;
-    const ts = NBFC_TIMESERIES[nbfc];
-    if (!ts) return;
-    METRICS_META.forEach(m => {
-      const data = ts[m.key];
-      const validData = data.filter(v => v != null);
-      const latest = validData[validData.length - 1];
-      const prev = validData[validData.length - 2];
-      if (latest == null || prev == null) return;
-      const change = latest - prev;
-      const pct = prev !== 0 ? (change / Math.abs(prev) * 100) : 0;
-      const canvasId = 'spark-' + nbfc.replace(/\s/g,'') + '-' + m.key;
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-      const wrap = canvas.closest('.spark-canvas-wrap');
-      if (!wrap) return;
-      const indicator = document.createElement('div');
-      indicator.style.cssText = `font-size:9px;font-family:var(--font-mono);color:${change>=0?'var(--success)':'var(--danger)'};margin-top:2px;text-align:right`;
-      // For GNPA/NNPA/CoB/DE: invert color logic (lower = better)
-      const invertMetrics = ['gnpa_pct','nnpa_pct','cost_of_borrowing_pct','d_e_ratio'];
-      const isBad = invertMetrics.includes(m.key) ? change > 0 : change < 0;
-      indicator.style.color = isBad ? 'var(--danger)' : 'var(--success)';
-      indicator.textContent = `${change >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% QoQ`;
-      wrap.appendChild(indicator);
+    const invertMetrics = ['gnpa_pct','nnpa_pct','cost_of_borrowing_pct','d_e_ratio'];
+    ALL_NBFCS.forEach(nbfc => {
+      const ts = NBFC_TIMESERIES[nbfc];
+      if (!ts) return;
+      METRICS_META.forEach(m => {
+        const data = ts[m.key];
+        const validData = data.filter(v => v != null);
+        const latest = validData[validData.length - 1];
+        const prev = validData[validData.length - 2];
+        if (latest == null || prev == null) return;
+        const change = latest - prev;
+        const pct = prev !== 0 ? (change / Math.abs(prev) * 100) : 0;
+        const canvasId = 'spark-' + nbfc.replace(/\s/g,'') + '-' + m.key;
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const wrap = canvas.closest('.spark-canvas-wrap');
+        if (!wrap) return;
+        const indicator = document.createElement('div');
+        const isBad = invertMetrics.includes(m.key) ? change > 0 : change < 0;
+        indicator.style.cssText = `font-size:9px;font-family:var(--font-mono);color:${isBad?'var(--danger)':'var(--success)'};margin-top:2px;text-align:right`;
+        indicator.textContent = `${change >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% QoQ`;
+        wrap.appendChild(indicator);
+      });
     });
   }, 300);
 };
@@ -2151,8 +2084,8 @@ const SECTOR_STATS = {
 
 // Build sector KPI banner at top of page (after selector)
 function buildSectorBanner() {
-  const selector = document.getElementById('nbfc-selector');
-  if (!selector || document.getElementById('sector-banner')) return;
+  const nav = document.getElementById('top-nav');
+  if (!nav || document.getElementById('sector-banner')) return;
   const banner = document.createElement('div');
   banner.id = 'sector-banner';
   banner.style.cssText = `
@@ -2181,7 +2114,7 @@ function buildSectorBanner() {
       <div style="font-size:10px;color:var(--text-muted)">${s.sub}</div>`;
     banner.appendChild(item);
   });
-  selector.insertAdjacentElement('afterend', banner);
+  nav.insertAdjacentElement('afterend', banner);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -2508,7 +2441,6 @@ window.buildAIBulletin = function() {
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
-  buildSelector();
   tabInitialized['market'] = true;
   initTabCharts('market');
 });
@@ -2880,16 +2812,4 @@ function addReferencePanel(nbfc) {
   tab.appendChild(panel);
 }
 
-// Patch renderDeepDive to also add reference panel
-const _prevDD = window.renderDeepDive;
-window.renderDeepDive = function() {
-  _prevDD();
-  const sel = document.getElementById('dd-nbfc-select');
-  if (sel) setTimeout(() => addReferencePanel(sel.value), 100);
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-  // Build DD reference panel for default selection (Bajaj Finance)
-  setTimeout(() => addReferencePanel('Bajaj Finance'), 800);
-});
 
