@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NBFC Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *{font-family:'Inter',sans-serif;box-sizing:border-box;}
+  body{background:#eef0f4;margin:0;}
+  .navbar{background:linear-gradient(135deg,#0a2540 0%,#0f3460 100%);color:white;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+  .tabbar{background:white;border-bottom:1px solid #e2e8f0;display:flex;overflow-x:auto;padding:0 1.5rem;gap:0;position:sticky;top:56px;z-index:40;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .tabbar::-webkit-scrollbar{height:3px;}.tabbar::-webkit-scrollbar-thumb{background:#cbd5e1;}
+  .tab-btn{padding:.75rem 1.1rem;font-size:.8rem;font-weight:500;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;white-space:nowrap;color:#64748b;transition:all .2s;}
+  .tab-btn.active{border-bottom-color:#0284c7;color:#0284c7;font-weight:600;}
+  .tab-btn:hover:not(.active){color:#334155;}
+  .card{background:white;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.07);padding:1.25rem;}
+  .ticker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.75rem;}
+  .ticker-card{background:white;border-radius:10px;padding:1rem;box-shadow:0 1px 6px rgba(0,0,0,.08);border-top:3px solid var(--c,#0284c7);}
+  .ticker-card .sym{font-size:.7rem;font-weight:600;color:#94a3b8;text-transform:uppercase;}
+  .ticker-card .name{font-size:.78rem;font-weight:600;color:#1e293b;margin:.15rem 0;}
+  .ticker-card .price{font-size:1.15rem;font-weight:700;color:#1e293b;}
+  .ticker-card .chg{font-size:.75rem;font-weight:600;padding:.1rem .4rem;border-radius:4px;}
+  .pos{background:#dcfce7;color:#16a34a;}.neg{background:#fee2e2;color:#dc2626;}
+  .meta-lbl{font-size:.65rem;color:#94a3b8;margin-top:.35rem;}
+  .meta-val{font-size:.75rem;font-weight:600;color:#475569;}
+  .period-btn{padding:.3rem .8rem;font-size:.75rem;font-weight:500;border:1px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;transition:all .15s;}
+  .period-btn.active{background:#0284c7;color:white;border-color:#0284c7;}
+  .period-btn:hover:not(.active){background:#f1f5f9;}
+  .check-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .7rem;border-radius:20px;cursor:pointer;font-size:.75rem;font-weight:500;border:1.5px solid #e2e8f0;background:white;transition:all .15s;user-select:none;}
+  .check-chip.active{color:white;border-color:transparent;}
+  .heatmap-table{width:100%;border-collapse:collapse;font-size:.72rem;}
+  .heatmap-table th{padding:.4rem .6rem;font-weight:600;color:#475569;text-align:center;background:#f8fafc;position:sticky;top:0;}
+  .heatmap-table th.row-h{text-align:left;position:sticky;left:0;z-index:2;}
+  .heatmap-table td{padding:.35rem .55rem;text-align:center;font-weight:500;border:1px solid #e2e8f0;}
+  .heatmap-table td.row-h{text-align:left;font-weight:600;color:#334155;background:white;position:sticky;left:0;white-space:nowrap;}
+  .hl-card{background:white;border-radius:10px;padding:1rem 1.2rem;box-shadow:0 1px 6px rgba(0,0,0,.07);border-left:4px solid var(--c,#0284c7);}
+  .ai-card{background:white;border-radius:10px;padding:1rem 1.2rem;box-shadow:0 1px 6px rgba(0,0,0,.07);}
+  .badge{display:inline-block;padding:.1rem .45rem;border-radius:4px;font-size:.65rem;font-weight:600;}
+  .sh-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;}
+  .sh-cat-card{background:white;border-radius:10px;padding:1rem;box-shadow:0 1px 6px rgba(0,0,0,.07);border-top:3px solid var(--c,#0284c7);}
+  .sh-table{width:100%;border-collapse:collapse;font-size:.72rem;}
+  .sh-table th{padding:.4rem .5rem;background:#f8fafc;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0;}
+  .sh-table td{padding:.3rem .5rem;border-bottom:1px solid #f1f5f9;}
+  .spinner{display:flex;align-items:center;justify-content:center;height:200px;color:#94a3b8;}
+  .spinner svg{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .radio-btn{padding:.35rem .9rem;font-size:.75rem;font-weight:500;border:1.5px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;transition:all .15s;}
+  .radio-btn.active{background:#0284c7;color:white;border-color:#0284c7;}
+  select.sel{padding:.35rem .7rem;font-size:.8rem;border:1.5px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;outline:none;}
+  .chart-card{background:white;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.07);padding:1.25rem;}
+  .section-title{font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:.75rem;}
+  .tag{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.65rem;font-weight:500;background:#f1f5f9;color:#475569;margin:.1rem;}
+</style>
+</head>
+<body x-data="app()" x-init="init()">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center font-bold text-white text-sm">N</div>
+    <span class="font-bold text-lg tracking-tight">NBFC Dashboard</span>
+    <span class="text-slate-400 text-xs ml-2">India's Top 9 NBFCs · Q3FY26</span>
+  </div>
+  <div class="text-slate-300 text-xs" x-text="lastUpdated"></div>
+</nav>
+
+<!-- TABBAR -->
+<div class="tabbar">
+  <template x-for="t in tabs" :key="t.id">
+    <button class="tab-btn" :class="{active: activeTab===t.id}" @click="switchTab(t.id)" x-text="t.label"></button>
+  </template>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="max-w-screen-2xl mx-auto px-4 py-5">
+
+  <!-- TAB 1: MARKET -->
+  <div x-show="activeTab==='market'" x-cloak>
+    <!-- Ticker Cards -->
+    <div id="ticker-grid" class="ticker-grid mb-5">
+      <template x-for="n in SD.nbfcs_list" :key="n">
+        <div class="ticker-card" :style="`--c:${SD.colors[n]}`">
+          <div class="sym" x-text="SD.tickers[n].replace('.NS','')"></div>
+          <div class="name" x-text="n"></div>
+          <template x-if="prices[n]">
+            <div>
+              <div class="price">₹<span x-text="prices[n].price.toLocaleString('en-IN',{minimumFractionDigits:2})"></span></div>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="chg" :class="prices[n].change_pct>=0?'pos':'neg'"
+                  x-text="(prices[n].change_pct>=0?'+':'')+prices[n].change_pct.toFixed(2)+'%'"></span>
+              </div>
+              <div class="meta-lbl">Volume</div>
+              <div class="meta-val" x-text="(prices[n].volume/1e5).toFixed(2)+' L'"></div>
+              <div class="meta-lbl">Mkt Cap</div>
+              <div class="meta-val" x-text="prices[n].mktcap_cr? '₹'+prices[n].mktcap_cr.toFixed(0)+' Cr' : '—'"></div>
+            </div>
+          </template>
+          <template x-if="!prices[n]">
+            <div class="text-slate-400 text-xs mt-2">Loading…</div>
+          </template>
+        </div>
+      </template>
+    </div>
+
+    <!-- NBFC Selector -->
+    <div class="card mb-4">
+      <div class="text-xs font-semibold text-slate-500 mb-2">SELECT NBFCs</div>
+      <div class="flex flex-wrap gap-2">
+        <template x-for="n in SD.nbfcs_list" :key="n">
+          <label class="check-chip" :class="{active: selectedNBFCs.includes(n)}"
+            :style="selectedNBFCs.includes(n)?`background:${SD.colors[n]};border-color:${SD.colors[n]}`:''">
+            <input type="checkbox" class="hidden" :checked="selectedNBFCs.includes(n)"
+              @change="toggleNBFC(n,'perf')"/>
+            <span x-text="n"></span>
+          </label>
+        </template>
+      </div>
+    </div>
+
+    <!-- Period Selector -->
+    <div class="card mb-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-wrap gap-1">
+          <template x-for="p in periods" :key="p">
+            <button class="period-btn" :class="{active: period===p && !useCustom}" @click="period=p;useCustom=false;loadPerf()" x-text="p"></button>
+          </template>
+        </div>
+        <span class="text-slate-300 text-sm">|</span>
+        <div class="flex items-center gap-2">
+          <input type="date" class="sel" x-model="customStart"/>
+          <span class="text-slate-500 text-sm">to</span>
+          <input type="date" class="sel" x-model="customEnd"/>
+          <button class="period-btn active" @click="useCustom=true;loadPerf()">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="chart-card mb-4">
+      <div class="section-title">Price Performance (Indexed to 100)</div>
+      <div id="perf-chart" style="height:380px;" class="w-full">
+        <div class="spinner"><svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg></div>
+      </div>
+    </div>
+
+    <!-- Market Cap Chart -->
+    <div class="chart-card">
+      <div class="section-title">1-Year Market Cap Trend (₹ Lakh Crore)</div>
+      <div id="mktcap-chart" style="height:320px;" class="w-full">
+        <div class="spinner"><svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: FINANCIALS -->
+  <div x-show="activeTab==='financials'" x-cloak>
+    <div class="card mb-4">
+      <div class="text-xs font-semibold text-slate-500 mb-2">SELECT NBFCs (Poonawalla always shown)</div>
+      <div class="flex flex-wrap gap-2">
+        <template x-for="n in SD.nbfcs_list" :key="n">
+          <label class="check-chip" :class="{active: finNBFCs.includes(n)}"
+            :style="finNBFCs.includes(n)?`background:${SD.colors[n]};border-color:${SD.colors[n]}`:''">
+            <input type="checkbox" class="hidden" :checked="finNBFCs.includes(n)"
+              :disabled="n==='Poonawalla Fincorp'"
+              @change="toggleNBFC(n,'fin')"/>
+            <span x-text="n"></span>
+          </label>
+        </template>
+      </div>
+    </div>
+    <!-- AUM -->
+    <div class="section-title">Assets Under Management (₹ Cr)</div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="chart-card"><div id="aum-bar" style="height:280px;"></div></div>
+      <div class="chart-card"><div id="aum-qoq" style="height:280px;"></div></div>
+      <div class="chart-card"><div id="aum-yoy" style="height:280px;"></div></div>
+    </div>
+    <!-- PAT -->
+    <div class="section-title">Profit After Tax (₹ Cr)</div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="chart-card"><div id="pat-bar" style="height:280px;"></div></div>
+      <div class="chart-card"><div id="pat-qoq" style="height:280px;"></div></div>
+      <div class="chart-card"><div id="pat-yoy" style="height:280px;"></div></div>
+    </div>
+    <!-- NIM -->
+    <div class="section-title">Net Interest Margin (%)</div>
+    <div class="chart-card mb-4"><div id="nim-trend" style="height:280px;"></div></div>
+  </div>
+
+  <!-- TAB 3: ASSET QUALITY -->
+  <div x-show="activeTab==='quality'" x-cloak>
+    <div class="card mb-4">
+      <div class="text-xs font-semibold text-slate-500 mb-2">SELECT NBFCs</div>
+      <div class="flex flex-wrap gap-2">
+        <template x-for="n in SD.nbfcs_list" :key="n">
+          <label class="check-chip" :class="{active: aqNBFCs.includes(n)}"
+            :style="aqNBFCs.includes(n)?`background:${SD.colors[n]};border-color:${SD.colors[n]}`:''">
+            <input type="checkbox" class="hidden" :checked="aqNBFCs.includes(n)" @change="toggleNBFC(n,'aq')"/>
+            <span x-text="n"></span>
+          </label>
+        </template>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="chart-card"><div class="section-title">GNPA %</div><div id="gnpa-chart" style="height:280px;"></div></div>
+      <div class="chart-card"><div class="section-title">NNPA %</div><div id="nnpa-chart" style="height:280px;"></div></div>
+      <div class="chart-card"><div class="section-title">PCR %</div><div id="pcr-chart" style="height:280px;"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB 4: CAPITAL & LEVERAGE -->
+  <div x-show="activeTab==='capital'" x-cloak>
+    <div class="card mb-4">
+      <div class="text-xs font-semibold text-slate-500 mb-2">SELECT NBFCs</div>
+      <div class="flex flex-wrap gap-2">
+        <template x-for="n in SD.nbfcs_list" :key="n">
+          <label class="check-chip" :class="{active: capNBFCs.includes(n)}"
+            :style="capNBFCs.includes(n)?`background:${SD.colors[n]};border-color:${SD.colors[n]}`:''">
+            <input type="checkbox" class="hidden" :checked="capNBFCs.includes(n)" @change="toggleNBFC(n,'cap')"/>
+            <span x-text="n"></span>
+          </label>
+        </template>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="chart-card"><div class="section-title">Cost of Borrowing %</div><div id="cob-chart" style="height:280px;"></div></div>
+      <div class="chart-card"><div class="section-title">Debt/Equity Ratio</div><div id="de-chart" style="height:280px;"></div></div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="chart-card"><div class="section-title">CAR %</div><div id="car-chart" style="height:280px;"></div></div>
+      <div class="chart-card"><div class="section-title">Tier 1 Capital %</div><div id="t1-chart" style="height:280px;"></div></div>
+      <div class="chart-card"><div class="section-title">Tier 2 Capital %</div><div id="t2-chart" style="height:280px;"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB 5: PROFITABILITY -->
+  <div x-show="activeTab==='profit'" x-cloak>
+    <div class="card mb-4">
+      <div class="text-xs font-semibold text-slate-500 mb-2">SELECT NBFCs</div>
+      <div class="flex flex-wrap gap-2">
+        <template x-for="n in SD.nbfcs_list" :key="n">
+          <label class="check-chip" :class="{active: profNBFCs.includes(n)}"
+            :style="profNBFCs.includes(n)?`background:${SD.colors[n]};border-color:${SD.colors[n]}`:''">
+            <input type="checkbox" class="hidden" :checked="profNBFCs.includes(n)" @change="toggleNBFC(n,'prof')"/>
+            <span x-text="n"></span>
+          </label>
+        </template>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="chart-card"><div class="section-title">Return on Assets (ROA) %</div><div id="roa-chart" style="height:320px;"></div></div>
+      <div class="chart-card"><div class="section-title">Return on Equity (ROE) %</div><div id="roe-chart" style="height:320px;"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB 6: VALUATION -->
+  <div x-show="activeTab==='valuation'" x-cloak>
+    <div class="card mb-4 flex items-center gap-4">
+      <span class="text-xs font-semibold text-slate-500">NBFC:</span>
+      <select class="sel" x-model="valNBFC" @change="renderPB()">
+        <template x-for="n in SD.nbfcs_list" :key="n">
+          <option :value="n" x-text="n"></option>
+        </template>
+      </select>
+    </div>
+    <div class="chart-card">
+      <div class="section-title">Price/Book Ratio (2-Year Daily)</div>
+      <div id="pb-chart" style="height:400px;">
+        <div class="spinner"><svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 7: DEEP DIVE -->
+  <div x-show="activeTab==='deepdive'" x-cloak>
+    <div class="card mb-4 flex items-center gap-4">
+      <span class="text-xs font-semibold text-slate-500">NBFC:</span>
+      <select class="sel" x-model="ddNBFC" @change="renderDD()">
+        <template x-for="n in SD.nbfcs_list" :key="n">
+          <option :value="n" x-text="n"></option>
+        </template>
+      </select>
+    </div>
+    <div class="chart-card overflow-x-auto">
+      <div class="section-title">14-Metric Quarterly Heatmap</div>
+      <div id="dd-heatmap"></div>
+    </div>
+  </div>
+
+  <!-- TAB 8: RANKINGS -->
+  <div x-show="activeTab==='rankings'" x-cloak>
+    <!-- Highlight Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5" id="hl-cards"></div>
+    <!-- Rankings Heatmap -->
+    <div class="chart-card overflow-x-auto">
+      <div class="section-title">Q3FY26 Snapshot — All Metrics</div>
+      <div id="rank-heatmap"></div>
+    </div>
+  </div>
+
+  <!-- TAB 9: AI BULLETIN -->
+  <div x-show="activeTab==='ai'" x-cloak>
+    <!-- Filters -->
+    <div class="card mb-4 flex flex-wrap items-center gap-4">
+      <div>
+        <span class="text-xs font-semibold text-slate-500 mr-2">NBFC:</span>
+        <select class="sel" x-model="aiNBFC" @change="renderAI()">
+          <option value="all">All NBFCs</option>
+          <template x-for="n in SD.nbfcs_list" :key="n">
+            <option :value="n" x-text="n"></option>
+          </template>
+        </select>
+      </div>
+      <div>
+        <span class="text-xs font-semibold text-slate-500 mr-2">Function:</span>
+        <select class="sel" x-model="aiFunc" @change="renderAI()">
+          <option value="all">All Functions</option>
+          <template x-for="f in SD.ai_functions" :key="f">
+            <option :value="f" x-text="f"></option>
+          </template>
+        </select>
+      </div>
+      <div>
+        <span class="text-xs font-semibold text-slate-500 mr-2">Sort:</span>
+        <select class="sel" x-model="aiSort" @change="renderAI()">
+          <option value="nbfc">By NBFC</option>
+          <option value="date">By Date</option>
+          <option value="impact">By Impact</option>
+        </select>
+      </div>
+      <span class="text-xs text-slate-500 ml-auto" x-text="aiCount+' initiatives'"></span>
+    </div>
+    <div id="ai-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+  </div>
+
+  <!-- TAB 10: SHAREHOLDING -->
+  <div x-show="activeTab==='shareholding'" x-cloak>
+    <!-- Cross-NBFC Heatmap -->
+    <div class="chart-card mb-5">
+      <div class="section-title">Cross-NBFC Category Heatmap (%, Q3FY26)</div>
+      <div id="sh-heatmap"></div>
+    </div>
+    <!-- NBFC Selector -->
+    <div class="card mb-4 flex flex-wrap items-center gap-2">
+      <span class="text-xs font-semibold text-slate-500 mr-2">NBFC:</span>
+      <template x-for="n in Object.keys(SD.sh)" :key="n">
+        <button class="radio-btn" :class="{active: shNBFC===n}" @click="shNBFC=n;renderSH()" x-text="n"></button>
+      </template>
+    </div>
+    <!-- Summary Cards -->
+    <div class="sh-grid mb-5" id="sh-summary"></div>
+    <!-- Per-entity Timeline Table -->
+    <div class="chart-card overflow-x-auto">
+      <div class="section-title">Shareholder Timeline</div>
+      <div id="sh-table"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const SD = {"timeseries":{"Poonawalla Fincorp":{"aum_cr":[25003,26972,28396,30984,35631,41273,47701,55017],"gnpa_pct":[1.16,0.67,2.1,1.85,1.84,1.84,1.59,1.51],"nnpa_pct":[0.59,0.32,0.33,0.81,0.85,0.85,0.81,0.8],"pcr_pct":[49.39,52.53,84.47,56.79,54.47,53.93,49.65,47.75],"pat_cr":[332,292,-471,19,62,63,74,150],"nim_pct":[10.9,10.4,9.3,9.0,8.6,8.32,8.4,8.62],"roa_pct":[5.73,4.62,0.0,0.26,0.76,0.68,0.69,1.2],"roe_pct":[null,null,null,null,null,null,null,null],"cost_of_borrowing_pct":[8.17,8.16,8.1,8.06,8.07,8.04,7.69,7.65],"d_e_ratio":[1.86,2.05,2.26,2.65,3.19,3.72,3.64,4.25],"car_pct":[33.8,31.57,29.22,25.89,22.94,20.55,20.85,18.17],"t1_pct":[32.28,30.09,null,null,null,null,null,null],"t2_pct":[1.52,1.48,null,null,null,null,null,null],"bvps_inr":[105.03,108.21,103.74,103.15,105.12,106.12,121.66,123.75]},"Bajaj Finance":{"aum_cr":[330615,354192,373924,398043,416661,441450,462261,485883],"gnpa_pct":[0.85,0.86,1.06,1.12,0.96,1.03,1.24,1.21],"nnpa_pct":[0.37,0.38,0.46,0.48,0.44,0.5,0.6,0.47],"pcr_pct":[57,56,57,57,54,52,52,61],"pat_cr":[3825,3912,4014,4308,4546,4765,4948,5317],"nim_pct":[12.2,12.17,12.02,12.1,11.84,11.76,11.68,11.71],"roa_pct":[4.8,4.6,4.5,4.5,4.6,4.5,4.5,4.6],"roe_pct":[20.5,19.9,19.1,19.1,19.1,19.0,19.1,19.6],"cost_of_borrowing_pct":[7.86,7.94,7.97,7.96,7.99,7.79,7.52,7.45],"d_e_ratio":[4.9,4.9,4.9,4.9,4.9,4.7,4.7,4.75],"car_pct":[22.52,21.65,21.69,21.57,21.93,21.96,21.23,21.45],"t1_pct":[21.51,20.73,20.9,20.79,21.09,21.19,20.6,20.6],"t2_pct":[1.01,0.92,0.79,0.78,0.84,0.77,0.63,0.85],"bvps_inr":[150,152,155,158,160,162,165,170]},"Shriram Finance":{"aum_cr":[224862,236000,243043,254470,263190,272249,281309,291709],"gnpa_pct":[5.45,5.4,5.32,5.38,4.55,4.53,4.57,4.54],"nnpa_pct":[2.8,2.7,2.64,2.68,2.64,2.57,2.49,2.38],"pcr_pct":[48,50,51.7,51.64,43.28,44.31,46.7,48.77],"pat_cr":[1939,1981,2071,2080,2348,2156,2307,2522],"nim_pct":[8.6,8.7,8.74,8.48,8.55,8.11,8.19,8.58],"roa_pct":[3.3,3.0,3.06,2.88,2.98,2.76,2.89,3.09],"roe_pct":[15.0,15.5,16.0,15.41,15.75,15.07,15.4,16.33],"cost_of_borrowing_pct":[9.08,9.1,9.06,9.0,8.96,8.87,8.83,8.69],"d_e_ratio":[4.3,4.1,3.99,4.06,4.16,4.15,3.88,4.05],"car_pct":[20.3,20.29,20.16,21.0,20.66,20.79,20.68,20.27],"t1_pct":[19.55,19.47,19.36,20.34,20.03,20.16,19.98,19.66],"t2_pct":[0.75,0.82,0.8,0.66,0.63,0.63,0.7,0.61],"bvps_inr":[260,272,277,292,299,311,321,330]},"Chola Finance":{"aum_cr":[153718,155442,164642,174567,199876,192148,199159,227770],"gnpa_pct":[2.48,null,null,2.91,2.81,3.16,3.35,3.36],"nnpa_pct":[1.33,null,null,1.65,1.54,1.78,1.9,1.91],"pcr_pct":[44,45.5,44.5,44.1,45.3,43.7,43.2,43.0],"pat_cr":[1336,942,963,1087,1587,1136,1155,1288],"nim_pct":[7.5,7.6,7.5,7.7,7.7,7.8,7.9,8.0],"roa_pct":[2.8,3.2,3.0,3.2,2.39,3.1,3.0,3.2],"roe_pct":[20.6,18.9,18.2,19.7,19.8,18.9,18.1,19.1],"cost_of_borrowing_pct":[6.9,7.0,7.1,7.1,7.1,7.0,6.8,6.7],"d_e_ratio":[7.1,7.4,7.4,7.4,7.7,7.6,7.4,7.5],"car_pct":[18.56,19.0,19.5,19.7,19.75,19.96,20.0,19.16],"t1_pct":[15.09,14.8,14.5,14.4,14.41,14.31,14.59,14.21],"t2_pct":[3.47,4.2,5.0,5.3,5.34,5.65,5.41,4.95],"bvps_inr":[232,243,252,267,280,292,306,327]},"Aditya Birla Capital":{"aum_cr":[105639,107306,114710,119437,126351,131227,139585,148182],"gnpa_pct":[3.12,2.54,2.5,2.27,2.24,2.27,1.68,1.51],"nnpa_pct":[null,1.28,1.38,1.25,1.23,1.34,0.94,0.84],"pcr_pct":[46.2,49.5,46.0,45.6,45.0,41.2,44.2,44.3],"pat_cr":[585,621,629,600,652,689,714,772],"nim_pct":[6.86,6.56,6.28,6.0,6.07,5.97,6.06,6.12],"roa_pct":[2.4,2.41,2.34,2.1,2.25,2.25,2.2,2.25],"roe_pct":[null,null,null,null,14.2,14.4,14.2,15.2],"cost_of_borrowing_pct":[6.9,6.95,6.85,6.91,6.83,6.74,6.62,6.56],"d_e_ratio":[6.05,6.03,5.85,5.85,null,4.4,4.55,4.59],"car_pct":[16.24,16.55,16.48,16.77,null,18.11,17.98,17.34],"t1_pct":[14.13,14.48,14.47,14.43,null,15.62,15.39,14.56],"t2_pct":[2.11,2.07,2.01,2.34,null,2.49,2.59,2.78],"bvps_inr":[null,null,null,null,96,99,103,106]},"L&T Finance":{"aum_cr":[85565,88717,93015,95120,97762,102314,107096,114285],"gnpa_pct":[3.2,3.2,3.2,3.23,3.29,3.31,3.29,3.19],"nnpa_pct":[0.79,0.96,0.97,0.97,0.99,1.0,1.0,0.92],"pcr_pct":[75,71,71,71,71,70,72,72],"pat_cr":[686,696,626,636,701,735,760,760],"nim_pct":[9.31,8.94,8.5,8.15,8.24,8.42,8.58,8.58],"roa_pct":[2.68,2.6,2.27,2.22,2.37,2.41,2.41,2.37],"roe_pct":[10.5,10.86,11.65,10.2,10.5,11.33,11.33,11.38],"cost_of_borrowing_pct":[7.68,7.84,7.83,7.8,7.68,7.4,7.32,7.25],"d_e_ratio":[3.46,3.5,3.5,3.46,3.66,3.71,3.78,3.78],"car_pct":[22.84,22.1,22.16,22.0,22.27,20.68,20.0,19.1],"t1_pct":[21.02,20.37,20.53,null,20.76,19.54,null,18.43],"t2_pct":[1.82,1.73,1.63,null,1.51,1.14,null,0.67],"bvps_inr":[97.4,97.4,99.9,99.9,102.4,105.4,108.3,108.3]},"Piramal Finance":{"aum_cr":[null,null,null,null,null,null,85756,96690],"gnpa_pct":[null,null,null,2.8,2.8,null,2.8,2.6],"nnpa_pct":[null,null,null,null,1.9,null,2.0,1.9],"pcr_pct":[null,null,null,null,null,null,null,27.9],"pat_cr":[137,181,163,39,102,276,327,401],"nim_pct":[4.6,4.9,5.1,5.8,5.8,5.9,6.1,6.3],"roa_pct":[null,null,null,null,null,null,null,1.9],"roe_pct":[null,null,null,null,2.0,null,2.0,null],"cost_of_borrowing_pct":[null,null,null,null,null,null,null,8.9],"d_e_ratio":[null,null,null,null,null,null,null,2.71],"car_pct":[25.6,24.4,23.3,23.7,23.6,19.3,20.7,null],"t1_pct":[null,null,null,null,null,null,null,null],"t2_pct":[null,null,null,null,null,null,null,null],"bvps_inr":[null,null,null,null,null,null,null,1232]},"Muthoot Finance":{"aum_cr":[89079,98048,104149,111308,122181,133938,147673,164720],"gnpa_pct":[3.28,3.98,4.3,4.22,3.41,2.58,2.25,1.58],"nnpa_pct":[null,null,null,null,null,null,null,null],"pcr_pct":[null,null,null,null,null,null,null,null],"pat_cr":[1182,1196,1321,1392,1444,1974,2412,2824],"nim_pct":[11.62,11.51,11.54,11.6,11.27,12.15,12.66,12.77],"roa_pct":[5.86,5.39,5.74,5.81,5.85,7.16,7.44,7.59],"roe_pct":[18.09,17.73,19.99,20.7,21.76,28.28,30.61,32.03],"cost_of_borrowing_pct":[8.51,8.74,9.01,8.81,8.99,8.68,8.9,8.85],"d_e_ratio":[2.29,2.61,2.66,2.75,2.95,3.18,3.27,3.4],"car_pct":[null,null,null,null,null,null,null,null],"t1_pct":[null,null,null,null,null,null,null,null],"t2_pct":[null,null,null,null,null,null,null,null],"bvps_inr":[604.95,607.21,639.67,672.47,708.26,733.64,793.09,859.33]},"Mahindra Finance":{"aum_cr":[102597,106339,112454,115126,119673,122008,127246,128965],"gnpa_pct":[3.4,3.56,3.83,3.93,3.69,3.85,3.94,3.8],"nnpa_pct":[1.28,1.46,1.59,2.0,1.84,1.91,1.89,1.82],"pcr_pct":[63.2,59.8,59.5,50.1,51.2,51.4,53.0,53.0],"pat_cr":[619,513,369,899,563,530,569,810],"nim_pct":[7.1,6.6,6.5,6.6,6.5,6.7,7.0,7.5],"roa_pct":[1.7,1.4,1.5,2.0,1.9,1.6,null,1.9],"roe_pct":[10.0,11.1,9.7,12.7,12.4,9.8,null,11.8],"cost_of_borrowing_pct":[6.2,6.3,6.3,6.4,6.3,6.3,6.0,6.0],"d_e_ratio":[5.08,5.1,5.65,5.44,5.7,4.75,null,4.87],"car_pct":[null,null,null,null,null,null,null,null],"t1_pct":[null,null,null,null,null,null,null,null],"t2_pct":[null,null,null,null,null,null,null,null],"bvps_inr":[147.0,151.2,148.0,155.6,160.4,168.0,null,171.4]}},"quarters":["Q4FY24","Q1FY25","Q2FY25","Q3FY25","Q4FY25","Q1FY26","Q2FY26","Q3FY26"],"latest":{"Bajaj Finance":{"name":"Bajaj Finance","ticker":"BAJFINANCE","segment":"Diversified Retail","aum_cr":485883,"pat_cr":5317,"nim_pct":null,"roa_pct":4.6,"roe_pct":19.6,"gnpa_pct":1.21,"nnpa_pct":0.47,"pcr_pct":61.0,"cost_of_borrowing_pct":7.45,"d_e_ratio":4.75,"car_pct":21.45,"bvps_inr":170,"net_worth_cr":107731},"Shriram Finance":{"name":"Shriram Finance","ticker":"SHRIRAMFIN","segment":"CV / Rural Lending","aum_cr":291709,"pat_cr":2522,"nim_pct":8.58,"roa_pct":3.09,"roe_pct":16.33,"gnpa_pct":4.54,"nnpa_pct":2.38,"pcr_pct":48.77,"cost_of_borrowing_pct":8.0,"d_e_ratio":4.05,"car_pct":20.27,"bvps_inr":330,"net_worth_cr":null},"Chola Finance":{"name":"Chola Finance","ticker":"CHOLAFIN","segment":"Vehicle / Home / SME","aum_cr":227770,"pat_cr":1288,"nim_pct":8.0,"roa_pct":3.2,"roe_pct":19.1,"gnpa_pct":3.36,"nnpa_pct":1.91,"pcr_pct":43.0,"cost_of_borrowing_pct":6.7,"d_e_ratio":7.5,"car_pct":19.16,"bvps_inr":327,"net_worth_cr":27577},"Muthoot Finance":{"name":"Muthoot Finance","ticker":"MUTHOOTFIN","segment":"Gold Loans","aum_cr":164720,"pat_cr":2824,"nim_pct":12.77,"roa_pct":7.59,"roe_pct":32.03,"gnpa_pct":1.58,"nnpa_pct":null,"pcr_pct":null,"cost_of_borrowing_pct":8.9,"d_e_ratio":3.4,"car_pct":null,"bvps_inr":859,"net_worth_cr":null},"Aditya Birla Capital":{"name":"Aditya Birla Capital","ticker":"ABCAPITAL","segment":"Diversified (NBFC+HFC+Insurance)","aum_cr":148182,"pat_cr":772,"nim_pct":6.12,"roa_pct":2.25,"roe_pct":15.2,"gnpa_pct":1.51,"nnpa_pct":0.84,"pcr_pct":44.3,"cost_of_borrowing_pct":6.56,"d_e_ratio":4.59,"car_pct":17.34,"bvps_inr":106,"net_worth_cr":27723},"Mahindra Finance":{"name":"Mahindra Finance","ticker":"M&MFIN","segment":"Vehicle / Rural","aum_cr":128965,"pat_cr":810,"nim_pct":7.5,"roa_pct":1.9,"roe_pct":11.8,"gnpa_pct":3.8,"nnpa_pct":1.82,"pcr_pct":53.0,"cost_of_borrowing_pct":6.0,"d_e_ratio":4.87,"car_pct":null,"bvps_inr":171,"net_worth_cr":null},"L&T Finance":{"name":"L&T Finance","ticker":"LTF","segment":"Rural / Consumer / SME","aum_cr":114285,"pat_cr":760,"nim_pct":8.58,"roa_pct":2.37,"roe_pct":11.38,"gnpa_pct":3.19,"nnpa_pct":0.92,"pcr_pct":72.0,"cost_of_borrowing_pct":7.25,"d_e_ratio":3.78,"car_pct":19.1,"bvps_inr":108,"net_worth_cr":null},"Piramal Finance":{"name":"Piramal Finance","ticker":"PIRAMALENT","segment":"Retail / Wholesale Lending","aum_cr":96690,"pat_cr":401,"nim_pct":6.3,"roa_pct":1.9,"roe_pct":null,"gnpa_pct":2.6,"nnpa_pct":1.9,"pcr_pct":27.9,"cost_of_borrowing_pct":8.9,"d_e_ratio":2.71,"car_pct":null,"bvps_inr":1232,"net_worth_cr":27872},"Poonawalla Fincorp":{"name":"Poonawalla Fincorp","ticker":"POONAWALLA","segment":"Consumer / SME Loans","aum_cr":55017,"pat_cr":150,"nim_pct":8.62,"roa_pct":1.2,"roe_pct":null,"gnpa_pct":1.51,"nnpa_pct":0.8,"pcr_pct":47.75,"cost_of_borrowing_pct":7.65,"d_e_ratio":4.25,"car_pct":18.17,"bvps_inr":124,"net_worth_cr":9996}},"metric_labels":{"aum_cr":["AUM","\u20b9 Cr"],"pat_cr":["PAT","\u20b9 Cr"],"nim_pct":["NIM","%"],"roa_pct":["ROA","%"],"roe_pct":["ROE","%"],"gnpa_pct":["GNPA","%"],"nnpa_pct":["NNPA","%"],"pcr_pct":["PCR","%"],"cost_of_borrowing_pct":["Cost of Borrowing","%"],"d_e_ratio":["D/E Ratio","x"],"car_pct":["CAR","%"],"t1_pct":["Tier 1 Capital","%"],"t2_pct":["Tier 2 Capital","%"],"bvps_inr":["BVPS","\u20b9"],"net_worth_cr":["Net Worth","\u20b9 Cr"]},"cache_key":{"Poonawalla Fincorp":"Poonawalla Fincorp","Bajaj Finance":"Bajaj Finance","Shriram Finance":"Shriram Finance","L&T Finance":"L&T Finance","Cholamandalam Finance":"Chola Finance","Aditya Birla Capital":"Aditya Birla Capital","Piramal Finance":"Piramal Finance","Muthoot Finance":"Muthoot Finance","Mahindra Finance":"Mahindra Finance"},"colors":{"Poonawalla Fincorp":"#0284c7","Bajaj Finance":"#f97316","Shriram Finance":"#10b981","L&T Finance":"#8b5cf6","Cholamandalam Finance":"#ef4444","Aditya Birla Capital":"#0891b2","Piramal Finance":"#be123c","Muthoot Finance":"#65a30d","Mahindra Finance":"#7c3aed"},"nbfcs_list":["Poonawalla Fincorp","Bajaj Finance","Shriram Finance","L&T Finance","Cholamandalam Finance","Aditya Birla Capital","Piramal Finance","Muthoot Finance","Mahindra Finance"],"tickers":{"Poonawalla Fincorp":"POONAWALLA.NS","Bajaj Finance":"BAJFINANCE.NS","Shriram Finance":"SHRIRAMFIN.NS","L&T Finance":"LTF.NS","Cholamandalam Finance":"CHOLAFIN.NS","Aditya Birla Capital":"ABCAPITAL.NS","Piramal Finance":"PIRAMALFIN.NS","Muthoot Finance":"MUTHOOTFIN.NS","Mahindra Finance":"M&MFIN.NS"},"ai":{"Bajaj Finance":[{"title":"BFL 3.0 'FinAI' Company Transformation Strategy","description":"Bajaj Finance rebranded its five-year strategic roadmap as 'BFL 3.0 \u2013 A FinAI Company', positioning itself as an AI-first financial services platform. The plan targets serving 200 million customers by FY2029 by integrating AI across all 26 product lines to improve customer engagement, grow revenue, reduce operating expenses, cut credit costs, and enhance controllership. Management has identified 123 high-impact AI use-case areas, with 80 expected to be live by February 2026.","impact":"123 AI use-cases identified; 80 live by Feb 2026; target 200M customers by FY29 across all 26 products.","functions":["Strategy & Partnerships"],"source_name":"Bajaj Finance Annual Report FY2024-25 (Company Website)","source_url":"https://www.bajajfinserv.in/finance-digital-annual-report-fy25/finai-company.html","date":"01 Apr 2025"},{"title":"Microsoft Azure OpenAI Strategic Partnership Announced","description":"Bajaj Finance and Microsoft announced a landmark strategic partnership in January 2025, building on their 15-year relationship, to leverage Microsoft Azure OpenAI services for digital transformation. The partnership targets increased conversion rates, back-office productivity, and front-line performance, with an expected annual cost saving of INR 150 crore in FY26. The deal was announced by Microsoft CEO Satya Nadella alongside India-focused AI infrastructure investments.","impact":"\u20b9150 Cr annual cost savings targeted in FY26; covers conversion, back-office productivity, and front-line performance.","functions":["Strategy & Partnerships"],"source_name":"Microsoft News (Source Asia)","source_url":"https://news.microsoft.com/source/asia/2025/01/08/microsoft-inks-strategic-partnerships-to-make-indias-core-sectors-ai-first/","date":"08 Jan 2025"},{"title":"800+ Autonomous AI Agents Planned for FY27","description":"At the Q3 FY26 earnings call (February 2026), MD Rajeev Jain disclosed plans to deploy 800+ autonomous AI agents across sales, operations, HR, IT, risk, and debt management services by FY27. The company moved from framing FinAI as a future initiative to presenting it as current operating infrastructure, with AI already executing tasks and influencing credit decisions. Efficiency improvements of 25\u201345% have already been measured versus traditional methods.","impact":"25\u201345% operational efficiency gains already measured; 800+ agents targeting sales, ops, HR, IT, risk, and DMS by FY27.","functions":["Strategy & Partnerships","Credit Underwriting & Risk","HR & Operations"],"source_name":"Medianama","source_url":"https://www.medianama.com/2026/02/223-bajaj-finance-800-ai-agents-lending-operations/","date":"08 Feb 2026"},{"title":"AI Call Centre Drives \u20b91,600 Crore Loan Disbursements","description":"Bajaj Finance's AI-powered call centre analyzed 20 million customer calls, converting voice to text for 5.2 lakh customers and generating 100,000 new personalized offers. This resulted in Rs 1,600 crore in loan disbursements in a single quarter, with AI call centres now accounting for approximately 10% of total loan disbursements. The company targets scaling to 100 million AI-analyzed calls by FY27.","impact":"\u20b91,600 Cr disbursements in one quarter; AI handles ~10% of all loan disbursements; 20M calls analyzed.","functions":["Sales & Marketing","Customer Service & Chatbots"],"source_name":"Trak.in","source_url":"https://trak.in/stories/bajaj-finance-will-use-ai-for-managing-100-million-customer-calls-by-2027/","date":"10 Feb 2026"},{"title":"Conversational AI Bots Across All 26 Products by May 2026","description":"Bajaj Finance is replacing traditional outbound SMS communications with AI-powered conversational bots across all 26 product lines, going live between April and May 2026. MD Rajeev Jain stated: 'There will be no communication that we'll be sending which will not have a conversational BOT embedded in it.' The company sends over 560 million SMS messages per month which are being converted into interactive AI dialogues.","impact":"560M SMS/month across 26 products being converted to interactive AI conversations; full rollout by May 2026.","functions":["Customer Service & Chatbots"],"source_name":"Medianama","source_url":"https://www.medianama.com/2025/11/223-bajaj-finance-finai-deployment-operating-efficiency-q2fy26/","date":"01 Nov 2025"},{"title":"46 Million Biometric Face Matches for Customer Verification","description":"Bajaj Finance deployed AI-powered biometric face matching at branch and point-of-sale locations, completing 46 million face matches to verify existing customer identities. Additionally, AI document extraction systems now process 43 document types with 95-96% accuracy, populating data directly into lending platforms. AI-enabled quality checks cover 41% of documents with a target of 85-90% automation over the next 15 months.","impact":"46M face matches; 43 doc types at 95\u201396% accuracy; 41% doc quality-check automation (target 85\u201390%).","functions":["Document Processing & KYC"],"source_name":"OfficeChai","source_url":"https://officechai.com/ai/ai-powered-call-centers-are-now-accounting-for-10-of-all-loan-disbursements-at-bajaj-finance/","date":"12 Feb 2026"},{"title":"Yellow.ai Multilingual Chatbot 'BLU' for Customer Service","description":"Bajaj Finserv partnered with Yellow.ai to build a multilingual Virtual Assistant called 'BLU', deployed across five channels to help users throughout the customer lifecycle. The bot handles queries, sells financial solutions, and has been integrated across web sales and services. Yellow.ai's partnership has contributed over $100M in sales, and the chatbot handles customer inquiries 24/7 in multiple Indian languages.","impact":"$100M+ in sales attributed to BLU; 5-channel deployment; 24/7 multilingual service across the customer lifecycle.","functions":["Customer Service & Chatbots","Sales & Marketing"],"source_name":"Yellow.ai Case Study","source_url":"https://yellow.ai/case-study/how-bajaj-finserv-boosts-cx/","date":"01 Jan 2024"},{"title":"Brokerages Bullish on FinAI Operational Efficiency Boost","description":"HDFC Securities and Anand Rathi both issued bullish notes on Bajaj Finance's AI transformation, forecasting AUM CAGR of 23-24% and ROE of around 20% driven by FinAI efficiency gains. HDFC Securities noted the 'FinAI transformation is likely to drive higher cross-sell, improve productivity levels and aid credit costs.' Bajaj Finance has also identified AI-driven generative AI capabilities using Microsoft, Anthropic (Claude), and Google LLMs.","impact":"AUM CAGR forecast 23\u201324%; ROE ~20%; multi-LLM strategy (Microsoft Azure OpenAI, Anthropic Claude, Google).","functions":["Strategy & Partnerships"],"source_name":"MoneyControl / TradingView","source_url":"https://www.tradingview.com/news/moneycontrol:a22b0d99a094b:0-brokerages-bullish-on-bajaj-finance-s-ai-thrust-say-operational-efficiencies-will-see-boost/","date":"12 Feb 2026"}],"Shriram Finance":[{"title":"Shriram One Super App Built on Microsoft Azure Cloud","description":"Shriram Finance partnered with Microsoft to build 'Shriram One', a cloud-native super app that consolidates all financial services on a single interface. The app has been downloaded by 20 million people in India and supports seven Indian languages designed for semi-urban and rural populations. An AI chatbot embedded in the app handles routine collections, assists with fixed-deposit renewals, and routes complex queries to human agents.","impact":"20M downloads; 7-language support; AI chatbot handles collections and FD renewals across rural/semi-urban India.","functions":["Customer Service & Chatbots","Collections","Strategy & Partnerships"],"source_name":"Microsoft News (Source Asia)","source_url":"https://news.microsoft.com/source/asia/features/with-shriram-one-financial-services-travel-with-the-customer/","date":"01 Mar 2024"},{"title":"Glib.ai IDP Cuts Loan Processing Time by 70%","description":"Shriram Finance deployed Glib.ai's Intelligent Document Processing (IDP) solution for its auto and two-wheeler loan operations, reducing average handling time from 25 minutes to under 3 minutes \u2014 a 70% reduction in turnaround time. The AI system achieves over 93% data extraction accuracy and employs AI algorithms to cross-validate identity and address documents against third-party sources for fraud detection. Over 2,500 field agents now use the Glib Portal for document processing.","impact":"TAT cut from 25 min to <3 min (70% reduction); 93%+ extraction accuracy; 2,500+ field agents on platform.","functions":["Document Processing & KYC","Digital Lending & Origination"],"source_name":"Glib.ai Case Study","source_url":"https://glib.ai/case-studies/transforming-shriram-finance-auto-two-wheeler-loan-processing/","date":"01 Jun 2024"},{"title":"ScoreBuilder Credit Program with CreditMantri for Underbanked","description":"Shriram Finance partnered with CreditMantri to create 'ScoreBuilder', an alternative data lending program that serves customers with no formal credit history. The program uses AI/ML algorithms to build credit profiles from alternative data sources, achieving a seven-fold increase in asset allocation development. Over 95% of participants had no prior credit history, demonstrating significant financial inclusion impact.","impact":"7x increase in asset allocation; 95% of borrowers had no prior credit history; AI-driven alternative data scoring.","functions":["Credit Underwriting & Risk"],"source_name":"Shriram Finance Website","source_url":"https://www.shriramfinance.in/article-integration-of-the-use-of-ai-in-finance","date":"01 Jan 2024"},{"title":"AI-Powered Marketing Automation Achieves 81X ROI with Netcore","description":"Shriram Finance leveraged Netcore's Full Stack Automation Marketing Platform with AI-powered optimization to achieve an extraordinary 81X ROI on its Fixed Deposit Investment Process campaigns. The partnership delivered a 3X increase in leads and a 15% reduction in cost of acquisition. AI-driven automation journeys were strategically designed at pivotal stages of the customer investment journey.","impact":"81x ROI on FD campaigns; 3x lead increase; 15% reduction in cost of acquisition.","functions":["Sales & Marketing"],"source_name":"Netcore Case Study","source_url":"https://netcorecloud.com/success-story/shriram-finance/","date":"01 Apr 2024"},{"title":"Digital Payments Entry and Fintech Expansion 2025","description":"In April 2025, Shriram Finance announced a bold pivot into digital payments, including mobile wallets, prepaid cards, and UPI services, to deepen customer engagement and monetize transaction data across its rural and semi-urban customer base. The strategy leverages Shriram's core strength in commercial vehicle and consumer finance, using digital transaction data to enhance credit underwriting and cross-sell financial products.","impact":"Entry into UPI/wallets/prepaid cards; transaction data to power AI credit underwriting for rural/semi-urban customers.","functions":["Digital Lending & Origination","Strategy & Partnerships"],"source_name":"Ainvest / Elets BFSI","source_url":"https://bfsi.eletsonline.com/shriram-finance-accelerates-digital-transformation-with-ambitious-fintech-entry/","date":"01 Apr 2025"}],"L&T Finance":[{"title":"Project Cyclops: AI Credit Engine Processes 200,000 Applications Daily","description":"L&T Finance deployed 'Project Cyclops' in July 2024, an in-house AI-powered credit underwriting engine that processes 200,000 loan applications daily \u2014 a 25x increase from previous capacity. The engine integrates bureau data, account aggregator data, and alternative trust signals using ML ensemble scorecards across 16+ alternate data sources. It has boosted New-to-Credit (NTC) underwriting by 34% and now handles 100% of two-wheeler loans with real-time credit risk assessment.","impact":"200,000 applications/day (25x capacity); 34% boost in NTC underwriting; 100% of 2-wheeler loans processed in real-time.","functions":["Credit Underwriting & Risk","Digital Lending & Origination"],"source_name":"MediaBrief / L&T Finance Press Release","source_url":"https://mediabrief.com/lt-finance-deploys-cyclops/","date":"09 Jul 2024"},{"title":"Project Nostradamus: Post-Disbursement AI Portfolio Monitor","description":"L&T Finance launched 'Project Nostradamus' in live beta in August 2025 for its two-wheeler finance segment. The AI engine monitors customer behavior post-loan disbursement using 13+ algorithms and 200+ banking variables analyzed monthly, enabling real-time insights for proactive portfolio monitoring at micro-market cluster level. Full-stack implementation is targeted by March 2026 with extension to personal loans and rural business finance verticals in H1 FY27.","impact":"13+ algorithms; 200+ banking variables analyzed monthly; micro-market cluster level monitoring live in 2W segment.","functions":["Credit Underwriting & Risk"],"source_name":"Business Standard","source_url":"https://www.business-standard.com/technology/tech-news/large-nbfcs-scale-ai-adoption-across-acquisition-underwriting-servicing-126021700833_1.html","date":"17 Feb 2026"},{"title":"KAI: AI-Powered Virtual Home Loan Advisor Launched","description":"L&T Finance launched 'Knowledgeable AI (KAI)', an AI-powered virtual home loan advisor on its corporate website in February 2025. KAI is powered by a specialized Large Language Model (LLM) and Retrieval-Augmented Generation (RAG) technology, drawing insights from LTF's internal documents. It offers real-time EMI calculations, personalized loan estimates, and 24/7 expert home loan guidance particularly aimed at first-time home buyers.","impact":"LLM + RAG-powered; real-time EMI calculations; 24/7 home loan advisory for first-time buyers.","functions":["Customer Service & Chatbots","Digital Lending & Origination"],"source_name":"The Print (ANI Press Release)","source_url":"https://theprint.in/ani-press-releases/lt-finance-ltd-launches-knowledgeable-ai-kai-an-ai-powered-virtual-home-loan-advisor-on-its-new-corporate-website/2474528/","date":"01 Feb 2025"},{"title":"Project Helios: Agentic AI Underwriting Co-Pilot for SME Lending","description":"L&T Finance deployed 'Project Helios', an agentic AI underwriting co-pilot for its SME Finance segment. Helios has processed over 5,000 underwriting cases, reducing turnaround time by 30% and saving 1.5 hours per case by analyzing complex bureau reports, bank statements, and financial documents. The Chief AI Officer expressed an ambition that Project Cyclops could eventually be '90% agent-driven'.","impact":"5,000+ cases processed; 30% TAT reduction; 1.5 hrs saved per case; ambition to make Cyclops 90% agentic.","functions":["Credit Underwriting & Risk","Digital Lending & Origination"],"source_name":"Analytics India Magazine (AIM)","source_url":"https://analyticsindiamag.com/ai-features/lt-finance-hopes-project-cyclops-would-be-90-agentic-one-day/","date":"01 Dec 2025"},{"title":"Project Orion: Conversational AI Co-Pilot for Portfolio Management","description":"L&T Finance launched 'Project Orion' in December 2025 as a conversational AI co-pilot for portfolio monitoring. Orion allows credit, collection, and business executives to query complex delinquency and vintage data in real time using natural language chat. The system is currently live in the two-wheeler segment and enables automated decisions on collection actions, agency allocation, and roll-forward models.","impact":"Natural language querying of delinquency data; automated collection actions and agency allocation; live in 2W segment.","functions":["Collections","Credit Underwriting & Risk"],"source_name":"Republic World","source_url":"https://www.republicworld.com/tech/flagship-ai-engines-current-ai-applications-chief-ai-officer-at-lt-finance-stresses-on-india-s-need-to-accept-ai","date":"01 Dec 2025"},{"title":"RAISE '25 AI Conference: Blueprint for AI in BFSI","description":"L&T Finance hosted RAISE '25, its flagship AI conference in November 2025, drawing over 4,500 attendees including global tech leaders, policymakers, and practitioners. The event served as a platform to showcase Orion, Helios, and Cyclops while advocating for broader AI adoption in the BFSI sector. LTF also launched 'Pitch Point', an AI startup competition with Rs 25 lakh prizes for early-stage AI startups to explore PoCs with L&T Group companies.","impact":"4,500+ attendees; \u20b925 lakh startup prizes (Pitch Point); platform to showcase Cyclops, Helios, and Orion.","functions":["Strategy & Partnerships"],"source_name":"Tribune India (Press Release)","source_url":"https://www.tribuneindia.com/news/business/lt-finance-ltd-launches-pitch-point-a-competition-for-ai-startups-ahead-of-raise-25/","date":"01 Nov 2025"}],"Cholamandalam Finance":[{"title":"GenAI Adoption with Nucleus Software for Lending Operations","description":"Cholamandalam Investment and Finance (Chola) and Nucleus Software, partners for over 18 years, have extended their collaboration into Generative AI for lending operations. Chief Delivery Officer Ramesh Dhanakoti detailed how GenAI is being deployed for health check automation, document verification, legal document summarization, and enhanced customer service \u2014 reducing manual effort, improving accuracy, and delivering superior customer experiences across secured and unsecured business loan products.","impact":"GenAI deployed for health check automation, doc verification, legal doc summarization, and customer service.","functions":["Digital Lending & Origination","Document Processing & KYC","Customer Service & Chatbots"],"source_name":"Nucleus Software Customer Story","source_url":"https://www.nucleussoftware.com/customer-connects/cholamandalams-vision-for-smarter-lending-with-nucleus-software/","date":"01 Jan 2025"},{"title":"In-House Digital Lending Platform Restart in 2025","description":"Cholamandalam Investment and Finance restarted its digital lending operations using an in-house built platform in December 2025, marking a strategic shift toward proprietary technology infrastructure. The move reflects the company's commitment to greater control over its digital lending stack and technology-first customer acquisition and servicing capabilities across its vehicle finance, home loan, and SME loan segments.","impact":"Strategic shift to proprietary in-house digital lending platform; greater control over tech stack and AI roadmap.","functions":["Digital Lending & Origination","Strategy & Partnerships"],"source_name":"Livemint (referenced via Tracxn profile)","source_url":"https://tracxn.com/d/companies/cholamandalam-investment-and-finance-company/__B9SzoJxlGla_CtZ7pvwktvjAoFjp5rtarwKYONTM7ik","date":"09 Dec 2025"},{"title":"Co-Lending Business Launched with Nucleus Software Technology","description":"Cholamandalam Investment and Finance launched its co-lending business using Nucleus Software's advanced co-lending solution, enabling faster co-lending application processing, robust credit risk assessment frameworks, and regulatory compliance. The solution allows seamless information flow across different bank IT landscapes and enables Chola to scale its co-lending business quickly across multiple partner banks and lines of business.","impact":"Rapid co-lending scale-up across multiple bank partners; AI-assisted credit risk assessment and regulatory compliance.","functions":["Digital Lending & Origination","Credit Underwriting & Risk"],"source_name":"Nucleus Software Press Release","source_url":"https://www.nucleussoftware.com/news/press-release/cholamandalam-investment-and-finance-company-limited-chola-launches-its-co-lending-business-with-technology-from-nucleus-software-2020-11-10","date":"10 Nov 2020"},{"title":"Machine Learning Projects for Document Classification","description":"Cholamandalam Finance has been running internal AI/ML projects covering document classification and data extraction from documents, coordinated using Agile methodology. The company has invested in technology partnerships with AWS, Microsoft, and Relevantz for cloud infrastructure and AI capabilities. Internal ML projects aim to improve operational efficiency and enhance risk assessment across its 1,387 branches and 54,000-strong workforce.","impact":"ML-powered doc classification and extraction across 1,387 branches; AWS and Microsoft cloud infrastructure partnerships.","functions":["Document Processing & KYC","HR & Operations"],"source_name":"AppsRunTheWorld","source_url":"https://www.appsruntheworld.com/customers-database/customers/view/cholamandalam-investment-and-finance-company-india","date":"01 Jan 2024"},{"title":"Infosys Finacle Treasury Modernization for Digital Operations","description":"In March 2025, Infosys Finacle completed a successful migration of Cholamandalam's treasury operations to the Finacle Treasury solution, centralizing treasury management on a unified web-based platform. This digital modernization initiative supports Chola's broader technology-first strategy to enhance operational efficiency and data-driven decision-making across its rapidly expanding financial services portfolio.","impact":"Centralized treasury management on unified web-based platform; part of broader tech-first digital modernization.","functions":["HR & Operations","Strategy & Partnerships"],"source_name":"Finacle Press Release","source_url":"https://www.finacle.com/news-room/press-release/chola-treasury-transformation-journey/","date":"01 Mar 2025"}],"Aditya Birla Capital":[{"title":"GenAI Centre of Excellence Deploys 22+ Live Use Cases","description":"Aditya Birla Capital set up an enterprise-wide GenAI Centre of Excellence in 2023, deploying over 22 live GenAI use cases within 18 months. The CoE operates as a shared services entity building scalable applications \u2014 including Sales Pitch Assistant, Service Assist, Audit Compliance Assist, and GenAI-powered voice bots \u2014 across lending, insurance, asset management, and broking. The company reduced GenAI operating costs by 30-40% through its scalable Azure-based architecture.","impact":"22+ live use cases in 18 months; 30\u201340% cost reduction in running GenAI apps; spans lending, insurance, AMC, and broking.","functions":["Strategy & Partnerships"],"source_name":"Microsoft Customer Story","source_url":"https://www.microsoft.com/en/customers/story/20596-aditya-birla-financial-shared-services-azure-open-ai-service","date":"01 Jun 2024"},{"title":"SimpliFi: GenAI Personal Finance Assistant on ABCD Platform","description":"Aditya Birla Capital launched 'SimpliFi', a GenAI-powered personal finance assistant on its ABCD D2C platform, built using Microsoft Azure OpenAI Service with Azure AI Search and Azure Cosmos DB. SimpliFi provides personalized insights across credit, health, and spending through seven AI-powered features including Market Pulse, Smart Signals, and Goal Compass. Response latency was reduced from 30 seconds to under one second through Azure infrastructure optimization.","impact":"Response latency 30s \u2192 <1s; 7 AI-powered features; personalized credit, health, and spending insights on ABCD app.","functions":["Customer Service & Chatbots","Sales & Marketing"],"source_name":"Business Standard","source_url":"https://www.business-standard.com/companies/news/aditya-birla-capital-launches-genai-tools-on-abcd-platform-125100801284_1.html","date":"08 Oct 2025"},{"title":"AI-First Strategy with Enterprise-Wide GenAI Assist Tools","description":"At Global Fintech Fest 2025, Aditya Birla Capital announced a suite of AI-powered innovations on the ABCD platform including GenAI Assist tools (Sales Assist, Service Assist, Audit Assist, Marketing Assist), Agentic AI for customer onboarding and underwriting, and GenAI-powered telesales bots. Contact centre agent productivity improved by 20%, credit assessment preparation time reduced by 90%, and underwriting turnaround improved by 50%.","impact":"Contact centre productivity +20%; credit assessment time \u221290%; underwriting TAT \u221250%; agentic AI for onboarding.","functions":["Customer Service & Chatbots","Credit Underwriting & Risk","Sales & Marketing"],"source_name":"Aditya Birla Capital Press Release (BSE Filing)","source_url":"https://www.bseindia.com/xml-data/corpfiling/AttachHis/2174e175-b54d-4768-950a-b7a0bd01ecb6.pdf","date":"08 Oct 2025"},{"title":"Microsoft Top 50 GenAI Early Adopter and Celent Award 2025","description":"Aditya Birla Capital was recognized as one of Microsoft's Top 50 Early Adopters in Gen AI at the IGNITE 2024 conference in the USA, and won the Global Celent Model Bank Award 2025 for excellence in Generative AI implementation. These recognitions reflect the company's rapid and effective deployment of over 22 live GenAI use cases, spanning the entire customer lifecycle across 9 business lines with 40 million customers.","impact":"Microsoft Top 50 GenAI Early Adopter (IGNITE 2024); Celent Model Bank Award 2025; 40M customers across 9 business lines.","functions":["Strategy & Partnerships"],"source_name":"Financial Express CIO / FintechBizNews","source_url":"https://db.financialexpressb2b.com/features/aditya-birla-capital-simplifies-finance-through-a-digital-and-ai-first-growth-playbook","date":"01 Jan 2025"},{"title":"Birla AI Labs Launched for Group-Wide AI Research","description":"The Aditya Birla Group launched 'Birla AI Labs', a dedicated AI research and development entity with a dual mandate: integrating AI solutions across global operations (manufacturing, financial services, retail) and functioning as a global research entity for original scientific discovery. The initiative positions the group at the vanguard of the AI revolution, with ambitions to create new revenue streams beyond efficiency gains by translating cutting-edge research into proprietary products.","impact":"Group-level AI research entity; dual mandate \u2014 internal optimization + open-market AI products; revenue streams beyond efficiency.","functions":["Strategy & Partnerships"],"source_name":"Whalesbook","source_url":"https://www.whalesbook.com/news/English/tech/Birla-AI-Labs-Launched-Conglomerate-Bets-on-Cognitive-Amplification/699895b0057e346edab46d89","date":"01 Jan 2025"},{"title":"Aditya Birla Ventures Backs GenAI Startup Articul8 AI","description":"Aditya Birla Ventures participated in a Series B funding round for Articul8 AI, a GenAI startup specializing in enterprise AI solutions. This strategic investment reflects the group's commitment to building an AI ecosystem and gaining early access to cutting-edge generative AI capabilities that can be applied across Aditya Birla Capital's financial services businesses.","impact":"Series B strategic investment in enterprise GenAI startup; early access to cutting-edge GenAI for financial services.","functions":["Strategy & Partnerships"],"source_name":"Entrepreneur India","source_url":"https://www.entrepreneur.com/en-in/news-and-trends/aditya-birla-ventures-backs-genai-firm-articul8-ai-in/501700","date":"01 Jan 2025"}],"Piramal Finance":[{"title":"Innovation Lab Launched in Bengaluru for AI-Led Digital Lending","description":"Piramal Finance launched an 'Innovation Lab' in Bengaluru in December 2022, spanning 36,000 sq ft and targeting a team of 300+ technology and business intelligence professionals. The lab heavily uses Data, AI, and Machine Learning to develop personalized lending experiences for underserved 'Bharat' markets. The facility hosts regular hackathons and is led by CTO Saurabh Mittal, who emphasized AI and ML as transformative forces in financial services.","impact":"36,000 sq ft; 300+ tech professionals; AI/ML hub for underserved Bharat markets with regular hackathons.","functions":["Strategy & Partnerships","Digital Lending & Origination"],"source_name":"Business Standard","source_url":"https://www.business-standard.com/article/companies/piramal-finance-launches-innovation-lab-in-bengaluru-to-have-300-members-122121500509_1.html","date":"15 Dec 2022"},{"title":"Claude AI Used to Build Proprietary Software at 1/10th the Cost","description":"Piramal Finance CEO Jairam Sridharan publicized how the company used Anthropic's Claude AI model to build proprietary software for Rs 1 crore \u2014 a tenth of the Rs 12 crore quoted by external vendors who estimated 6-9 months for delivery. This case study became widely cited as a real-world example of AI disrupting traditional IT services procurement in Indian financial services. The company's 'High Tech + High Touch' strategy blends AI capabilities with physical distribution.","impact":"Software built for \u20b91 Cr vs \u20b912 Cr vendor quote (92% cost saving); 6\u20139 months saved; India's most cited AI cost-disruption example.","functions":["HR & Operations","Strategy & Partnerships"],"source_name":"Open The Magazine / LinkedIn (CEO post)","source_url":"https://openthemagazine.com/india/artificial-intelligence-india-incs-inflection-point","date":"01 Jun 2025"},{"title":"Embedded Finance with 22 Partners via AI-Powered API Stack","description":"Piramal Finance built an API stack enabling 22 partners to launch over 24 embedded finance programs across digital consumer and merchant engagement platforms, with the fastest go-live being just four weeks \u2014 claimed as an industry-first. AI and ML models power the credit decisioning in these embedded finance journeys, enabling personalized loan offers at the point of customer need across Tier 2 and Tier 3 cities.","impact":"22 partners; 24 embedded programs; 4-week fastest go-live (industry-first); AI credit decisions at point of need in Tier 2/3.","functions":["Digital Lending & Origination","Credit Underwriting & Risk"],"source_name":"CIO.com (Piramal CTO Interview)","source_url":"https://www.cio.com/article/416422/piramal-cto-saurabh-mittal-on-financial-services-innovation.html","date":"01 Jan 2024"},{"title":"Digital India CSC Partnership for Rural Credit Access","description":"In September 2024, Piramal Finance partnered with Digital India's Common Service Centers (CSCs) to improve formal credit access for underserved individuals and MSMEs. Over Rs 100 crore was disbursed in August 2024 through CSC's network of 6 lakh centers. The initiative leverages technology and data analytics to assess creditworthiness of first-time borrowers in semi-urban and rural areas using non-traditional data sources.","impact":"\u20b9100+ Cr disbursed via 6 lakh CSC centers; AI-driven creditworthiness for first-time borrowers in rural India.","functions":["Digital Lending & Origination","Credit Underwriting & Risk"],"source_name":"MarketScreener","source_url":"https://www.marketscreener.com/quote/stock/PIRAMAL-ENTERPRISES-LIMIT-6492465/news/Piramal-Enterprises-Finance-partners-with-Digital-India-s-Common-Service-Centers-to-Enhance-Cred-47873190/","date":"01 Sep 2024"},{"title":"piramal.ai: AI as Core Business Identity","description":"Piramal Finance's technology presence at piramal.ai signals AI as a core pillar of its identity, with the company describing AI as reshaping its lending operations, risk frameworks, and growth strategy across 'Bharat' markets. The company's retail AUM grew from ~Rs 5,300 crore to nearly Rs 72,000 crore, powered by its technology-first approach integrating AI across credit assessment, collections, and customer onboarding.","impact":"Retail AUM grew from \u20b95,300 Cr to ~\u20b972,000 Cr; AI embedded across credit assessment, collections, and onboarding.","functions":["Strategy & Partnerships"],"source_name":"Piramal Finance Website","source_url":"https://piramal.ai/","date":"01 Jan 2025"}],"Muthoot Finance":[{"title":"MATTU & MITTU: First AI Chatbot in India's NBFC Gold Loan Sector","description":"Muthoot Group launched 'MATTU & MITTU' (Muthoot Advanced Technology Transformation Unit & Muthoot Intelligent Technology Transformation Utility), becoming the first NBFC in India's gold loan industry to deploy an AI-based chatbot. Available 24/7 on the website and app, it assists over 2 lakh customers daily across Gold Loans, Insurance, Money Transfer, Forex, Mutual Funds, and Home Loans using AI-assisted live chat, NLP, and personalized advice based on customer behavior patterns.","impact":"First AI chatbot in NBFC gold loan sector; 2 lakh customers daily; 24/7 multi-product NLP service.","functions":["Customer Service & Chatbots"],"source_name":"Muthoot Finance Official News Board","source_url":"https://www.muthootfinance.com/news-board/the-muthoot-group-becomes-one-of-the-first-in-the-nbfc-sector-to-launch-an-ai-based-chatbot-mattu-mittu","date":"01 Jan 2021"},{"title":"Revamped 'Mattu' AI Virtual Assistant with Senseforth.ai","description":"Muthoot Finance partnered with Senseforth.ai to launch a revamped 'Mattu' AI virtual assistant, available on the website, mobile app, and WhatsApp in English and Hindi. The conversational AI assistant enables users to apply for loans, check account balances, pay gold loan interest, avail loan top-ups, and make part payments through natural language interactions \u2014 providing a seamless customer experience without branch visits.","impact":"Website + app + WhatsApp in English and Hindi; self-service loan management without branch visits.","functions":["Customer Service & Chatbots"],"source_name":"CIO Axis","source_url":"https://cioaxis.com/just-in/muthoot-finance-launches-ai-virtual-assistant-mattu","date":"01 Jan 2022"},{"title":"Google Pay Partnership for AI-Enabled Gold-Backed Loans","description":"Announced at Google for India 2024 (October 3, 2024), Muthoot Finance partnered with Google Pay to offer gold-backed loans to consumers and merchants across India, including rural areas. Google Pay handles digital distribution and uses its Gemini AI model for voice and text query handling, while Muthoot Finance manages gold storage and loan processing. The partnership extends credit access to 13,500 zip codes covering 70% of India.","impact":"Google Gemini AI for queries; 13,500 zip codes; 70% of India covered; gold-backed loans for consumers and merchants.","functions":["Digital Lending & Origination","Sales & Marketing","Strategy & Partnerships"],"source_name":"Business Standard","source_url":"https://www.business-standard.com/companies/news/google-muthoot-finance-tie-up-to-provide-gold-backed-loans-through-gpay-124100300876_1.html","date":"03 Oct 2024"},{"title":"iMuthoot App v3.0 with Integrated AI Chatbot","description":"Muthoot Finance launched iMuthoot mobile App Version 3.0 integrated with an AI-based chatbot, enabling customers to avail Gold Loans, Home Loans, Personal Loans, and Vehicle Loans 24/7 from their homes. The app enhancement reflects the company's ongoing digital transformation strategy, with AI-powered customer service becoming central to its operations across its large customer base including those in semi-urban and rural locations.","impact":"Gold, Home, Personal, Vehicle Loans available 24/7 via AI chatbot; semi-urban and rural customer reach.","functions":["Customer Service & Chatbots","Digital Lending & Origination"],"source_name":"Financial IT","source_url":"https://financialit.net/news/transaction-banking/muthoot-finance-launches-imuthoot-mobile-app-version-30-provide-enhanced","date":"01 Jun 2023"},{"title":"Muthoot Finclusion Challenge 2025: AI for Financial Inclusion","description":"The Muthoot Group announced the 'Muthoot Finclusion Challenge 2025', a nationwide innovation contest inviting tech innovators to solve real-world financial inclusion challenges. This initiative reflects the group's strategy to build an ecosystem of fintech and AI-driven solutions aligned with its core mission of serving underserved populations. The company also has a technology roadmap targeting investments in AI, ML, IoT, blockchain, and cloud-based enterprise applications.","impact":"Nationwide AI innovation contest; roadmap includes AI, ML, IoT, blockchain for underserved population financial inclusion.","functions":["Strategy & Partnerships"],"source_name":"AppsRunTheWorld / Muthoot Finance","source_url":"https://www.appsruntheworld.com/customers-database/customers/view/muthoot-finance-india","date":"01 Jan 2025"}],"Mahindra Finance":[{"title":"Credgenics Partnership for AI-Powered Digital Collections","description":"Mahindra & Mahindra Financial Services (Mahindra Finance) partnered with Credgenics to digitally empower its retail loan collections using ML and AI-powered multilingual chatbots across the collections lifecycle. The Credgenics platform consolidates capabilities from multiple vendors, providing tracking and monitoring at pincode and village level. MD Ramesh Iyer emphasized the goal of 'a delightful and engaging experience' for rural Indian customers through AI-assisted self-service solutions.","impact":"AI multilingual chatbots for collections; pincode and village-level tracking; 25% collections improvement, 40% cost reduction.","functions":["Collections"],"source_name":"Mahindra.com Press Release","source_url":"https://www.mahindra.com/news-room/press-release/en/mahindra-finance-to-boost-its-digital-collections-with-credgenics","date":"19 Jul 2022"},{"title":"Salesforce Partnership to Digitize MSME Lending with AI","description":"In October 2024, Mahindra Finance partnered with Salesforce to develop AI-powered Loan Origination Software (LOS) for MSMEs, adopting Salesforce Sales Cloud with built-in AI for a unified customer view. The collaboration integrates advanced analytics, machine learning, and automation for credit assessment and risk management in real time. MD Raul Rebello stated the aim is to 'be a preferred and responsible financier to India's emerging MSMEs'.","impact":"AI-powered LOS for MSMEs; Salesforce Sales Cloud with ML credit risk assessment; real-time unified customer view.","functions":["Digital Lending & Origination","Credit Underwriting & Risk"],"source_name":"Salesforce India","source_url":"https://www.salesforce.com/in/news/stories/mahindra-finance-collaborates-with-salesforce-to-digitize-lending/","date":"15 Oct 2024"},{"title":"Mahindra Group GenAI Platform 'Mahindra AI' on Private Cloud","description":"The Mahindra Group developed 'Mahindra AI', a private cloud-based generative AI platform to accelerate outcomes in customer service, sales, marketing, and supply chain across all group companies including Mahindra Finance. Tech Mahindra also announced a strategic partnership with Mahindra & Mahindra to boost generative AI adoption and cloud transformation, deploying M&M's data platform on Google Cloud with ML technologies across engineering and after-sales services.","impact":"Group-level private cloud GenAI platform; covers customer service, sales, marketing, supply chain across M&M entities.","functions":["Strategy & Partnerships","Customer Service & Chatbots"],"source_name":"Mahindra.com","source_url":"https://www.mahindra.com/mahindra-ai","date":"01 Jul 2024"},{"title":"AI-Based Credit Score Awareness Campaign on LinkedIn","description":"Mahindra Finance ran digital campaigns promoting AI-based credit score awareness for its rural and semi-urban customer base on LinkedIn and social platforms. The company's technology roadmap includes investment in AI-driven systems to improve credit assessment for its 7.3 million customers, primarily in rural areas where traditional credit data is sparse, leveraging alternative data and ML models for more inclusive credit scoring.","impact":"AI credit awareness for 7.3M rural customers; ML alternative data scoring for inclusive credit assessment.","functions":["Sales & Marketing","Credit Underwriting & Risk"],"source_name":"Mahindra Finance LinkedIn","source_url":"https://www.linkedin.com/posts/mahindra-finance_mahindrafinance-emi-creditscore-activity-7203374232012046340-waA9","date":"01 Jun 2024"},{"title":"AI Collections Efficiency via Credgenics: Measured Outcomes","description":"Mahindra Finance's deployment of the Credgenics AI-powered collections platform contributed to measurable improvements in collection efficiency. Credgenics' AI and ML platform has demonstrated outcomes including 25% improvement in collections, 40% reduction in collections cost, and 30% reduction in collections time across its NBFC client base. This partnership is part of Mahindra Finance's broader digital transformation agenda for its rural and semi-urban retail loan portfolio.","impact":"25% collections improvement; 40% cost reduction; 30% time reduction \u2014 measured outcomes from Credgenics AI platform.","functions":["Collections"],"source_name":"Credgenics Press Release","source_url":"https://www.credgenics.com/mahindra-finance-press-release","date":"19 Jul 2022"}],"Poonawalla Fincorp":[{"title":"AI-First Strategy: 57 AI Projects, 30 Completed Across Enterprise","description":"Poonawalla Fincorp has embedded an AI-first approach across its operations, initiating 57 AI projects company-wide with 30 successfully completed as of January 2026. MD Arvind Kapil stated: 'AI is more than a tool \u2014 it is reshaping how organisations think, decide, and compete.' The company has deployed AI across risk calibration, fraud detection, marketing, compliance, HR, governance, audit, and underwriting quality assessment.","impact":"57 AI projects initiated; 30 completed by Jan 2026; covers risk, fraud, marketing, compliance, HR, governance, and audit.","functions":["Strategy & Partnerships"],"source_name":"Business Standard","source_url":"https://www.business-standard.com/markets/capital-market-news/poonawalla-fincorp-deepens-commitment-to-its-ai-first-approach-126012800222_1.html","date":"28 Jan 2026"},{"title":"IIT Bombay Partnership for AI-Powered Underwriting System","description":"Poonawalla Fincorp partnered with IIT Bombay to develop an AI-driven underwriting system integrating large language models and machine learning to automate credit evaluations. The system is expected to increase retail lending productivity by 40% and features self-learning capabilities allowing the AI model to refine decisions through pattern recognition. Prof. Pushpak Bhattacharyya from IIT Bombay's CS department confirmed the collaboration extends to multiple financial services projects.","impact":"40% retail lending productivity increase projected; LLM + ML with self-learning deep-learning capabilities; IIT Bombay CS dept.","functions":["Credit Underwriting & Risk"],"source_name":"DQ India","source_url":"https://www.dqindia.com/news/poonawalla-fincorp-embraces-ai-for-transformative-hr-revolution-8556670","date":"01 Dec 2024"},{"title":"Five New Enterprise AI Solutions Deployed in October 2025","description":"Poonawalla Fincorp deployed five new AI-powered solutions in October 2025: an Early Warning System (EWS) for workforce risk, a Travel Bot for operational mobility, RegIntel for compliance intelligence, an ER Governance Tool for employee relations, and an AI-driven Suspicious Transaction Reporting (STR) system for financial crime compliance. These solutions embed AI into core operations, shifting from reactive to predictive and prescriptive approaches.","impact":"5 solutions live: EWS (workforce risk), Travel Bot, RegIntel, ER Governance, Suspicious Transaction Reporting.","functions":["Compliance & Governance","HR & Operations"],"source_name":"Business Standard","source_url":"https://www.business-standard.com/markets/capital-market-news/poonawalla-fincorp-deploys-5-ai-powered-solutions-for-its-digital-transformation-125102700142_1.html","date":"27 Oct 2025"},{"title":"AI-Powered HR Revolution: Hiring Time Cut 90% with IIT Bombay","description":"Poonawalla Fincorp pioneered AI integration in its HR processes, reducing job offer finalization time from ten days to under one day \u2014 a 90% decrease. AI tools handle document verification, candidate screening, real-time assessments, and automated job postings. The system eliminates hiring bias by evaluating candidates on technical and cognitive skills. A WhatsApp AI bot is also being developed for employee self-service on leave, payroll, and HR policy queries.","impact":"Hiring time 10 days \u2192 <1 day (90% reduction); AI screening, bias elimination; WhatsApp HR bot for employee self-service.","functions":["HR & Operations"],"source_name":"India Technology News / CRN India","source_url":"https://indiatechnologynews.in/poonawalla-fincorp-integrates-artificial-intelligence-ai-into-its-human-resources-hr-strategic-business-unit/","date":"01 Dec 2024"},{"title":"AI Competition Benchmarking Engine and 4 New Solutions (Jan 2026)","description":"In January 2026, Poonawalla Fincorp launched an AI-powered Competition Benchmarking Engine that autonomously monitors competitor pricing moves, product shifts, and engagement patterns \u2014 converting market intelligence into decision-ready insights. Additional solutions launched include a Central KYC AI Platform (reducing manual intervention by ~15%), Agentic Data Quality Intelligence, AI-led Voice of Customer Categorisation, and 'Build Buddy', an AI development assistant.","impact":"Competition intelligence automated; Central KYC (~15% manual intervention reduction); Build Buddy dev assistant; Agentic Data Quality.","functions":["Sales & Marketing","Compliance & Governance","Document Processing & KYC"],"source_name":"Technuter / SME Street","source_url":"https://technuter.com/artificial-intelligence/poonawalla-fincorp-deepens-ai-first-transformation-with-five-new-enterprise-ai-solutions.html","date":"28 Jan 2026"},{"title":"AI-Powered Underwriting System: International Coverage","description":"Poonawalla Fincorp's AI-powered underwriting system was covered internationally, highlighting how the NBFC is automating credit evaluation using LLMs and ML platforms with human cognitive design principles. The company intends to enhance the system with advanced deep-learning algorithms and self-learning capabilities in future phases, positioning it as a model for AI-driven credit transformation in India's NBFC sector.","impact":"LLM + ML credit evaluation with human cognitive design; future deep-learning upgrades; recognized as India NBFC AI model.","functions":["Credit Underwriting & Risk"],"source_name":"Finance Director Europe","source_url":"https://www.financedirectoreurope.com/news/poonawalla-fincorp-introduces-ai-powered-underwriting-system/","date":"01 Dec 2024"}]},"ai_functions":["Credit Underwriting & Risk","Customer Service & Chatbots","Collections","Sales & Marketing","Digital Lending & Origination","Document Processing & KYC","HR & Operations","Compliance & Governance","Strategy & Partnerships"],"sh":{"Shriram Finance":{"category_pct":{"Promoter":[25.4,25.38,25.38,25.36,25.38,25.39,25.39,25.38],"FII":[53.88,52.84,51.62,50.11,49.2,48.47,47.82,47.16],"DII":[15.73,16.24,17.14,18.32,19.11,19.84,20.54,21.32],"Public":[4.99,5.54,5.86,6.21,6.31,6.3,6.25,6.14]},"named_entities":[{"name":"Shriram Capital Ltd","category":"Promoter","pct":[17.87,17.87,17.87,17.85,17.87,17.87,17.87,17.87]},{"name":"Shriram Ownership Trust","category":"Promoter","pct":[7.53,7.51,7.51,7.51,7.51,7.52,7.52,7.51]},{"name":"Govt of Singapore","category":"FII","pct":[6.1,5.92,5.68,5.43,5.12,4.89,4.75,4.66]},{"name":"Norges Bank (Norway SWF)","category":"FII","pct":[2.84,2.91,2.97,3.02,3.04,3.08,3.1,3.13]},{"name":"Vanguard Group","category":"FII","pct":[2.21,2.18,2.15,2.11,2.08,2.05,2.02,1.99]},{"name":"BlackRock Inc.","category":"FII","pct":[2.07,2.04,2.01,1.98,1.96,1.93,1.91,1.88]},{"name":"Societe Generale","category":"FII","pct":[null,null,null,1.21,1.42,1.6,1.73,1.82]},{"name":"Fidelity (FMR LLC)","category":"FII","pct":[1.58,1.61,1.63,1.64,1.65,1.63,1.61,1.58]},{"name":"Capital Group","category":"FII","pct":[1.72,1.69,1.65,1.6,1.54,1.47,1.4,1.33]},{"name":"Templeton (Franklin)","category":"FII","pct":[1.34,1.3,1.25,1.19,1.12,1.05,1.0,null]},{"name":"HDFC Mutual Fund","category":"DII \u2013 MF","pct":[4.21,4.58,5.01,5.67,6.12,6.48,6.83,7.14]},{"name":"SBI Mutual Fund","category":"DII \u2013 MF","pct":[1.83,1.97,2.14,2.31,2.47,2.61,2.73,2.84]},{"name":"Nippon India MF","category":"DII \u2013 MF","pct":[1.24,1.31,1.38,1.44,1.48,1.51,1.53,1.55]},{"name":"ICICI Pru Mutual Fund","category":"DII \u2013 MF","pct":[1.02,1.09,1.14,1.19,1.23,1.25,1.27,1.28]},{"name":"LIC of India","category":"DII \u2013 Insurance","pct":[3.87,3.72,3.6,3.45,3.31,3.18,3.08,2.99]},{"name":"NPS Trust","category":"DII \u2013 Pension","pct":[1.41,1.52,1.63,1.74,1.84,1.93,2.03,2.18]}]},"Poonawalla Fincorp":{"category_pct":{"Promoter":[62.13,62.09,61.87,62.36,62.53,62.46,63.96,63.95],"FII":[7.76,7.85,7.72,8.19,9.99,10.76,10.56,10.61],"DII":[5.81,6.77,9.63,11.82,11.12,12.26,12.28,12.22],"Public":[24.31,23.3,20.77,17.63,16.36,14.51,13.2,13.21]},"named_entities":[{"name":"Rising Sun Holdings Pvt Ltd","category":"Promoter","pct":[62.13,62.09,61.87,62.36,62.53,62.46,63.96,63.95]},{"name":"Amansa Holdings Private Limited","category":"FII","pct":[2.2,2.05,2.07,1.95,1.95,1.92,1.75,1.51]},{"name":"Bank Muscat India Fund","category":"FII","pct":[1.13,1.13,1.13,1.13,1.13,1.12,1.08,1.08]},{"name":"Franklin Templeton Investment Funds \u2013 Franklin India Fund","category":"FII","pct":[null,null,null,null,null,1.19,1.14,1.14]},{"name":"Kotak Mahindra Trustee Co Ltd A/C Kotak Multicap Fund","category":"DII \u2013 MF","pct":[null,null,null,2.43,2.81,3.34,4.24,4.17]},{"name":"Quant Mutual Fund \u2013 Quant Mid Cap Fund","category":"DII \u2013 MF","pct":[1.91,1.91,1.9,1.9,null,null,null,null]},{"name":"Bandhan Value Fund","category":"DII \u2013 MF","pct":[null,null,null,null,null,1.05,1.13,1.23]},{"name":"Bandhan Sterling Value Fund","category":"DII \u2013 MF","pct":[null,null,1.06,null,1.02,null,null,null]},{"name":"Life Insurance Corporation Of India","category":"DII \u2013 Insurance","pct":[null,1.47,1.8,1.97,2.93,3.21,3.08,3.07]},{"name":"SBI Life Insurance Co. Ltd","category":"DII \u2013 Insurance","pct":[null,null,2.66,2.66,2.44,2.53,1.8,1.56]},{"name":"Mayank Poddar","category":"Public","pct":[2.12,2.12,2.12,2.12,2.12,2.12,1.06,1.06]}]},"Bajaj Finance":{"category_pct":{"Promoter":[54.69,54.7,54.7,54.7,54.73,54.73,54.67,54.7],"FII":[20.55,21.08,20.81,20.79,21.45,21.71,21.97,21.49],"DII":[14.4,14.32,15.1,15.16,14.86,14.6,14.47,14.94],"Public":[10.35,9.91,9.41,9.36,8.94,8.95,8.9,8.87]},"named_entities":[{"name":"Bajaj Finserv Limited","category":"Promoter","pct":[51.34,51.34,51.34,51.34,51.39,51.39,51.32,51.32]},{"name":"Maharashtra Scooters Limited","category":"Promoter","pct":[3.07,3.07,3.07,3.07,3.05,3.05,3.05,3.05]},{"name":"Government of Singapore (GIC)","category":"FII","pct":[3.41,3.31,3.08,3.03,2.55,2.42,2.5,2.16]},{"name":"SBI Mutual Fund","category":"DII \u2013 MF","pct":[3.06,2.76,2.61,2.53,2.37,2.04,1.98,2.31]},{"name":"Axis Mutual Fund","category":"DII \u2013 MF","pct":[1.64,1.4,1.32,1.04,1.07,1.08,1.05,null]},{"name":"UTI Mutual Fund","category":"DII \u2013 MF","pct":[1.05,1.05,1.06,1.03,null,1.13,1.14,1.13]},{"name":"Life Insurance Corporation Of India","category":"DII \u2013 Insurance","pct":[1.51,1.93,2.49,2.84,2.77,2.62,2.35,2.38]},{"name":"NPS Trust","category":"DII \u2013 Pension","pct":[null,null,null,null,null,null,1.07,1.37]}]},"Cholamandalam Finance":{"category_pct":{"Promoter":[50.35,50.33,50.24,49.93,49.92,49.9,49.88,49.72],"FII":[26.0,26.62,27.18,27.43,28.23,27.96,26.85,26.55],"DII":[17.04,16.86,16.58,16.1,15.49,16.06,17.27,17.55],"Public":[6.61,6.19,6.01,6.54,6.36,6.08,6.0,6.17]},"named_entities":[{"name":"Cholamandalam Financial Holdings Ltd","category":"Promoter","pct":[44.39,44.38,44.37,44.35,44.34,44.33,44.32,44.18]},{"name":"Ambadi Investments Limited","category":"Promoter","pct":[4.01,4.01,4.01,4.01,4.01,4.01,4.01,4.0]},{"name":"New World Fund Inc (Capital Group)","category":"FII","pct":[1.71,1.9,1.94,2.02,1.86,1.72,1.72,1.71]},{"name":"Smallcap World Fund, Inc (Capital Group)","category":"FII","pct":[1.44,1.38,1.38,1.34,1.31,1.29,1.29,1.07]},{"name":"Government Pension Fund Global (Norges)","category":"FII","pct":[1.19,1.24,1.07,1.63,1.39,1.09,1.12,1.06]},{"name":"EuroPacific Growth Fund (Capital Group)","category":"FII","pct":[1.01,1.15,1.15,null,null,null,null,null]},{"name":"Axis Mutual Fund","category":"DII \u2013 MF","pct":[3.98,3.86,3.43,2.57,2.39,2.23,2.04,1.93]},{"name":"SBI Mutual Fund","category":"DII \u2013 MF","pct":[1.57,2.02,1.82,1.54,1.62,1.5,1.39,1.22]},{"name":"HDFC Mutual Fund","category":"DII \u2013 MF","pct":[1.23,1.21,1.22,1.33,1.25,1.12,null,null]},{"name":"Aditya Birla Sun Life Mutual Fund","category":"DII \u2013 MF","pct":[1.15,1.09,1.0,1.03,1.02,null,null,null]},{"name":"Canara Robeco Mutual Fund","category":"DII \u2013 MF","pct":[null,1.08,1.24,1.13,null,null,null,null]},{"name":"Invesco India Mutual Fund","category":"DII \u2013 MF","pct":[null,null,null,null,null,1.01,1.2,1.21]},{"name":"Motilal Oswal Mutual Fund","category":"DII \u2013 MF","pct":[null,null,null,null,null,1.14,1.15,1.08]},{"name":"Kotak Mahindra Mutual Fund","category":"DII \u2013 MF","pct":[null,null,null,null,null,null,null,1.16]},{"name":"NPS Trust (SBI Pension Fund)","category":"DII \u2013 Pension","pct":[null,null,null,null,null,1.31,1.31,2.56]}]},"L&T Finance":{"category_pct":{"Promoter":[65.86,66.37,66.29,66.25,66.24,66.16,66.1,66.03],"FII":[11.05,7.33,6.73,5.3,5.48,6.19,6.41,6.66],"DII":[8.7,11.64,12.33,12.17,13.29,14.11,14.32,15.33],"Public":[14.4,14.65,14.65,16.27,15.0,13.54,13.17,11.98]},"named_entities":[{"name":"Larsen and Toubro Limited","category":"Promoter","pct":[65.86,66.37,66.29,66.25,66.24,66.16,66.1,66.03]},{"name":"BNP Paribas Financial Markets (ODI)","category":"FII","pct":[2.43,null,null,null,null,null,null,null]},{"name":"Mirae Asset Large & Midcap Fund","category":"DII \u2013 MF","pct":[null,1.74,2.57,2.88,3.46,3.47,2.88,1.8]},{"name":"Invesco India Mutual Fund","category":"DII \u2013 MF","pct":[null,1.23,1.07,1.17,1.29,1.65,1.72,1.75]},{"name":"Kotak Midcap Fund","category":"DII \u2013 MF","pct":[null,null,null,null,null,null,1.31,1.8]},{"name":"Axis Mutual Fund","category":"DII \u2013 MF","pct":[null,null,null,null,null,null,1.1,1.29]},{"name":"Motilal Oswal Mutual Fund","category":"DII \u2013 MF","pct":[null,null,null,null,null,null,null,1.63]},{"name":"Life Insurance Corporation Of India","category":"DII \u2013 Insurance","pct":[1.94,1.94,1.94,2.07,2.28,1.7,null,null]},{"name":"ICICI Prudential Life Insurance","category":"DII \u2013 Insurance","pct":[1.51,1.5,1.46,1.44,1.44,1.47,null,1.17]},{"name":"Tata AIA Life Insurance","category":"DII \u2013 Insurance","pct":[null,null,null,1.46,1.54,1.58,null,null]}]}},"sh_quarters":["Q4FY24","Q1FY25","Q2FY25","Q3FY25","Q4FY25","Q1FY26","Q2FY26","Q3FY26"],"sh_cat_colors":{"Promoter":"#10b981","FII":"#0284c7","DII":"#f97316","Public":"#94a3b8"},"sh_entity_colors":{"Promoter":"#10b981","FII":"#0284c7","DII \u2013 MF":"#fde68a","DII \u2013 Insurance":"#fecdd3","DII \u2013 Pension":"#8b5cf6","DII \u2013 Other":"#64748b"},"sh_badge_text":{"DII \u2013 MF":"#78350f","DII \u2013 Insurance":"#9f1239"}};
+
+// QUARTER_ENDS for P/B stepped BVPS
+const QUARTER_ENDS = [
+  ['2024-03-31', 0], ['2024-06-30', 1], ['2024-09-30', 2], ['2024-12-31', 3],
+  ['2025-03-31', 4], ['2025-06-30', 5], ['2025-09-30', 6], ['2025-12-31', 7],
+];
+
+// Yahoo Finance CORS fetch
+async function yfFetch(sym, params='interval=1d&range=1y') {
+  const u1 = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?${params}`;
+  const u2 = `https://query2.finance.yahoo.com/v8/finance/chart/${sym}?${params}`;
+  const u3 = `https://api.allorigins.win/raw?url=${encodeURIComponent(u1)}`;
+  const hdrs = {'Accept':'application/json','User-Agent':'Mozilla/5.0'};
+  for (const url of [u1, u2, u3]) {
+    try {
+      const r = await fetch(url, {headers: hdrs});
+      if (!r.ok) continue;
+      const j = await r.json();
+      const res = j?.chart?.result?.[0];
+      if (!res) continue;
+      return res;
+    } catch {}
+  }
+  return null;
+}
+
+function parseYFResult(res) {
+  if (!res) return null;
+  const ts = res.timestamp;
+  const closes = res.indicators?.quote?.[0]?.close;
+  const volumes = res.indicators?.quote?.[0]?.volume;
+  if (!ts || !closes) return null;
+  const dates = ts.map(t => new Date(t * 1000).toISOString().slice(0, 10));
+  return { dates, closes, volumes };
+}
+
+function baseLayout(title='', extra={}) {
+  return Object.assign({
+    title: {text: title, font: {size: 13, color: '#1e293b'}, x: 0.01},
+    paper_bgcolor: 'white', plot_bgcolor: 'white',
+    margin: {l: 45, r: 15, t: title ? 36 : 15, b: 50},
+    font: {family: 'Inter, sans-serif', size: 11, color: '#64748b'},
+    legend: {orientation: 'h', y: -0.18, font: {size: 10}},
+    xaxis: {gridcolor: '#f1f5f9', linecolor: '#e2e8f0'},
+    yaxis: {gridcolor: '#f1f5f9', linecolor: '#e2e8f0', zeroline: false},
+    hovermode: 'x unified',
+    autosize: true,
+  }, extra);
+}
+
+function heatColor(val, lo, hi, invert=false) {
+  if (val == null) return '#f8fafc';
+  let t = hi === lo ? 0.5 : (val - lo) / (hi - lo);
+  if (invert) t = 1 - t;
+  t = Math.max(0, Math.min(1, t));
+  if (t < 0.5) {
+    const r = Math.round(239 + (255 - 239) * (1 - t * 2));
+    const g = Math.round(68 + (246 - 68) * t * 2);
+    return `rgb(${r},${g},58)`;
+  } else {
+    const r = Math.round(255 + (34 - 255) * ((t - 0.5) * 2));
+    const g = Math.round(246 + (197 - 246) * ((t - 0.5) * 2));
+    return `rgb(${r},${g},${t < 0.75 ? 58 : 94})`;
+  }
+}
+
+function lastNonNull(arr) {
+  for (let i = arr.length - 1; i >= 0; i--) if (arr[i] != null) return arr[i];
+  return null;
+}
+
+function makeTrend(elId, nbfcs, metric, title='') {
+  const traces = nbfcs.map(n => {
+    const ck = SD.cache_key[n];
+    const vals = SD.timeseries[ck]?.[metric] ?? [];
+    return {
+      x: SD.quarters, y: vals, name: n,
+      line: {color: SD.colors[n], width: 2},
+      mode: 'lines+markers', type: 'scatter',
+      connectgaps: true,
+      hovertemplate: `${n}: %{y}<extra></extra>`,
+    };
+  });
+  Plotly.react(elId, traces, baseLayout(title), {responsive: true, displayModeBar: false});
+}
+
+function makeBar(elId, nbfcs, metric, title='') {
+  const traces = nbfcs.map(n => {
+    const ck = SD.cache_key[n];
+    const vals = SD.timeseries[ck]?.[metric] ?? [];
+    return {
+      x: SD.quarters, y: vals, name: n,
+      marker: {color: SD.colors[n]},
+      type: 'bar',
+      hovertemplate: `${n}: %{y}<extra></extra>`,
+    };
+  });
+  Plotly.react(elId, traces, Object.assign(baseLayout(title), {barmode: 'group'}), {responsive: true, displayModeBar: false});
+}
+
+function makeGrowth(elId, nbfcs, metric, title='', mode='qoq') {
+  const traces = nbfcs.map(n => {
+    const ck = SD.cache_key[n];
+    const vals = SD.timeseries[ck]?.[metric] ?? [];
+    const gr = [];
+    for (let i = 1; i < vals.length; i++) {
+      const prev = mode === 'yoy' && i >= 4 ? vals[i - 4] : vals[i - 1];
+      if (prev && prev !== 0 && vals[i] != null) {
+        gr.push(((vals[i] - prev) / Math.abs(prev) * 100).toFixed(1) * 1);
+      } else { gr.push(null); }
+    }
+    const xq = mode === 'yoy' ? SD.quarters.slice(4) : SD.quarters.slice(1);
+    return {
+      x: xq, y: gr, name: n,
+      line: {color: SD.colors[n], width: 2},
+      mode: 'lines+markers', type: 'scatter',
+      connectgaps: true,
+      hovertemplate: `${n}: %{y:.1f}%<extra></extra>`,
+    };
+  });
+  Plotly.react(elId, traces, baseLayout(title), {responsive: true, displayModeBar: false});
+}
+
+function app() {
+  return {
+    tabs: [
+      {id:'market',label:'📈 Market'},
+      {id:'financials',label:'💰 Financials'},
+      {id:'quality',label:'🏦 Asset Quality'},
+      {id:'capital',label:'🏗️ Capital & Leverage'},
+      {id:'profit',label:'📊 Profitability'},
+      {id:'valuation',label:'📉 Valuation'},
+      {id:'deepdive',label:'🔬 Deep Dive'},
+      {id:'rankings',label:'🏆 Rankings'},
+      {id:'ai',label:'🤖 AI Bulletin'},
+      {id:'shareholding',label:'👥 Shareholding'},
+    ],
+    activeTab: 'market',
+    lastUpdated: 'Loading prices…',
+    prices: {},
+    selectedNBFCs: ['Bajaj Finance','Shriram Finance','L&T Finance','Poonawalla Fincorp'],
+    finNBFCs: ['Bajaj Finance','Shriram Finance','Poonawalla Fincorp'],
+    aqNBFCs: ['Bajaj Finance','Shriram Finance','Poonawalla Fincorp'],
+    capNBFCs: ['Bajaj Finance','Shriram Finance','Poonawalla Fincorp'],
+    profNBFCs: ['Bajaj Finance','Shriram Finance','Poonawalla Fincorp'],
+    periods: ['1W','1M','3M','6M','1Y','3Y','5Y'],
+    period: '6M',
+    useCustom: false,
+    customStart: '',
+    customEnd: '',
+    valNBFC: 'Bajaj Finance',
+    ddNBFC: 'Bajaj Finance',
+    shNBFC: 'Shriram Finance',
+    aiNBFC: 'all',
+    aiFunc: 'all',
+    aiSort: 'nbfc',
+    aiCount: 0,
+    perfLoaded: false,
+    mcLoaded: false,
+
+    async init() {
+      this.loadPrices();
+      // Load perf after tiny delay so DOM is ready
+      setTimeout(() => this.loadPerf(), 300);
+    },
+
+    switchTab(id) {
+      this.activeTab = id;
+      this.$nextTick(() => {
+        if (id === 'market') {
+          if (!this.perfLoaded) this.loadPerf();
+          if (!this.mcLoaded) this.loadMC();
+        }
+        if (id === 'financials') this.renderFinancials();
+        if (id === 'quality') this.renderAQ();
+        if (id === 'capital') this.renderCapital();
+        if (id === 'profit') this.renderProfit();
+        if (id === 'valuation') this.renderPB();
+        if (id === 'deepdive') this.renderDD();
+        if (id === 'rankings') this.renderRankings();
+        if (id === 'ai') this.renderAI();
+        if (id === 'shareholding') { this.renderSHHeatmap(); this.renderSH(); }
+      });
+    },
+
+    toggleNBFC(n, group) {
+      const map = {perf:'selectedNBFCs', fin:'finNBFCs', aq:'aqNBFCs', cap:'capNBFCs', prof:'profNBFCs'};
+      const key = map[group];
+      if (key === 'finNBFCs' && n === 'Poonawalla Fincorp') return;
+      const arr = this[key];
+      const idx = arr.indexOf(n);
+      if (idx >= 0) { if (arr.length > 1) arr.splice(idx, 1); }
+      else arr.push(n);
+      if (group === 'perf') this.loadPerf();
+      if (group === 'fin') this.renderFinancials();
+      if (group === 'aq') this.renderAQ();
+      if (group === 'cap') this.renderCapital();
+      if (group === 'prof') this.renderProfit();
+    },
+
+    async loadPrices() {
+      // Fetch 5d OHLCV for each NBFC from Yahoo Finance
+      const all = SD.nbfcs_list.map(async (name) => {
+        const sym = SD.tickers[name];
+        const res = await yfFetch(sym, 'interval=1d&range=5d');
+        if (!res) return;
+        const parsed = parseYFResult(res);
+        if (!parsed || parsed.closes.length < 2) return;
+        const closes = parsed.closes.filter(v => v != null);
+        if (closes.length < 2) return;
+        const cur = closes[closes.length - 1];
+        const prev = closes[closes.length - 2];
+        const vols = parsed.volumes?.filter(v => v != null) ?? [];
+        const vol = vols[vols.length - 1] ?? 0;
+        // Market cap from fast_info: no server, so estimate from latest data
+        const lat = SD.latest[name];
+        this.prices[name] = {
+          price: Math.round(cur * 100) / 100,
+          change_abs: Math.round((cur - prev) * 100) / 100,
+          change_pct: Math.round((cur - prev) / prev * 10000) / 100,
+          volume: vol,
+          mktcap_cr: null,
+        };
+      });
+      await Promise.allSettled(all);
+      this.lastUpdated = 'Prices as of ' + new Date().toLocaleTimeString();
+      // Try to load MC in parallel
+      this.loadMC();
+    },
+
+    async loadPerf() {
+      this.perfLoaded = true;
+      const el = document.getElementById('perf-chart');
+      if (!el) return;
+      el.innerHTML = '<div class="spinner"><svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg></div>';
+      
+      // Build range param
+      const rangeMap = {'1W':'5d','1M':'1mo','3M':'3mo','6M':'6mo','1Y':'1y','3Y':'3y','5Y':'5y'};
+      let params;
+      if (this.useCustom && this.customStart && this.customEnd) {
+        const s = Math.floor(new Date(this.customStart).getTime()/1000);
+        const e = Math.floor(new Date(this.customEnd).getTime()/1000);
+        params = `interval=1d&period1=${s}&period2=${e}`;
+      } else {
+        params = `interval=1d&range=${rangeMap[this.period]||'6mo'}`;
+      }
+
+      const traces = [];
+      await Promise.allSettled(this.selectedNBFCs.map(async (name) => {
+        const sym = SD.tickers[name];
+        const res = await yfFetch(sym, params);
+        const parsed = parseYFResult(res);
+        if (!parsed) return;
+        const validPairs = parsed.dates.map((d,i) => [d, parsed.closes[i]]).filter(p => p[1] != null);
+        if (validPairs.length < 2) return;
+        const base = validPairs[0][1];
+        traces.push({
+          x: validPairs.map(p => p[0]),
+          y: validPairs.map(p => Math.round(p[1]/base*10000)/100),
+          name, mode: 'lines', type: 'scatter',
+          line: {color: SD.colors[name], width: 2},
+          hovertemplate: `${name}: %{y:.2f}<extra></extra>`,
+        });
+      }));
+
+      if (traces.length === 0) {
+        el.innerHTML = '<div class="spinner text-red-400">Failed to load data. Please try again later.</div>';
+        return;
+      }
+
+      const layout = Object.assign(baseLayout(), {
+        yaxis: {gridcolor:'#f1f5f9', linecolor:'#e2e8f0', zeroline:false, ticksuffix:''},
+        shapes: [{type:'line', x0:0, x1:1, xref:'paper', y0:100, y1:100,
+          line:{color:'#94a3b8', width:1, dash:'dot'}}],
+      });
+      Plotly.react('perf-chart', traces, layout, {responsive:true, displayModeBar:false});
+    },
+
+    async loadMC() {
+      this.mcLoaded = true;
+      const el = document.getElementById('mktcap-chart');
+      if (!el) return;
+      
+      const traces = [];
+      await Promise.allSettled(this.selectedNBFCs.map(async (name) => {
+        const sym = SD.tickers[name];
+        const res = await yfFetch(sym, 'interval=1d&range=1y');
+        const parsed = parseYFResult(res);
+        if (!parsed) return;
+        // We need shares outstanding — use net_worth / bvps as proxy
+        const lat = SD.latest[name];
+        const bvps = lat?.bvps_inr;
+        const nw_cr = lat?.net_worth_cr;
+        let shares = null;
+        if (bvps && nw_cr) {
+          // net_worth_cr * 1e7 / bvps_inr = shares
+          shares = Math.round(nw_cr * 1e7 / bvps);
+        }
+        if (!shares) return;
+        const validPairs = parsed.dates.map((d,i) => [d, parsed.closes[i]]).filter(p => p[1] != null);
+        if (!validPairs.length) return;
+        // market cap in lakh crore: price * shares / 1e12 (crore = 1e7)
+        const mcs = validPairs.map(p => Math.round(p[1] * shares / 1e10) / 100); // in lakh cr
+        traces.push({
+          x: validPairs.map(p => p[0]),
+          y: mcs,
+          name, mode: 'lines', type: 'scatter',
+          line: {color: SD.colors[name], width: 2},
+          hovertemplate: `${name}: ₹%{y:.2f}L Cr<extra></extra>`,
+        });
+        // Also update prices mktcap
+        if (this.prices[name]) {
+          this.prices[name].mktcap_cr = Math.round(validPairs[validPairs.length-1][1] * shares / 1e7);
+        }
+      }));
+
+      if (traces.length === 0) {
+        el.innerHTML = '<div class="spinner text-red-400">Failed to load market cap data.</div>';
+        return;
+      }
+      Plotly.react('mktcap-chart', traces, baseLayout(), {responsive:true, displayModeBar:false});
+    },
+
+    renderFinancials() {
+      const nb = this.finNBFCs;
+      makeBar('aum-bar', nb, 'aum_cr', 'AUM (₹ Cr)');
+      makeGrowth('aum-qoq', nb, 'aum_cr', 'AUM QoQ Growth %', 'qoq');
+      makeGrowth('aum-yoy', nb, 'aum_cr', 'AUM YoY Growth %', 'yoy');
+      makeBar('pat-bar', nb, 'pat_cr', 'PAT (₹ Cr)');
+      makeGrowth('pat-qoq', nb, 'pat_cr', 'PAT QoQ Growth %', 'qoq');
+      makeGrowth('pat-yoy', nb, 'pat_cr', 'PAT YoY Growth %', 'yoy');
+      makeTrend('nim-trend', nb, 'nim_pct', 'NIM %');
+    },
+
+    renderAQ() {
+      const nb = this.aqNBFCs;
+      makeTrend('gnpa-chart', nb, 'gnpa_pct');
+      makeTrend('nnpa-chart', nb, 'nnpa_pct');
+      makeTrend('pcr-chart', nb, 'pcr_pct');
+    },
+
+    renderCapital() {
+      const nb = this.capNBFCs;
+      makeTrend('cob-chart', nb, 'cost_of_borrowing_pct');
+      makeTrend('de-chart', nb, 'd_e_ratio');
+      makeTrend('car-chart', nb, 'car_pct');
+      makeTrend('t1-chart', nb, 't1_pct');
+      makeTrend('t2-chart', nb, 't2_pct');
+    },
+
+    renderProfit() {
+      const nb = this.profNBFCs;
+      makeTrend('roa-chart', nb, 'roa_pct');
+      makeTrend('roe-chart', nb, 'roe_pct');
+    },
+
+    async renderPB() {
+      const el = document.getElementById('pb-chart');
+      if (!el) return;
+      el.innerHTML = '<div class="spinner"><svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg></div>';
+      
+      const name = this.valNBFC;
+      const sym = SD.tickers[name];
+      const ck = SD.cache_key[name];
+      const bvpsVals = SD.timeseries[ck]?.bvps_inr ?? [];
+
+      const res = await yfFetch(sym, 'interval=1d&range=2y');
+      const parsed = parseYFResult(res);
+      if (!parsed) {
+        el.innerHTML = '<div class="spinner text-red-400">Failed to load price data.</div>';
+        return;
+      }
+
+      const dates=[], pbs=[], prices=[], bvpsList=[];
+      for (let i = 0; i < parsed.dates.length; i++) {
+        const d = parsed.dates[i];
+        const price = parsed.closes[i];
+        if (!price || price <= 0) continue;
+        // Find BVPS using stepped quarterly logic
+        let bvps = null;
+        for (let j = QUARTER_ENDS.length - 1; j >= 0; j--) {
+          const [qend, idx] = QUARTER_ENDS[j];
+          if (d >= qend) {
+            const bv = bvpsVals[idx];
+            if (bv != null && bv > 0) { bvps = bv; }
+            break;
+          }
+        }
+        if (!bvps) continue;
+        dates.push(d);
+        pbs.push(Math.round(price / bvps * 1000) / 1000);
+        prices.push(Math.round(price * 100) / 100);
+        bvpsList.push(bvps);
+      }
+
+      if (!dates.length) {
+        el.innerHTML = '<div class="spinner text-red-400">No P/B data available.</div>';
+        return;
+      }
+
+      const traces = [
+        {
+          x: dates, y: pbs, name: 'P/B Ratio',
+          mode: 'lines', type: 'scatter',
+          line: {color: SD.colors[name], width: 2},
+          yaxis: 'y1',
+          hovertemplate: 'P/B: %{y:.3f}<extra></extra>',
+        },
+        {
+          x: dates, y: bvpsList, name: 'BVPS (₹)',
+          mode: 'lines', type: 'scatter',
+          line: {color: '#94a3b8', width: 1.5, dash: 'dot'},
+          yaxis: 'y2',
+          hovertemplate: 'BVPS: ₹%{y}<extra></extra>',
+        },
+      ];
+
+      const layout = Object.assign(baseLayout('P/B Ratio — ' + name), {
+        yaxis: {title: 'P/B Ratio', gridcolor:'#f1f5f9'},
+        yaxis2: {title: 'BVPS (₹)', overlaying:'y', side:'right', showgrid:false},
+        shapes: [{
+          type:'line', x0:dates[0], x1:dates[dates.length-1],
+          y0:1, y1:1, line:{color:'#ef4444', width:1.5, dash:'dot'},
+        }],
+        annotations: [{
+          x: dates[Math.floor(dates.length/4)], y: 1,
+          text: 'P/B = 1', showarrow: false,
+          font: {size: 10, color: '#ef4444'},
+          yshift: 8,
+        }],
+      });
+      Plotly.react('pb-chart', traces, layout, {responsive:true, displayModeBar:false});
+    },
+
+    renderDD() {
+      const name = this.ddNBFC;
+      const ck = SD.cache_key[name];
+      const ts = SD.timeseries[ck] ?? {};
+      
+      const metrics = [
+        ['aum_cr','AUM (₹Cr)',false],
+        ['pat_cr','PAT (₹Cr)',false],
+        ['nim_pct','NIM %',false],
+        ['roa_pct','ROA %',false],
+        ['roe_pct','ROE %',false],
+        ['gnpa_pct','GNPA %',true],
+        ['nnpa_pct','NNPA %',true],
+        ['pcr_pct','PCR %',false],
+        ['cost_of_borrowing_pct','CoB %',true],
+        ['d_e_ratio','D/E',true],
+        ['car_pct','CAR %',false],
+        ['t1_pct','Tier 1 %',false],
+        ['t2_pct','Tier 2 %',true],
+        ['bvps_inr','BVPS (₹)',false],
+      ];
+
+      let html = '<table class="heatmap-table"><thead><tr><th class="row-h">Metric</th>';
+      for (const q of SD.quarters) html += `<th>${q}</th>`;
+      html += '</tr></thead><tbody>';
+
+      for (const [key, label, invert] of metrics) {
+        const vals = ts[key] ?? [];
+        const validVals = vals.filter(v => v != null);
+        const lo = Math.min(...validVals);
+        const hi = Math.max(...validVals);
+        html += `<tr><td class="row-h">${label}</td>`;
+        for (const v of vals) {
+          const bg = heatColor(v, lo, hi, invert);
+          const lum = v != null ? (parseInt(bg.slice(4))*0.299 + parseInt(bg.split(',')[1])*0.587 + parseInt(bg.split(',')[2])*0.114) : 255;
+          const fg = lum < 128 ? 'white' : '#1e293b';
+          const disp = v != null ? (Number.isInteger(v) ? v.toLocaleString() : v.toFixed(2)) : '—';
+          html += `<td style="background:${bg};color:${fg}">${disp}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      document.getElementById('dd-heatmap').innerHTML = html;
+    },
+
+    renderRankings() {
+      // Highlight cards
+      const lat = SD.latest;
+      const nbfcs = SD.nbfcs_list;
+      
+      let maxAUM = {name:'', val:0}, maxPAT = {name:'', val:0}, maxROA = {name:'', val:0}, minGNPA = {name:'', val:Infinity};
+      for (const n of nbfcs) {
+        const d = lat[n];
+        if (!d) continue;
+        if ((d.aum_cr||0) > maxAUM.val) maxAUM = {name:n, val:d.aum_cr};
+        if ((d.pat_cr||0) > maxPAT.val) maxPAT = {name:n, val:d.pat_cr};
+        if ((d.roa_pct||0) > maxROA.val) maxROA = {name:n, val:d.roa_pct};
+        if ((d.gnpa_pct||Infinity) < minGNPA.val) minGNPA = {name:n, val:d.gnpa_pct};
+      }
+
+      const hlData = [
+        {label:'Largest AUM', name:maxAUM.name, val:'₹'+maxAUM.val?.toLocaleString()+' Cr', c:'#0284c7'},
+        {label:'Highest PAT', name:maxPAT.name, val:'₹'+maxPAT.val?.toLocaleString()+' Cr', c:'#10b981'},
+        {label:'Best ROA', name:maxROA.name, val:maxROA.val?.toFixed(2)+'%', c:'#f97316'},
+        {label:'Cleanest Book (GNPA)', name:minGNPA.name, val:minGNPA.val?.toFixed(2)+'%', c:'#8b5cf6'},
+      ];
+      document.getElementById('hl-cards').innerHTML = hlData.map(h =>
+        `<div class="hl-card" style="--c:${h.c}">
+          <div class="text-xs font-semibold text-slate-500 mb-1">${h.label}</div>
+          <div class="font-bold text-slate-800">${h.name}</div>
+          <div class="text-lg font-bold mt-1" style="color:${h.c}">${h.val}</div>
+        </div>`
+      ).join('');
+
+      // Rankings heatmap table
+      const metrics = [
+        ['aum_cr','AUM (₹Cr)',false],
+        ['pat_cr','PAT (₹Cr)',false],
+        ['nim_pct','NIM %',false],
+        ['roa_pct','ROA %',false],
+        ['roe_pct','ROE %',false],
+        ['gnpa_pct','GNPA %',true],
+        ['nnpa_pct','NNPA %',true],
+        ['pcr_pct','PCR %',false],
+        ['cost_of_borrowing_pct','CoB %',true],
+        ['d_e_ratio','D/E',true],
+        ['car_pct','CAR %',false],
+      ];
+
+      // Compute column min/max
+      const colRange = {};
+      for (const [key,,] of metrics) {
+        const vals = nbfcs.map(n => lat[n]?.[key]).filter(v => v != null);
+        colRange[key] = {lo: Math.min(...vals), hi: Math.max(...vals)};
+      }
+
+      let html = '<table class="heatmap-table"><thead><tr><th class="row-h">NBFC</th>';
+      for (const [,label,] of metrics) html += `<th>${label}</th>`;
+      html += '</tr></thead><tbody>';
+      
+      for (const n of nbfcs) {
+        const d = lat[n] ?? {};
+        html += `<tr><td class="row-h">${n}</td>`;
+        for (const [key,,invert] of metrics) {
+          const v = d[key];
+          const {lo,hi} = colRange[key];
+          const bg = heatColor(v, lo, hi, invert);
+          const parts = bg.slice(4,-1).split(',').map(Number);
+          const lum = parts[0]*0.299 + parts[1]*0.587 + (parts[2]||0)*0.114;
+          const fg = lum < 128 ? 'white' : '#1e293b';
+          const disp = v != null ? (key==='aum_cr'||key==='pat_cr' ? Math.round(v).toLocaleString() : v.toFixed(2)) : '—';
+          html += `<td style="background:${bg};color:${fg}">${disp}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      document.getElementById('rank-heatmap').innerHTML = html;
+    },
+
+    renderAI() {
+      const ai = SD.ai;
+      let all = [];
+      for (const [nbfc, inits] of Object.entries(ai)) {
+        for (const item of inits) {
+          all.push({...item, nbfc});
+        }
+      }
+      // Filter
+      if (this.aiNBFC !== 'all') all = all.filter(i => i.nbfc === this.aiNBFC);
+      if (this.aiFunc !== 'all') all = all.filter(i => i.functions?.includes(this.aiFunc));
+      // Sort
+      if (this.aiSort === 'date') all.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+      else if (this.aiSort === 'impact') {
+        const impMap = {High:3,Medium:2,Low:1};
+        all.sort((a,b) => (impMap[b.impact]||0)-(impMap[a.impact]||0));
+      } else {
+        all.sort((a,b) => a.nbfc.localeCompare(b.nbfc));
+      }
+      this.aiCount = all.length;
+
+      const impColors = {High:'bg-green-100 text-green-800', Medium:'bg-yellow-100 text-yellow-800', Low:'bg-slate-100 text-slate-600'};
+      const html = all.map(item => {
+        const ic = impColors[item.impact] || 'bg-slate-100 text-slate-600';
+        const funcs = (item.functions||[]).map(f => `<span class="tag">${f}</span>`).join('');
+        const srcLink = item.source_url ? `<a href="${item.source_url}" target="_blank" class="text-sky-600 hover:underline text-xs">${item.source_name||'Source'} ↗</a>` : '';
+        return `<div class="ai-card">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <span class="font-semibold text-slate-800 text-sm leading-snug">${item.title}</span>
+            <span class="badge ${ic} shrink-0">${item.impact||''}</span>
+          </div>
+          <div class="text-xs text-sky-700 font-semibold mb-1" style="color:${SD.colors[item.nbfc]||'#0284c7'}">${item.nbfc}</div>
+          <div class="text-xs text-slate-600 mb-2 leading-relaxed">${item.description||''}</div>
+          <div class="flex flex-wrap mb-2">${funcs}</div>
+          <div class="flex items-center justify-between">
+            ${srcLink}
+            <span class="text-xs text-slate-400">${item.date||''}</span>
+          </div>
+        </div>`;
+      }).join('');
+      document.getElementById('ai-cards').innerHTML = html || '<div class="text-slate-400 text-sm col-span-3 p-8 text-center">No initiatives match current filters.</div>';
+    },
+
+    renderSHHeatmap() {
+      const sh = SD.sh;
+      const cats = ['Promoter','FII','DII','Public'];
+      const shNBFCs = Object.keys(sh);
+      const lastQ = SD.sh_quarters.length - 1;
+
+      let html = '<table class="heatmap-table"><thead><tr><th class="row-h">NBFC</th>';
+      for (const c of cats) html += `<th>${c} %</th>`;
+      html += '</tr></thead><tbody>';
+
+      for (const n of shNBFCs) {
+        html += `<tr><td class="row-h">${n}</td>`;
+        for (const cat of cats) {
+          const vals = sh[n].category_pct[cat] ?? [];
+          const v = vals[lastQ] ?? vals[vals.length-1];
+          const lo = Math.min(...vals.filter(x=>x!=null));
+          const hi = Math.max(...vals.filter(x=>x!=null));
+          const bg = heatColor(v, lo, hi, false);
+          const parts = bg.slice(4,-1).split(',').map(Number);
+          const lum = parts[0]*0.299 + parts[1]*0.587 + (parts[2]||0)*0.114;
+          const fg = lum < 128 ? 'white' : '#1e293b';
+          html += `<td style="background:${bg};color:${fg}">${v!=null?v.toFixed(2)+'%':'—'}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      document.getElementById('sh-heatmap').innerHTML = html;
+    },
+
+    renderSH() {
+      const n = this.shNBFC;
+      const sh = SD.sh[n];
+      if (!sh) return;
+      const cats = ['Promoter','FII','DII','Public'];
+      const catColors = SD.sh_cat_colors;
+      const qtrs = SD.sh_quarters;
+      const lastQ = qtrs.length - 1;
+      const firstQ = 0;
+
+      // Summary cards
+      const sumCards = cats.map(cat => {
+        const vals = sh.category_pct[cat] ?? [];
+        const cur = vals[lastQ] ?? vals[vals.length-1];
+        const old = vals[firstQ];
+        const delta = (cur != null && old != null) ? cur - old : null;
+        const arrow = delta == null ? '' : delta > 0.01 ? '▲' : delta < -0.01 ? '▼' : '→';
+        const dColor = delta > 0.01 ? '#16a34a' : delta < -0.01 ? '#dc2626' : '#94a3b8';
+        return `<div class="sh-cat-card" style="--c:${catColors[cat]||'#94a3b8'}">
+          <div class="text-xs font-semibold text-slate-500 mb-1">${cat}</div>
+          <div class="text-2xl font-bold" style="color:${catColors[cat]}">${cur!=null?cur.toFixed(2)+'%':'—'}</div>
+          <div class="text-xs mt-1" style="color:${dColor}">${arrow} ${delta!=null?Math.abs(delta).toFixed(2)+'% vs Q4FY24':''}</div>
+        </div>`;
+      });
+      document.getElementById('sh-summary').innerHTML = sumCards.join('');
+
+      // Entity timeline table
+      const ents = sh.named_entities ?? [];
+      if (!ents.length) {
+        document.getElementById('sh-table').innerHTML = '<div class="text-slate-400 text-sm p-4">No entity data available.</div>';
+        return;
+      }
+
+      let html = '<table class="sh-table"><thead><tr><th>Shareholder</th><th>Category</th>';
+      for (const q of qtrs) html += `<th>${q}</th>`;
+      html += '<th>Trend</th></tr></thead><tbody>';
+
+      for (const ent of ents) {
+        const vals = ent.pct ?? [];
+        const cat = ent.category ?? '';
+        const catColor = catColors[cat] || '#94a3b8';
+        // Trend indicator
+        const first = vals.find(v=>v!=null);
+        const last = [...vals].reverse().find(v=>v!=null);
+        let trend='→', tColor='#94a3b8';
+        if (first!=null && last!=null) {
+          if (last-first > 0.5) { trend='▲'; tColor='#16a34a'; }
+          else if (first-last > 0.5) { trend='▼'; tColor='#dc2626'; }
+        }
+        html += `<tr>
+          <td class="font-medium text-slate-800">${ent.name}</td>
+          <td><span class="badge" style="background:${catColor}20;color:${catColor}">${cat}</span></td>`;
+        for (const v of vals) {
+          html += `<td>${v!=null?v.toFixed(2)+'%':'—'}</td>`;
+        }
+        html += `<td style="color:${tColor};font-weight:700;font-size:1rem">${trend}</td></tr>`;
+      }
+      html += '</tbody></table>';
+      document.getElementById('sh-table').innerHTML = html;
+    },
+  };
+}
+</script>
+</body>
+</html>
