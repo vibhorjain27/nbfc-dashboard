@@ -165,7 +165,7 @@ NBFC_Q4FY26 = [
         "segment": "Consumer / SME Loans",
         "aum_cr": 60348,
         "pat_cr": 255,
-        "nim_pct": 8.85,
+        "nim_pct": 9.05,
         "roa_pct": 1.81,
         "roe_pct": None,          # Not reported
         "gnpa_pct": 1.44,
@@ -200,7 +200,7 @@ NBFC_TIMESERIES = {
         "nnpa_pct":              [0.59,   0.32,   0.33,   0.81,   0.85,   0.85,   0.81,   0.80,   0.74  ],
         "pcr_pct":               [49.39,  52.53,  84.47,  56.79,  54.47,  53.93,  49.65,  47.75,  49.0  ],
         "pat_cr":                [332,    292,    -471,   19,     62,     63,     74,     150,    255   ],
-        "nim_pct":               [10.90,  10.40,  9.30,   9.00,   8.60,   8.32,   8.40,   8.62,   8.85  ],  # Q4FY24–Q4FY25 estimated; Q1FY26+ official
+        "nim_pct":               [10.90,  10.40,  9.30,   9.00,   8.60,   8.32,   8.40,   8.62,   9.05  ],  # Q4FY24–Q4FY25 estimated; Q1FY26+ official
         "roa_pct":               [5.73,   4.62,   0.00,   0.26,   0.76,   0.68,   0.69,   1.20,   1.81  ],  # Q2FY25 = 0 (negative PAT quarter, avoids line break)
         "roe_pct":               [None,   None,   None,   None,   None,   None,   None,   None,   None  ],  # not reported
         "cost_of_borrowing_pct": [8.17,   8.16,   8.10,   8.06,   8.07,   8.04,   7.69,   7.65,   7.63  ],
