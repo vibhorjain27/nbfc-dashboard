@@ -292,16 +292,34 @@ def make_bar_chart(metric, selected, title, ylabel, fmt='cr', height=380):
     data = get_series(metric)
     fig = go.Figure()
 
+    def _last_label(v):
+        if v is None:
+            return ''
+        if fmt == 'cr':
+            if abs(v) >= 100000:
+                return f'₹{v/1000:.0f}k'
+            elif abs(v) >= 1000:
+                return f'₹{v/1000:.1f}k'
+            else:
+                return f'₹{int(v)}'
+        return f'{v:,.0f}'
+
     for name in selected:
         vals = data[name]
         color = COLORS[name]
         x_vals = list(range(len(Q_LABELS)))
+        last_val = vals[-1] if vals else None
+        texts = [''] * (len(vals) - 1) + [_last_label(last_val)]
         fig.add_trace(go.Bar(
             x=x_vals,
             y=vals,
             name=name,
             marker_color=color,
             opacity=0.85,
+            text=texts,
+            textposition='outside',
+            textfont=dict(size=9, family='Inter', color=color),
+            cliponaxis=False,
             hovertemplate=f"<b>{name}</b><br>%{{x}}<br>{ylabel}: %{{y:,.0f}}<extra></extra>",
         ))
 
@@ -313,7 +331,7 @@ def make_bar_chart(metric, selected, title, ylabel, fmt='cr', height=380):
         barmode='group',
         showlegend=True,
         legend=dict(orientation='h', y=-0.18, x=0.5, xanchor='center', font=dict(size=10)),
-        margin=dict(l=55, r=20, t=55, b=90),
+        margin=dict(l=55, r=20, t=65, b=90),
         title=dict(text=title_html, x=0, xref='paper', font=dict(family='Inter')),
         xaxis=dict(
             tickmode='array',
