@@ -342,7 +342,7 @@ def make_yoy_chart(metric, selected, title, height=310):
     """YoY growth line chart for last 4 quarters."""
     data = get_series(metric)
     YOY_LABELS = ["Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26", "Q4FY26"]
-    YOY_PAIRS = [(4, 0), (5, 1), (6, 2), (7, 3)]
+    YOY_PAIRS = [(4, 0), (5, 1), (6, 2), (7, 3), (8, 4)]
 
     series_info = []
     for name in selected:
