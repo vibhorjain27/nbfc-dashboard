@@ -119,7 +119,7 @@ COLORS = {
 
 DISPLAY_NAMES = list(NBFCS.keys())
 DEFAULT_COMPARISON = ['Bajaj Finance', 'Shriram Finance', 'L&T Finance']
-Q_LABELS = CACHE_QUARTERS  # ["Q4FY24", "Q1FY25", ..., "Q3FY26"]
+Q_LABELS = CACHE_QUARTERS  # ["Q4FY24", "Q1FY25", ..., "Q4FY26"]
 
 # ── DATA HELPERS ───────────────────────────────────────────────────────────────
 def get_series(metric: str) -> dict:
@@ -158,7 +158,7 @@ def _fmt_val(v, fmt):
 
 
 def make_trend_chart(metric, selected, title, ylabel, fmt='pct', note=None, height=420, lower_is_better=False):
-    """Line chart for a single metric across selected NBFCs over 8 quarters."""
+    """Line chart for a single metric across selected NBFCs over 9 quarters."""
     data = get_series(metric)
 
     # Collect series and sort by last value descending
@@ -341,7 +341,7 @@ def make_bar_chart(metric, selected, title, ylabel, fmt='cr', height=380):
 def make_yoy_chart(metric, selected, title, height=310):
     """YoY growth line chart for last 4 quarters."""
     data = get_series(metric)
-    YOY_LABELS = ["Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26"]
+    YOY_LABELS = ["Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26", "Q4FY26"]
     YOY_PAIRS = [(4, 0), (5, 1), (6, 2), (7, 3)]
 
     series_info = []
@@ -466,10 +466,10 @@ def make_yoy_chart(metric, selected, title, height=310):
 
 
 def make_qoq_chart(metric, selected, title, height=310):
-    """QoQ growth line chart for Q1FY25 through Q3FY26."""
+    """QoQ growth line chart for Q1FY25 through Q4FY26."""
     data = get_series(metric)
-    QOQ_LABELS = ["Q1FY25", "Q2FY25", "Q3FY25", "Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26"]
-    QOQ_PAIRS = [(1, 0), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6)]
+    QOQ_LABELS = ["Q1FY25", "Q2FY25", "Q3FY25", "Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26", "Q4FY26"]
+    QOQ_PAIRS = [(1, 0), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7)]
 
     series_info = []
     for name in selected:
@@ -877,7 +877,7 @@ def build_rankings_table():
         ('car_pct', 'CAR %', 'pct', False),
         ('bvps_inr', 'BVPS (₹)', 'bvps', False),
     ]
-    Q_IDX = 7
+    Q_IDX = 8
 
     def _fmt_cell(v, fmt):
         if v is None:
@@ -1125,7 +1125,7 @@ def make_deep_dive(nbfc_disp):
             )
         })
 
-    title_text = f'<b style="color:#0a2540;font-size:16px;">{nbfc_disp} — All Metrics Q4FY24 → Q3FY26</b>'
+    title_text = f'<b style="color:#0a2540;font-size:16px;">{nbfc_disp} — All Metrics Q4FY24 → Q4FY26</b>'
     fig.update_layout(
         height=1020,
         showlegend=False,
@@ -1759,7 +1759,7 @@ with tab2:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Growth &amp; Scale</div>
-      <div class="tab-intro-sub">Q4FY24 – Q3FY26 · AUM · PAT · NIM · 8 quarters · 9 NBFCs</div>
+      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · AUM · PAT · NIM · 9 quarters · 9 NBFCs</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1801,7 +1801,7 @@ with tab3:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Asset Quality</div>
-      <div class="tab-intro-sub">Q4FY24 – Q3FY26 · GNPA · NNPA · PCR</div>
+      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · GNPA · NNPA · PCR</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1829,7 +1829,7 @@ with tab4:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Capital Structure &amp; Leverage</div>
-      <div class="tab-intro-sub">Q4FY24 – Q3FY26 · CoB · D/E · CAR · Tier 1 · Tier 2</div>
+      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · CoB · D/E · CAR · Tier 1 · Tier 2</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1867,7 +1867,7 @@ with tab5:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Profitability Ratios</div>
-      <div class="tab-intro-sub">Q4FY24 – Q3FY26 · ROA · ROE · 8 quarters · 9 NBFCs</div>
+      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · ROA · ROE · 9 quarters · 9 NBFCs</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1886,7 +1886,7 @@ with tab6:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Valuation Metrics</div>
-      <div class="tab-intro-sub">Q4FY24 – Q3FY26 · BVPS · P/B Ratio · Daily prices over quarterly book value</div>
+      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · BVPS · P/B Ratio · Daily prices over quarterly book value</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1915,7 +1915,7 @@ with tab6:
     st.markdown("""
     <div class="metric-note">
       P/B = Daily NSE closing price ÷ most recently reported quarterly BVPS.
-      BVPS steps up at each quarter-end (Q4FY24–Q3FY26). Dotted line at P/B = 1 (book value floor).
+      BVPS steps up at each quarter-end (Q4FY24–Q4FY26). Dotted line at P/B = 1 (book value floor).
       Lower P/B may indicate undervaluation relative to peers.
     </div>
     """, unsafe_allow_html=True)
@@ -1926,7 +1926,7 @@ with tab7:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Company Deep Dive</div>
-      <div class="tab-intro-sub">Select an NBFC to view all 14 metrics across 8 quarters · Tier 1 &amp; Tier 2 where disclosed</div>
+      <div class="tab-intro-sub">Select an NBFC to view all 14 metrics across 9 quarters · Tier 1 &amp; Tier 2 where disclosed</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1953,7 +1953,7 @@ with tab7:
 with tab8:
     st.markdown("""
     <div class="tab-intro">
-      <div class="tab-intro-title">Peer Scorecard — Q3 FY26</div>
+      <div class="tab-intro-title">Peer Scorecard — Q4 FY26</div>
       <div class="tab-intro-sub">All 9 NBFCs · 11 metrics · Red → Yellow → Green spectrum within each column</div>
     </div>
     """, unsafe_allow_html=True)
@@ -1969,16 +1969,16 @@ with tab8:
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="section-label">Quick Highlights — Q3 FY26</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-label">Quick Highlights — Q4 FY26</div>', unsafe_allow_html=True)
 
     # Compute highlights
-    Q_IDX = 7
+    Q_IDX = 8
 
-    def _get_q3(metric):
+    def _get_q4(metric):
         best_name, best_val = None, None
         for name in DISPLAY_NAMES:
             cache = CACHE_KEY[name]
-            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 8)
+            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 9)
             v = vals[Q_IDX] if Q_IDX < len(vals) else None
             if v is not None:
                 if best_val is None or v > best_val:
@@ -1986,11 +1986,11 @@ with tab8:
                     best_name = name
         return best_name, best_val
 
-    def _get_q3_min(metric):
+    def _get_q4_min(metric):
         best_name, best_val = None, None
         for name in DISPLAY_NAMES:
             cache = CACHE_KEY[name]
-            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 8)
+            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 9)
             v = vals[Q_IDX] if Q_IDX < len(vals) else None
             if v is not None:
                 if best_val is None or v < best_val:
@@ -1998,17 +1998,17 @@ with tab8:
                     best_name = name
         return best_name, best_val
 
-    aum_name, aum_val = _get_q3('aum_cr')
-    pat_name, pat_val = _get_q3('pat_cr')
-    roa_name, roa_val = _get_q3('roa_pct')
-    gnpa_name, gnpa_val = _get_q3_min('gnpa_pct')
+    aum_name, aum_val = _get_q4('aum_cr')
+    pat_name, pat_val = _get_q4('pat_cr')
+    roa_name, roa_val = _get_q4('roa_pct')
+    gnpa_name, gnpa_val = _get_q4_min('gnpa_pct')
 
     hl_cols = st.columns(4)
     highlights = [
-        ("Largest AUM", aum_name, f"₹{int(aum_val):,} Cr" if aum_val else "—", "AUM Q3FY26", '#0284c7'),
-        ("Highest PAT", pat_name, f"₹{int(pat_val):,} Cr" if pat_val else "—", "PAT Q3FY26", '#10b981'),
-        ("Best ROA", roa_name, f"{roa_val:.2f}%" if roa_val else "—", "ROA Q3FY26", '#f97316'),
-        ("Cleanest Book", gnpa_name, f"GNPA {gnpa_val:.2f}%" if gnpa_val else "—", "GNPA Q3FY26", '#8b5cf6'),
+        ("Largest AUM", aum_name, f"₹{int(aum_val):,} Cr" if aum_val else "—", "AUM Q4FY26", '#0284c7'),
+        ("Highest PAT", pat_name, f"₹{int(pat_val):,} Cr" if pat_val else "—", "PAT Q4FY26", '#10b981'),
+        ("Best ROA", roa_name, f"{roa_val:.2f}%" if roa_val else "—", "ROA Q4FY26", '#f97316'),
+        ("Cleanest Book", gnpa_name, f"GNPA {gnpa_val:.2f}%" if gnpa_val else "—", "GNPA Q4FY26", '#8b5cf6'),
     ]
 
     for i, (label, name, value, note_txt, color) in enumerate(highlights):
@@ -2124,7 +2124,7 @@ with tab10:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Shareholding Pattern</div>
-      <div class="tab-intro-sub">BSE quarterly filings · Q4FY24 – Q3FY26 (8 quarters) · Named shareholders ≥1%</div>
+      <div class="tab-intro-sub">BSE quarterly filings · Q4FY24 – Q4FY26 (9 quarters) · Named shareholders ≥1%</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2276,9 +2276,9 @@ with tab10:
 
     DII_CATS = ["DII – MF", "DII – Insurance", "DII – Pension", "DII – Other"]
 
-    # ── Section 1 — Q3FY26 Cross-NBFC Snapshot ───────────────────────────────
+    # ── Section 1 — Q4FY26 Cross-NBFC Snapshot ───────────────────────────────
     st.markdown("""
-    <div class="section-label">Q3FY26 Snapshot — All NBFCs
+    <div class="section-label">Q4FY26 Snapshot — All NBFCs
       <span class="section-label-sub" style="margin-left:8px;">Current quarter shareholding · % of paid-up capital</span>
     </div>
     """, unsafe_allow_html=True)
@@ -2398,7 +2398,7 @@ with tab10:
         st.markdown(f"""
         <div class="section-label">≥1% Shareholders
           <span class="section-label-sub" style="margin-left:8px;">
-            {sh_sel} · Q4FY24 – Q3FY26 · green = building · red = reducing ·
+            {sh_sel} · Q4FY24 – Q4FY26 · green = building · red = reducing ·
             ● = new entry · ○ = exited · shaded rows = category totals
           </span>
         </div>
@@ -2487,7 +2487,7 @@ st.markdown("""
 <div style="font-size:10px;color:#94a3b8;font-family:'JetBrains Mono',monospace;
             border-top:1px solid #e2e8f0;padding-top:8px;margin-top:14px;">
     Data: Screener.in investor presentations · Yahoo Finance (market prices) ·
-    Q4FY24–Q3FY26 (8 quarters) · 9 NBFCs · Last refreshed: Feb 2026
+    Q4FY24–Q4FY26 (9 quarters) · 9 NBFCs · Last refreshed: May 2026
 </div>
 """, unsafe_allow_html=True)
 
