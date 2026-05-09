@@ -65,8 +65,8 @@ st.markdown("""
 .ai-date-badge { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 3px; }
 .ai-source-link { font-size: 11px; color: #0284c7; text-decoration: none; }
 .sh-table { border-collapse: collapse; width: 100%; font-size: 12px; }
-.sh-table th { background: #0a2540; color: white; padding: 7px 10px; font-size: 10.5px; }
-.sh-table td { padding: 6px 10px; border-bottom: 1px solid #f1f5f9; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+.sh-table th { background: #0a2540; color: white; padding: 7px 10px; font-size: 10.5px; text-align: center; }
+.sh-table td { padding: 6px 10px; border-bottom: 1px solid #f1f5f9; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; text-align: center; }
 .sh-td-name { text-align: left; font-family: 'Inter', sans-serif !important; font-size: 12px; font-weight: 600; color: #0a2540; max-width: 200px; }
 .sh-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 10px; padding: 2px 9px; }
 .sh-cell-up { color: #16a34a; }
@@ -2221,8 +2221,9 @@ with tab10:
                 cells += f'<td class="{cls}" style="font-weight:700;background:{bg};">{val:.2f}%</td>'
                 prev = val
         fv, lv = sh_first(vals_list), sh_latest(vals_list)
-        if fv is not None and lv is not None:
-            d = lv - fv
+        non_none_vals = [v for v in vals_list if v is not None]
+        if len(non_none_vals) >= 2:
+            d = non_none_vals[-1] - non_none_vals[-2]
             if d > 0.04:
                 trend = f'<span class="sh-cell-up">▲ {abs(d):.2f}%</span>'
             elif d < -0.04:
@@ -2235,7 +2236,7 @@ with tab10:
             f'<tr style="background:{bg};">'
             f'<td class="sh-td-name" style="font-weight:700;color:#0a2540;">{label}</td>'
             f'<td></td>{cells}'
-            f'<td style="font-size:10.5px;">{trend}</td>'
+            f'<td style="font-size:10.5px;text-align:center;">{trend}</td>'
             f'</tr>'
         )
 
@@ -2280,19 +2281,20 @@ with tab10:
                 is_last_exit = (qi == last_app_i and is_exited)
                 cells += _cell_html(val, prev_val, is_first, is_last_exit)
 
-            # Trend
+            # Trend: QoQ change between last two non-None data points
             fv, lv = sh_first(pct_vals), sh_latest(pct_vals)
-            if is_exited and fv is not None and lv is not None:
-                d = lv - fv
-                trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}% → exited</span>'
-            elif fv is not None and lv is not None:
-                d = lv - fv
+            non_none_vals = [v for v in pct_vals if v is not None]
+            if len(non_none_vals) >= 2:
+                d = non_none_vals[-1] - non_none_vals[-2]
+                suffix = " → exited" if is_exited else ""
                 if d > 0.04:
-                    trend = f'<span class="sh-cell-up">▲ {abs(d):.2f}%</span>'
+                    trend = f'<span class="sh-cell-up">▲ {abs(d):.2f}%{suffix}</span>'
                 elif d < -0.04:
-                    trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%</span>'
+                    trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%{suffix}</span>'
                 else:
-                    trend = '<span class="sh-cell-flat">→ flat</span>'
+                    trend = f'<span class="sh-cell-flat">→ {"exited" if is_exited else "flat"}</span>'
+            elif is_exited:
+                trend = '<span class="sh-cell-flat">→ exited</span>'
             else:
                 trend = "—"
 
@@ -2303,9 +2305,9 @@ with tab10:
             html += (
                 f'<tr>'
                 f'<td class="sh-td-name">{ent["name"]}</td>'
-                f'<td style="padding:6px 10px;">{badge}</td>'
+                f'<td style="padding:6px 10px;text-align:center;">{badge}</td>'
                 f'{cells}'
-                f'<td style="font-size:10.5px;">{trend}</td>'
+                f'<td style="font-size:10.5px;text-align:center;">{trend}</td>'
                 f'</tr>'
             )
         return html
@@ -2445,10 +2447,10 @@ with tab10:
 
         header_html = '<thead><tr>'
         header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:left;font-size:10.5px;min-width:180px;">Shareholder</th>'
-        header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:left;font-size:10.5px;">Category</th>'
+        header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:center;font-size:10.5px;">Category</th>'
         for q in SH_QUARTERS:
-            header_html += f'<th style="background:#0a2540;color:white;padding:7px 10px;text-align:right;font-size:10.5px;">{q}</th>'
-        header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:left;font-size:10.5px;">Trend</th>'
+            header_html += f'<th style="background:#0a2540;color:white;padding:7px 10px;text-align:center;font-size:10.5px;">{q}</th>'
+        header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:center;font-size:10.5px;">Trend</th>'
         header_html += '</tr></thead>'
 
         # Group entities
