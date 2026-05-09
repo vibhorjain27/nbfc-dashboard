@@ -461,15 +461,15 @@ SHAREHOLDING = {
 
     # ── L&T FINANCE ────────────────────────────────────────────────────────────
     # BSE code 533519 · NSE: LTF · L&T Group NBFC
-    # Source: NSE corporate-share-holdings API (fetched Feb 2026)
+    # Source: Screener.in (fetched May 2026)
     "L&T Finance": {
 
         "category_pct": {
-            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-            "Promoter": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03,   None,   None],
-            "FII":      [11.05,   7.33,   6.73,   5.30,   5.48,   6.19,   6.41,   6.66,   None,   None],
-            "DII":      [ 8.70,  11.64,  12.33,  12.17,  13.29,  14.11,  14.32,  15.33,   None,   None],
-            "Public":   [14.40,  14.65,  14.65,  16.27,  15.00,  13.54,  13.17,  11.98,   None,   None],
+            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+            "Promoter": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03,  65.99,  65.99],
+            "FII":      [11.04,   7.34,   6.73,   5.30,   5.48,   6.19,   6.40,   6.66,   7.64,   7.64],
+            "DII":      [ 8.69,  11.64,  12.33,  12.17,  13.28,  14.10,  14.33,  15.33,  14.91,  14.91],
+            "Public":   [14.39,  14.66,  14.66,  16.27,  15.01,  13.55,  13.15,  11.99,  11.48,  11.48],
         },
 
         "named_entities": [
@@ -478,13 +478,11 @@ SHAREHOLDING = {
             {
                 "name":     "Larsen and Toubro Limited",
                 "category": "Promoter",
-                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-                "pct": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03,   None,   None],
+                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03,  65.99,  65.99],
             },
 
             # ── FII ─────────────────────────────────────────────────────────────
-            # BNP Paribas held via ODI (Offshore Derivative Instrument);
-            # exited after Q4FY24 — coincided with broader FII unwind from ~11% to ~7%.
             {
                 "name":     "BNP Paribas Financial Markets (ODI)",
                 "category": "FII",
@@ -495,27 +493,27 @@ SHAREHOLDING = {
             {
                 "name":     "Mirae Asset Large & Midcap Fund",
                 "category": "DII – MF",
-                "pct": [ None,   1.74,   2.57,   2.88,   3.46,   3.47,   2.88,   1.80,   None,   None],
+                "pct": [ None,   1.74,   2.57,   2.88,   3.46,   3.47,   2.88,   1.80,   1.92,   1.92],
             },
             {
-                "name":     "Invesco India Mutual Fund",
+                "name":     "Invesco India Flexi Cap Fund",
                 "category": "DII – MF",
-                "pct": [ None,   1.23,   1.07,   1.17,   1.29,   1.65,   1.72,   1.75,   None,   None],
+                "pct": [ None,   None,   None,   1.17,   1.29,   1.65,   1.72,   1.75,   1.64,   1.64],
             },
             {
                 "name":     "Kotak Midcap Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   None,   1.31,   1.80,   None,   None],
+                "pct": [ None,   None,   None,   None,   None,   None,   1.31,   1.80,   1.90,   1.90],
+            },
+            {
+                "name":     "Motilal Oswal Midcap Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.63,   1.68,   1.68],
             },
             {
                 "name":     "Axis Mutual Fund",
                 "category": "DII – MF",
                 "pct": [ None,   None,   None,   None,   None,   None,   1.10,   1.29,   None,   None],
-            },
-            {
-                "name":     "Motilal Oswal Mutual Fund",
-                "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.63,   None,   None],
             },
 
             # ── DII – Insurance ─────────────────────────────────────────────────
@@ -527,7 +525,7 @@ SHAREHOLDING = {
             {
                 "name":     "ICICI Prudential Life Insurance",
                 "category": "DII – Insurance",
-                "pct": [ 1.51,   1.50,   1.46,   1.44,   1.44,   1.47,   None,   1.17,   None,   None],
+                "pct": [ 1.51,   1.50,   1.46,   1.44,   1.44,   1.47,   None,   1.17,   1.01,   1.01],
             },
             {
                 "name":     "Tata AIA Life Insurance",
