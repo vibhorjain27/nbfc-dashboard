@@ -358,39 +358,38 @@ SHAREHOLDING = {
 
     # ── CHOLAMANDALAM FINANCE ───────────────────────────────────────────────────
     # BSE code 511243 · NSE: CHOLAFIN · Murugappa Group NBFC
-    # Source: NSE corporate-share-holdings API (fetched Feb 2026)
+    # Source: Screener.in (fetched May 2026)
     "Cholamandalam Finance": {
 
         "category_pct": {
-            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-            "Promoter": [50.35,  50.33,  50.24,  49.93,  49.92,  49.90,  49.88,  49.72,   None,   None],
-            "FII":      [26.00,  26.62,  27.18,  27.43,  28.23,  27.96,  26.85,  26.55,   None,   None],
-            "DII":      [17.04,  16.86,  16.58,  16.10,  15.49,  16.06,  17.27,  17.55,   None,   None],
-            "Public":   [ 6.61,   6.19,   6.01,   6.54,   6.36,   6.08,   6.00,   6.17,   None,   None],
+            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+            "Promoter": [50.35,  50.33,  50.24,  49.93,  49.92,  49.90,  49.88,  49.72,  49.25,  49.25],
+            "FII":      [26.00,  26.63,  27.17,  27.43,  28.23,  27.96,  26.85,  26.56,  24.87,  24.87],
+            "DII":      [17.05,  16.86,  16.58,  16.10,  15.49,  16.05,  17.27,  17.54,  19.91,  19.91],
+            "Public":   [ 6.61,   6.19,   6.02,   6.56,   6.36,   6.07,   6.00,   6.16,   5.95,   5.95],
         },
 
-        # Named shareholders ≥1% at any point across the 8 quarters.
-        # None = below 1% threshold / not separately disclosed that quarter.
+        # Named shareholders ≥1% at any point. None = below 1% or not disclosed.
         "named_entities": [
 
             # ── Promoter Group ──────────────────────────────────────────────────
             {
                 "name":     "Cholamandalam Financial Holdings Ltd",
                 "category": "Promoter",
-                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-                "pct": [44.39,  44.38,  44.37,  44.35,  44.34,  44.33,  44.32,  44.18,   None,   None],
+                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [44.39,  44.38,  44.37,  44.35,  44.34,  44.33,  44.32,  44.18,  43.76,  43.76],
             },
             {
                 "name":     "Ambadi Investments Limited",
                 "category": "Promoter",
-                "pct": [ 4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.00,   None,   None],
+                "pct": [ 4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.00,   3.96,   3.96],
             },
 
             # ── FII ─────────────────────────────────────────────────────────────
             {
                 "name":     "New World Fund Inc (Capital Group)",
                 "category": "FII",
-                "pct": [ 1.71,   1.90,   1.94,   2.02,   1.86,   1.72,   1.72,   1.71,   None,   None],
+                "pct": [ 1.71,   1.90,   1.94,   2.02,   1.86,   1.72,   1.72,   1.71,   1.62,   1.62],
             },
             {
                 "name":     "Smallcap World Fund, Inc (Capital Group)",
@@ -400,7 +399,7 @@ SHAREHOLDING = {
             {
                 "name":     "Government Pension Fund Global (Norges)",
                 "category": "FII",
-                "pct": [ 1.19,   1.24,   1.07,   1.63,   1.39,   1.09,   1.12,   1.06,   None,   None],
+                "pct": [ 1.19,   1.24,   1.07,   1.63,   1.39,   1.09,   1.12,   1.06,   1.05,   1.05],
             },
             {
                 "name":     "EuroPacific Growth Fund (Capital Group)",
@@ -412,7 +411,7 @@ SHAREHOLDING = {
             {
                 "name":     "Axis Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 3.98,   3.86,   3.43,   2.57,   2.39,   2.23,   2.04,   1.93,   None,   None],
+                "pct": [ 3.98,   3.86,   3.43,   2.57,   2.39,   2.23,   2.04,   1.93,   1.78,   1.78],
             },
             {
                 "name":     "SBI Mutual Fund",
@@ -422,7 +421,7 @@ SHAREHOLDING = {
             {
                 "name":     "HDFC Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.23,   1.21,   1.22,   1.33,   1.25,   1.12,   None,   None,   None,   None],
+                "pct": [ 1.23,   1.21,   1.22,   1.33,   1.25,   1.12,   None,   None,   1.19,   1.19],
             },
             {
                 "name":     "Aditya Birla Sun Life Mutual Fund",
@@ -442,19 +441,19 @@ SHAREHOLDING = {
             {
                 "name":     "Motilal Oswal Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   1.14,   1.15,   1.08,   None,   None],
+                "pct": [ None,   None,   None,   None,   None,   1.14,   1.15,   1.08,   1.15,   1.15],
             },
             {
                 "name":     "Kotak Mahindra Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.16,   None,   None],
+                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.16,   1.16,   1.16],
             },
 
             # ── DII – Pension / NPS ─────────────────────────────────────────────
             {
                 "name":     "NPS Trust (SBI Pension Fund)",
                 "category": "DII – Pension",
-                "pct": [ None,   None,   None,   None,   None,   1.31,   1.31,   2.56,   None,   None],
+                "pct": [ None,   None,   None,   None,   None,   1.31,   1.31,   2.56,   2.71,   2.71],
             },
         ],
     },
