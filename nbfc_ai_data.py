@@ -946,6 +946,63 @@ NBFC_AI_INITIATIVES = {
             "source_url": "https://www.financedirectoreurope.com/news/poonawalla-fincorp-introduces-ai-powered-underwriting-system/",
             "date": "01 Dec 2024",
         },
+        {
+            "title": "CII National AI Award 2025: Most Innovative Practice in Underwriting and Hiring",
+            "description": (
+                "Poonawalla Fincorp received the 'Most Innovative Practice' award at the CII "
+                "National Awards for Artificial Intelligence 2025 — in two categories: AI-powered "
+                "underwriting and AI-powered hiring. This recognition reflects the company's "
+                "simultaneous deployment of AI in both credit operations (IIT Bombay underwriting "
+                "system with self-learning LLM+ML) and HR operations (90% reduction in hiring "
+                "time). The dual award signals industry acknowledgment of PFL's breadth of AI "
+                "adoption across core business and operational functions."
+            ),
+            "impact": "CII National AI Award 2025 — dual winner in AI Underwriting and AI Hiring; industry validation of cross-functional AI deployment.",
+            "functions": ["Credit Underwriting & Risk", "HR & Operations"],
+            "source_name": "CII / Poonawalla Fincorp Q2FY26 Investor Presentation",
+            "source_url": "https://nsearchives.nseindia.com/corporate/POONAWALLA_18012026105522_4PFLInvestorPresentation17012026.pdf",
+            "date": "01 Nov 2025",
+        },
+        {
+            "title": "Unified Conversational AI Platform: 80% Autonomous Voice & Chat Resolution",
+            "description": (
+                "Poonawalla Fincorp filed a press release with BSE/NSE on April 20, 2026 announcing "
+                "the launch of its next-generation conversational AI platform — a unified omnichannel "
+                "interaction layer for all customer service. Powered by multi-agent AI orchestration, "
+                "the platform autonomously resolves up to 80% of voice and chat interactions while "
+                "routing high-empathy or complex cases to human agents. An industry-first contextual "
+                "interface provides agents with real-time customer history, loan risk flags, and "
+                "sentiment analysis. Mood-aware AI detects customer emotion to personalise support "
+                "and improve compliance. Complementary launches include: an Autonomous Testing "
+                "Agent, Agentic Process Automation, a low-code DIY Bot Creation Tool, and 'Lead "
+                "Forward' — an AI coaching platform for managers. MD Arvind Kapil called it "
+                "'a fundamental change in business architecture'."
+            ),
+            "impact": "80% autonomous voice and chat resolution; mood-aware sentiment detection; multi-agent orchestration; 41 of 57 AI initiatives now deployed.",
+            "functions": ["Customer Service & Chatbots", "HR & Operations", "Compliance & Governance"],
+            "source_name": "BSE/NSE Exchange Filing (Press Release)",
+            "source_url": "https://www.constructionworld.in/policy-updates-and-economic-news/poonawalla-fincorp-unveils-next-generation-conversational-ai-platform/90366",
+            "date": "20 Apr 2026",
+        },
+        {
+            "title": "Q4FY26 Earnings: AI Programme Reaches 76 Initiatives, 42 Deployed",
+            "description": (
+                "At the Q4 FY26 earnings call on May 5, 2026, Poonawalla Fincorp disclosed that "
+                "its AI programme had grown to 76 total initiatives — adding 19 new projects in "
+                "Q4FY26 alone — with 42 already fully implemented across the enterprise. The "
+                "earnings call featured Harsh Kumar (Head of AI and CHRO) alongside MD Arvind "
+                "Kapil, underscoring PFL's structural integration of AI into core leadership. "
+                "PAT surged 4x YoY to ₹255 crore and AUM grew 69.4% YoY to ₹60,348 crore, "
+                "with management attributing operational efficiencies to the AI-first strategy. "
+                "AI now spans customer acquisition, risk management, collections, compliance, "
+                "HR, and business analytics."
+            ),
+            "impact": "76 AI initiatives (42 deployed); 19 added in Q4FY26; PAT 4x YoY to ₹255 Cr; AUM ₹60,348 Cr (+69.4% YoY); AI Head is also CHRO.",
+            "functions": ["Strategy & Partnerships", "Credit Underwriting & Risk", "Collections"],
+            "source_name": "Business Standard / Gurufocus Earnings Call Transcript",
+            "source_url": "https://www.business-standard.com/companies/news/poonawalla-fincorp-s-q4fy26-results-net-profit-jumps-4x-to-255-crore-126050501432_1.html",
+            "date": "05 May 2026",
+        },
     ],
 }
 
