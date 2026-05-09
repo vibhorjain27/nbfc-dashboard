@@ -958,7 +958,7 @@ def build_rankings_table():
         cache = CACHE_KEY[name]
         row = []
         for metric, label, fmt, lib in METRICS:
-            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 8)
+            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 9)
             v = vals[Q_IDX] if Q_IDX < len(vals) else None
             row.append(_fmt_cell(v, fmt))
         rows[name] = row
@@ -1057,7 +1057,7 @@ def make_deep_dive(nbfc_disp):
         xref = 'x' if axis_num == 1 else f'x{axis_num}'
         yref = 'y' if axis_num == 1 else f'y{axis_num}'
 
-        vals = NBFC_TIMESERIES[cache_name].get(metric, [None] * 8)
+        vals = NBFC_TIMESERIES[cache_name].get(metric, [None] * 9)
         has_data = any(v is not None for v in vals)
 
         if has_data:
@@ -1137,6 +1137,7 @@ def make_deep_dive(nbfc_disp):
                 tickmode='array',
                 tickvals=list(range(len(Q_LABELS))),
                 ticktext=Q_LABELS,
+                range=[-0.5, len(Q_LABELS) - 0.5],
                 tickangle=45,
                 tickfont=dict(size=8),
                 showgrid=True,
