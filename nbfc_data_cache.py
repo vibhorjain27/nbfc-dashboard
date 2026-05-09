@@ -9,7 +9,7 @@
 #   - Bajaj ROA/ROE = consolidated Q4 FY26 annualized, before one-time actions
 #   - Poonawalla ROE = annualised estimate (PAT×4/Avg Equity, Screener.in); NIM = NII/Avg-AUM annualized
 #   - AB Capital CAR/T1/T2 = investor deck; NNPA derived (GNPA × (1−PCR)); T2 = CAR−T1
-#   - L&T Finance CAR/T1/T2 = investor deck Q4FY26
+#   - L&T Finance NIM = NIM + Fees (from RoA trajectory table in Q4FY26 investor deck); CAR/T1/T2 = investor deck Q4FY26
 #   - Chola Finance, Muthoot Finance, Mahindra Finance: Q4FY26 PDFs pending — Q3FY26 values retained
 #   - Piramal CAR = investor deck (consolidated); T1/T2 not disclosed; CoB = explicit 6.41%
 #   - Piramal PCR = Stage-3 PCR (29.6%); total provisions/AUM higher
@@ -129,7 +129,7 @@ NBFC_Q4FY26 = [
         "segment": "Rural / Consumer / SME",
         "aum_cr": 121728,
         "pat_cr": 807,
-        "nim_pct": 8.78,
+        "nim_pct": 10.47,         # NIM + Fees
         "roa_pct": 2.40,
         "roe_pct": 11.71,
         "gnpa_pct": 2.88,
@@ -280,7 +280,7 @@ NBFC_TIMESERIES = {
         "nnpa_pct":              [0.79,   0.96,   0.97,   0.97,   0.99,   1.00,   1.00,   0.92,   0.96  ],
         "pcr_pct":               [75,     71,     71,     71,     71,     70,     72,     72,     67    ],
         "pat_cr":                [686,    696,    626,    636,    701,    735,    760,    760,    807   ],
-        "nim_pct":               [9.31,   8.94,   8.50,   8.15,   8.24,   8.42,   8.58,   8.58,   8.78  ],
+        "nim_pct":               [11.25,  11.08,  10.86,  10.33,  10.15,  10.22,  10.22,  10.41,  10.47 ],  # NIM + Fees, from Q4FY26 investor deck (RoA trajectory table)
         "roa_pct":               [2.68,   2.60,   2.27,   2.22,   2.37,   2.41,   2.41,   2.37,   2.40  ],
         "roe_pct":               [10.5,   10.86,  11.65,  10.2,   10.5,   11.33,  11.33,  11.38,  11.71 ],
         "cost_of_borrowing_pct": [7.68,   7.84,   7.83,   7.80,   7.68,   7.40,   7.32,   7.25,   6.6   ],  # Q4FY26 derived

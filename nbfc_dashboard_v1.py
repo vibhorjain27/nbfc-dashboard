@@ -32,23 +32,25 @@ st.markdown("""
 * { font-family: 'Inter', sans-serif; }
 .main { background: #eef0f4; }
 .block-container { padding: 2.8rem 1.6rem 0.6rem 1.6rem !important; max-width: 1600px !important; }
-.section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; border-left: 2px solid #0284c7; padding-left: 7px; margin-bottom: 4px; }
-.section-label-sub { font-size: 10.5px; font-weight: 400; color: #94a3b8; }
+.section-label { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #64748b; border-left: 2px solid #0284c7; padding-left: 7px; margin-bottom: 4px; }
+.section-label-sub { font-size: 11px; font-weight: 400; color: #94a3b8; }
 .tab-intro { background: white; border-left: 4px solid #0284c7; padding: 12px 18px; border-radius: 5px; margin-bottom: 16px; }
 .tab-intro-title { font-size: 17px; font-weight: 700; color: #0a2540; }
 .tab-intro-sub { font-size: 12.5px; color: #94a3b8; }
-.metric-note { background: #f8fafc; border-radius: 4px; padding: 6px 12px; border-left: 2px solid #cbd5e1; font-size: 10.5px; color: #64748b; margin-top: 8px; }
+.metric-note { background: #f8fafc; border-radius: 4px; padding: 6px 12px; border-left: 2px solid #cbd5e1; font-size: 11px; color: #64748b; margin-top: 8px; }
 .stTabs [data-baseweb="tab-list"] { background: white; border-bottom: 1px solid #e2e8f0; gap: 0; }
 .stTabs [data-baseweb="tab"] { color: #64748b; font-size: 13px; font-weight: 500; padding: 10px 18px; border-bottom: 2px solid transparent; }
 .stTabs [aria-selected="true"] { color: #0284c7 !important; border-bottom: 2px solid #0284c7 !important; font-weight: 600; }
-.ticker-card { background: white; border-radius: 5px; padding: 12px 14px 10px 14px; border-top: 3px solid #0284c7; box-shadow: 0 1px 3px rgba(0,0,0,0.07); height: 112px; }
-.ticker-name-sm { font-size: 17px; font-weight: 600; color: #0a2540; line-height: 1.2; }
+.ticker-card { background: white; border-radius: 5px; padding: 12px 14px 10px 14px; border-top: 3px solid #0284c7; box-shadow: 0 1px 3px rgba(0,0,0,0.07); min-height: 118px; height: auto; }
+.ticker-name-sm { font-size: 15px; font-weight: 600; color: #0a2540; line-height: 1.2; }
 .ticker-sym { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #94a3b8; }
 .ticker-price { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: #0a2540; }
 .ticker-pos { color: #16a34a; font-size: 14px; font-weight: 600; }
 .ticker-neg { color: #dc2626; font-size: 14px; font-weight: 600; }
 .ticker-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #94a3b8; }
 .stButton button { background: white !important; border: 1px solid #e2e8f0 !important; color: #64748b !important; border-radius: 4px !important; padding: 3px 10px !important; height: 28px !important; font-size: 11.5px !important; }
+[data-testid="stCheckbox"] p { font-size: 13px !important; }
+[data-testid="stCheckbox"] label { font-size: 13px !important; }
 .rank-table { border-collapse: collapse; width: 100%; font-size: 12px; }
 .rank-table th { background: #0a2540; color: white; padding: 8px 10px; text-align: right; font-size: 10.5px; }
 .rank-table th:first-child { text-align: left; }
@@ -958,7 +960,7 @@ def build_rankings_table():
         cache = CACHE_KEY[name]
         row = []
         for metric, label, fmt, lib in METRICS:
-            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 8)
+            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 9)
             v = vals[Q_IDX] if Q_IDX < len(vals) else None
             row.append(_fmt_cell(v, fmt))
         rows[name] = row
@@ -1057,7 +1059,7 @@ def make_deep_dive(nbfc_disp):
         xref = 'x' if axis_num == 1 else f'x{axis_num}'
         yref = 'y' if axis_num == 1 else f'y{axis_num}'
 
-        vals = NBFC_TIMESERIES[cache_name].get(metric, [None] * 8)
+        vals = NBFC_TIMESERIES[cache_name].get(metric, [None] * 9)
         has_data = any(v is not None for v in vals)
 
         if has_data:
@@ -1137,6 +1139,7 @@ def make_deep_dive(nbfc_disp):
                 tickmode='array',
                 tickvals=list(range(len(Q_LABELS))),
                 ticktext=Q_LABELS,
+                range=[-0.5, len(Q_LABELS) - 0.5],
                 tickangle=45,
                 tickfont=dict(size=8),
                 showgrid=True,
