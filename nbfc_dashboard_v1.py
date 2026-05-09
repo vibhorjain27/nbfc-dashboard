@@ -2064,7 +2064,7 @@ with tab9:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">AI Bulletin</div>
-      <div class="tab-intro-sub">51 AI initiatives across 9 NBFCs · Jan 2021 – Feb 2026 · Research compiled 23 Feb 2026</div>
+      <div class="tab-intro-sub">56 AI initiatives across 9 NBFCs · Jan 2021 – May 2026 · Research updated 9 May 2026</div>
     </div>
     """, unsafe_allow_html=True)
 

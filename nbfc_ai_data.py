@@ -152,6 +152,39 @@ NBFC_AI_INITIATIVES = {
             "source_url": "https://www.tradingview.com/news/moneycontrol:a22b0d99a094b:0-brokerages-bullish-on-bajaj-finance-s-ai-thrust-say-operational-efficiencies-will-see-boost/",
             "date": "12 Feb 2026",
         },
+        {
+            "title": "Bajaj Tech.AI × Modern Data Company: Enterprise AI Partnership",
+            "description": (
+                "Bajaj Tech.AI (Bajaj Finance's technology arm) announced a strategic partnership "
+                "with The Modern Data Company in April 2026 to accelerate enterprise data and AI "
+                "solution delivery across financial services markets in the US and India. The "
+                "collaboration targets advanced AI-driven risk analytics, personalised lending "
+                "models, and data platform modernisation. It follows Bajaj Finance's broader "
+                "strategy of building an ecosystem of AI-focused partnerships alongside its "
+                "in-house FinAI capabilities."
+            ),
+            "impact": "Cross-border AI solutions for financial services; enterprise data platform modernisation; risk analytics and personalised lending.",
+            "functions": ["Strategy & Partnerships", "Credit Underwriting & Risk"],
+            "source_name": "Business Wire",
+            "source_url": "https://www.businesswire.com/news/home/20260420546550/en/The-Modern-Data-Company-and-Bajaj-Tech.AI-Partner-to-Deliver-Data-and-AI-Solutions-Across-US-and-India-Financial-Services",
+            "date": "20 Apr 2026",
+        },
+        {
+            "title": "Q4FY26: AI Agent Target Trimmed to 600; Consumer AI Platform by FY27",
+            "description": (
+                "At the Q4 FY26 earnings call in May 2026, Bajaj Finance revised its autonomous "
+                "agent deployment target from 800+ to 600 for FY27, citing a focus on deployment "
+                "quality over quantity. The company confirmed all 26 products now have conversational "
+                "AI bots embedded in outbound communications, with 'AI injection and AI summaries' "
+                "live from May–June 2026. A next-generation Consumer AI Platform — allowing customers "
+                "to choose 'classic mode' or 'AI mode' — is targeted by May–June 2027."
+            ),
+            "impact": "600 autonomous agents targeted for FY27; conversational AI across all 26 products live; Consumer AI Platform by May-Jun 2027.",
+            "functions": ["Strategy & Partnerships", "Customer Service & Chatbots"],
+            "source_name": "Medianama",
+            "source_url": "https://www.medianama.com/2026/05/223-q4fy26-bajaj-finance-autonomous-agent-target-800-600-fy27/",
+            "date": "07 May 2026",
+        },
     ],
 
     "Shriram Finance": [
@@ -329,6 +362,24 @@ NBFC_AI_INITIATIVES = {
             "source_name": "Tribune India (Press Release)",
             "source_url": "https://www.tribuneindia.com/news/business/lt-finance-ltd-launches-pitch-point-a-competition-for-ai-startups-ahead-of-raise-25/",
             "date": "01 Nov 2025",
+        },
+        {
+            "title": "Lakshya 2031: AI-First Retail Strategy Targeting ₹3 Lakh Crore AUM",
+            "description": (
+                "L&T Finance unveiled 'Lakshya 2031', a five-year strategic roadmap announced "
+                "alongside record FY26 results (PAT ₹3,003 Cr, retail book ₹1.19 lakh crore). "
+                "The plan targets >20% book CAGR, credit cost <2%, ROA 3.0–3.2%, and ROE 16–18% "
+                "by FY31, with AI as the core enabler. Project Nostradamus will expand from "
+                "two-wheelers to personal loans and rural business finance in H1 FY27. L&T Finance "
+                "has already deployed 10 enterprise-wide AI co-pilots spanning fraud detection, "
+                "legal processing, and credit evaluation; Project Helios has cut SME loan TAT from "
+                "21 to 14 hours (self-employed) and 37 to 25 hours (non-professionals)."
+            ),
+            "impact": "₹3 lakh crore AUM target by FY31; Nostradamus expanding to PL + rural BF; Helios TAT: 21→14 hrs (self-employed); 10 enterprise AI co-pilots.",
+            "functions": ["Strategy & Partnerships", "Credit Underwriting & Risk", "Digital Lending & Origination"],
+            "source_name": "BusinessToday / Whalesbook",
+            "source_url": "https://www.businesstoday.in/latest/corporate/story/what-is-lakshya-2031-how-lt-finance-plans-to-become-an-ai-led-retail-lender-527462-2026-04-25",
+            "date": "25 Apr 2026",
         },
     ],
 
@@ -510,6 +561,24 @@ NBFC_AI_INITIATIVES = {
             "source_name": "Entrepreneur India",
             "source_url": "https://www.entrepreneur.com/en-in/news-and-trends/aditya-birla-ventures-backs-genai-firm-articul8-ai-in/501700",
             "date": "01 Jan 2025",
+        },
+        {
+            "title": "Blue Machines AI: Voice AI Deployed Across 7 Business Verticals",
+            "description": (
+                "Aditya Birla Capital deployed Blue Machines AI's enterprise voice AI platform "
+                "across seven business verticals — mutual funds, health insurance, housing finance, "
+                "lending, investment, insurance, and broking — in approximately six weeks. The "
+                "system enables human-like dynamic conversations for prospect qualification, policy "
+                "education, SIP guidance, and loan documentation follow-ups. The platform incorporates "
+                "a hot-swap architecture for switching between LLM providers during outages, and "
+                "includes SEBI/IRDAI compliance guardrails. Customer outreach scaled 4–5x versus "
+                "traditional contact centres, with higher connect rates."
+            ),
+            "impact": "4–5x customer outreach scale; 7 business verticals; SEBI/IRDAI-compliant; hot-swap multi-LLM architecture; deployed in ~6 weeks.",
+            "functions": ["Customer Service & Chatbots", "Sales & Marketing", "Compliance & Governance"],
+            "source_name": "ANI News / CRN Asia",
+            "source_url": "https://aninews.in/news/business/aditya-birla-capital-deploys-conversational-ai-in-7-business-verticals-with-blue-machines-ai20260505121040/",
+            "date": "05 May 2026",
         },
     ],
 
@@ -760,6 +829,24 @@ NBFC_AI_INITIATIVES = {
             "source_url": "https://www.credgenics.com/mahindra-finance-press-release",
             "date": "19 Jul 2022",
         },
+        {
+            "title": "Multilingual AI Bots Serve 100,000+ Rural Customers; ₹10,000 Cr Disbursement Target",
+            "description": (
+                "Mahindra Finance integrated AI-powered multilingual bots into its customer app "
+                "leveraging Project Indus (Tech Mahindra's LLM supporting Hindi and 37 regional "
+                "dialects), enabling rural customers to resolve queries in their own language. "
+                "The bots have already engaged over 100,000 users across rural and semi-urban "
+                "markets. Separately, the company set targets to reach ₹10,000 crore in "
+                "disbursements through AI-driven customer strategies, automate 80% of operations, "
+                "and have AI support 75% of live loan collections — reflecting a structural shift "
+                "toward AI-enabled financial inclusion."
+            ),
+            "impact": "100,000+ rural users on multilingual AI bots; ₹10,000 Cr AI-driven disbursement target; 80% ops automation; 75% AI-assisted collections.",
+            "functions": ["Customer Service & Chatbots", "Collections", "Strategy & Partnerships"],
+            "source_name": "Mahindra Group / Medianama",
+            "source_url": "https://www.mahindra.com/mahindra-ai",
+            "date": "01 Feb 2026",
+        },
     ],
 
     "Poonawalla Fincorp": [
@@ -866,7 +953,7 @@ NBFC_AI_INITIATIVES = {
 # METADATA
 # ============================================================
 RESEARCH_METADATA = {
-    "compiled_date": "23 Feb 2026",
+    "compiled_date": "09 May 2026",
     "compiled_by": "Claude AI Research Agent (claude-sonnet-4-6)",
     "total_initiatives": sum(len(v) for v in NBFC_AI_INITIATIVES.values()),
     "nbfc_count": len(NBFC_AI_INITIATIVES),
