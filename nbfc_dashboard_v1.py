@@ -2221,8 +2221,9 @@ with tab10:
                 cells += f'<td class="{cls}" style="font-weight:700;background:{bg};">{val:.2f}%</td>'
                 prev = val
         fv, lv = sh_first(vals_list), sh_latest(vals_list)
-        if fv is not None and lv is not None:
-            d = lv - fv
+        non_none_vals = [v for v in vals_list if v is not None]
+        if len(non_none_vals) >= 2:
+            d = non_none_vals[-1] - non_none_vals[-2]
             if d > 0.04:
                 trend = f'<span class="sh-cell-up">▲ {abs(d):.2f}%</span>'
             elif d < -0.04:
@@ -2280,19 +2281,20 @@ with tab10:
                 is_last_exit = (qi == last_app_i and is_exited)
                 cells += _cell_html(val, prev_val, is_first, is_last_exit)
 
-            # Trend
+            # Trend: QoQ change between last two non-None data points
             fv, lv = sh_first(pct_vals), sh_latest(pct_vals)
-            if is_exited and fv is not None and lv is not None:
-                d = lv - fv
-                trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}% → exited</span>'
-            elif fv is not None and lv is not None:
-                d = lv - fv
+            non_none_vals = [v for v in pct_vals if v is not None]
+            if len(non_none_vals) >= 2:
+                d = non_none_vals[-1] - non_none_vals[-2]
+                suffix = " → exited" if is_exited else ""
                 if d > 0.04:
-                    trend = f'<span class="sh-cell-up">▲ {abs(d):.2f}%</span>'
+                    trend = f'<span class="sh-cell-up">▲ {abs(d):.2f}%{suffix}</span>'
                 elif d < -0.04:
-                    trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%</span>'
+                    trend = f'<span class="sh-cell-dn">▼ {abs(d):.2f}%{suffix}</span>'
                 else:
-                    trend = '<span class="sh-cell-flat">→ flat</span>'
+                    trend = f'<span class="sh-cell-flat">→ {"exited" if is_exited else "flat"}</span>'
+            elif is_exited:
+                trend = '<span class="sh-cell-flat">→ exited</span>'
             else:
                 trend = "—"
 
