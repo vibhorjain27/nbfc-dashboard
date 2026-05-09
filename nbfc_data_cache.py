@@ -206,8 +206,8 @@ NBFC_TIMESERIES = {
         "cost_of_borrowing_pct": [8.17,   8.16,   8.10,   8.06,   8.07,   8.04,   7.69,   7.65,   7.63  ],
         "d_e_ratio":             [1.86,   2.05,   2.26,   2.65,   3.19,   3.72,   3.64,   4.25,   4.67  ],
         "car_pct":               [33.80,  31.57,  29.22,  25.89,  22.94,  20.55,  20.85,  18.17,  16.83 ],
-        "t1_pct":                [32.28,  30.09,  None,   None,   None,   None,   None,   None,   None  ],  # Q2FY25 onward not disclosed
-        "t2_pct":                [1.52,   1.48,   None,   None,   None,   None,   None,   None,   None  ],  # Q2FY25 onward not disclosed
+        "t1_pct":                [32.28,  30.09,  27.75,  24.46,  21.67,  19.02,  19.63,  17.15,  15.90 ],
+        "t2_pct":                [1.52,   1.48,   1.47,   1.43,   1.27,   1.53,   1.22,   1.02,   0.93  ],  # derived: CAR − T1
         "bvps_inr":              [105.03, 108.21, 103.74, 103.15, 105.12, 106.12, 121.66, 123.75, 127.0 ],
     },
     "Bajaj Finance": {
