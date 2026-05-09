@@ -32,7 +32,7 @@ st.markdown("""
 * { font-family: 'Inter', sans-serif; }
 .main { background: #eef0f4; }
 .block-container { padding: 2.8rem 1.6rem 0.6rem 1.6rem !important; max-width: 1600px !important; }
-.section-label { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #64748b; border-left: 2px solid #0284c7; padding-left: 7px; margin-bottom: 4px; }
+.section-label { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #64748b; border-left: 2px solid #0284c7; padding-left: 7px; margin-bottom: 6px; margin-top: 4px; }
 .section-label-sub { font-size: 11px; font-weight: 400; color: #94a3b8; }
 .tab-intro { background: white; border-left: 4px solid #0284c7; padding: 12px 18px; border-radius: 5px; margin-bottom: 16px; }
 .tab-intro-title { font-size: 17px; font-weight: 700; color: #0a2540; }
@@ -1586,6 +1586,7 @@ with tab1:
       <span class="section-label-sub" style="margin-left:8px;">Live NSE · auto-refreshes after 5 min idle</span>
     </div>
     """, unsafe_allow_html=True)
+    st.markdown('<div style="height:14px;"></div>', unsafe_allow_html=True)
 
     with st.spinner("Fetching live prices…"):
         prices_data = get_current_prices()
