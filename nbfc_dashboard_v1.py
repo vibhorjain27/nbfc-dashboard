@@ -1955,7 +1955,7 @@ with tab7:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Company Deep Dive</div>
-      <div class="tab-intro-sub">Select an NBFC to view all 14 metrics across 9 quarters · Tier 1 &amp; Tier 2 where disclosed</div>
+      <div class="tab-intro-sub">Select an NBFC to view all 14 metrics across 9 quarters</div>
     </div>
     """, unsafe_allow_html=True)
 
