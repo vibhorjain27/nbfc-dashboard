@@ -65,8 +65,8 @@ st.markdown("""
 .ai-date-badge { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 3px; }
 .ai-source-link { font-size: 11px; color: #0284c7; text-decoration: none; }
 .sh-table { border-collapse: collapse; width: 100%; font-size: 12px; }
-.sh-table th { background: #0a2540; color: white; padding: 7px 10px; font-size: 10.5px; }
-.sh-table td { padding: 6px 10px; border-bottom: 1px solid #f1f5f9; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+.sh-table th { background: #0a2540; color: white; padding: 7px 10px; font-size: 10.5px; text-align: center; }
+.sh-table td { padding: 6px 10px; border-bottom: 1px solid #f1f5f9; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; text-align: center; }
 .sh-td-name { text-align: left; font-family: 'Inter', sans-serif !important; font-size: 12px; font-weight: 600; color: #0a2540; max-width: 200px; }
 .sh-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 10px; padding: 2px 9px; }
 .sh-cell-up { color: #16a34a; }
@@ -2235,7 +2235,7 @@ with tab10:
             f'<tr style="background:{bg};">'
             f'<td class="sh-td-name" style="font-weight:700;color:#0a2540;">{label}</td>'
             f'<td></td>{cells}'
-            f'<td style="font-size:10.5px;">{trend}</td>'
+            f'<td style="font-size:10.5px;text-align:center;">{trend}</td>'
             f'</tr>'
         )
 
@@ -2303,9 +2303,9 @@ with tab10:
             html += (
                 f'<tr>'
                 f'<td class="sh-td-name">{ent["name"]}</td>'
-                f'<td style="padding:6px 10px;">{badge}</td>'
+                f'<td style="padding:6px 10px;text-align:center;">{badge}</td>'
                 f'{cells}'
-                f'<td style="font-size:10.5px;">{trend}</td>'
+                f'<td style="font-size:10.5px;text-align:center;">{trend}</td>'
                 f'</tr>'
             )
         return html
@@ -2445,10 +2445,10 @@ with tab10:
 
         header_html = '<thead><tr>'
         header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:left;font-size:10.5px;min-width:180px;">Shareholder</th>'
-        header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:left;font-size:10.5px;">Category</th>'
+        header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:center;font-size:10.5px;">Category</th>'
         for q in SH_QUARTERS:
-            header_html += f'<th style="background:#0a2540;color:white;padding:7px 10px;text-align:right;font-size:10.5px;">{q}</th>'
-        header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:left;font-size:10.5px;">Trend</th>'
+            header_html += f'<th style="background:#0a2540;color:white;padding:7px 10px;text-align:center;font-size:10.5px;">{q}</th>'
+        header_html += '<th style="background:#0a2540;color:white;padding:7px 10px;text-align:center;font-size:10.5px;">Trend</th>'
         header_html += '</tr></thead>'
 
         # Group entities
