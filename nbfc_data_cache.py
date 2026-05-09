@@ -10,7 +10,8 @@
 #   - Poonawalla ROE = annualised estimate (PAT×4/Avg Equity, Screener.in); NIM = NII/Avg-AUM annualized
 #   - AB Capital CAR/T1/T2 = investor deck; NNPA derived (GNPA × (1−PCR)); T2 = CAR−T1
 #   - L&T Finance NIM = NIM + Fees (from RoA trajectory table in Q4FY26 investor deck); CAR/T1/T2 = investor deck Q4FY26
-#   - Chola Finance, Muthoot Finance, Mahindra Finance: Q4FY26 PDFs pending — Q3FY26 values retained
+#   - Muthoot Finance, Mahindra Finance: Q4FY26 PDFs pending — Q3FY26 values retained
+#   - Chola Finance Q4FY26: all metrics from Screener.in (Screener AI summary); BVPS verified via consolidated balance sheet
 #   - Piramal CAR = investor deck (consolidated); T1/T2 not disclosed; CoB = explicit 6.41%
 #   - Piramal PCR = Stage-3 PCR (29.6%); total provisions/AUM higher
 
@@ -55,19 +56,19 @@ NBFC_Q4FY26 = [
         "name": "Chola Finance",
         "ticker": "CHOLAFIN",
         "segment": "Vehicle / Home / SME",
-        "aum_cr": 227770,         # Q3FY26 retained — Q4FY26 PDF pending
-        "pat_cr": 1288,
-        "nim_pct": 8.0,
-        "roa_pct": 3.2,
-        "roe_pct": 19.1,
-        "gnpa_pct": 3.36,
-        "nnpa_pct": 1.91,
-        "pcr_pct": 43.0,
-        "cost_of_borrowing_pct": 6.7,
-        "d_e_ratio": 7.5,
-        "car_pct": 19.16,
-        "bvps_inr": 327,
-        "net_worth_cr": 27577,
+        "aum_cr": 242630,
+        "pat_cr": 1641,
+        "nim_pct": 8.4,
+        "roa_pct": 2.9,
+        "roe_pct": 23.0,
+        "gnpa_pct": 4.36,
+        "nnpa_pct": 2.87,
+        "pcr_pct": 34.2,          # PCR = 1 − NNPA/GNPA; Stage-3 coverage = 47.3%
+        "cost_of_borrowing_pct": 6.6,
+        "d_e_ratio": 6.9,
+        "car_pct": 19.21,
+        "bvps_inr": 357,          # equity ₹30,458 Cr ÷ 85.3 Cr shares (Screener)
+        "net_worth_cr": 30458,
     },
     {
         "name": "Muthoot Finance",
@@ -243,20 +244,20 @@ NBFC_TIMESERIES = {
         "bvps_inr":              [260,    272,    277,    292,    299,    311,    321,    330,    349   ],
     },
     "Chola Finance": {
-        "aum_cr":                [153718, 155442, 164642, 174567, 199876, 192148, 199159, 227770, None  ],  # Q4FY26 pending
-        "gnpa_pct":              [2.48,   None,   None,   2.91,   2.81,   3.16,   3.35,   3.36,   None  ],
-        "nnpa_pct":              [1.33,   None,   None,   1.65,   1.54,   1.78,   1.90,   1.91,   None  ],
-        "pcr_pct":               [44,     45.5,   44.5,   44.1,   45.3,   43.7,   43.2,   43.0,   None  ],
-        "pat_cr":                [1336,   942,    963,    1087,   1587,   1136,   1155,   1288,   None  ],
-        "nim_pct":               [7.5,    7.6,    7.5,    7.7,    7.7,    7.8,    7.9,    8.0,    None  ],
-        "roa_pct":               [2.8,    3.2,    3.0,    3.2,    2.39,   3.1,    3.0,    3.2,    None  ],
-        "roe_pct":               [20.6,   18.9,   18.2,   19.7,   19.8,   18.9,   18.1,   19.1,   None  ],
-        "cost_of_borrowing_pct": [6.9,    7.0,    7.1,    7.1,    7.1,    7.0,    6.8,    6.7,    None  ],
-        "d_e_ratio":             [7.1,    7.4,    7.4,    7.4,    7.7,    7.6,    7.4,    7.5,    None  ],
-        "car_pct":               [18.56,  19.0,   19.5,   19.7,   19.75,  19.96,  20.00,  19.16,  None  ],
-        "t1_pct":                [15.09,  14.8,   14.5,   14.4,   14.41,  14.31,  14.59,  14.21,  None  ],
-        "t2_pct":                [3.47,   4.2,    5.0,    5.3,    5.34,   5.65,   5.41,   4.95,   None  ],
-        "bvps_inr":              [232,    243,    252,    267,    280,    292,    306,    327,    None  ],
+        "aum_cr":                [153718, 155442, 164642, 174567, 199876, 192148, 199159, 227770, 242630],
+        "gnpa_pct":              [2.48,   None,   None,   2.91,   2.81,   3.16,   3.35,   3.36,   4.36  ],
+        "nnpa_pct":              [1.33,   None,   None,   1.65,   1.54,   1.78,   1.90,   1.91,   2.87  ],
+        "pcr_pct":               [44,     45.5,   44.5,   44.1,   45.3,   43.7,   43.2,   43.0,   34.2  ],  # Q4FY26: PCR from GNPA/NNPA (1 - 2.87/4.36); Stage-3 coverage = 47.3%
+        "pat_cr":                [1336,   942,    963,    1087,   1587,   1136,   1155,   1288,   1641  ],
+        "nim_pct":               [7.5,    7.6,    7.5,    7.7,    7.7,    7.8,    7.9,    8.0,    8.4   ],
+        "roa_pct":               [2.8,    3.2,    3.0,    3.2,    2.39,   3.1,    3.0,    3.2,    2.9   ],
+        "roe_pct":               [20.6,   18.9,   18.2,   19.7,   19.8,   18.9,   18.1,   19.1,   23.0  ],
+        "cost_of_borrowing_pct": [6.9,    7.0,    7.1,    7.1,    7.1,    7.0,    6.8,    6.7,    6.6   ],
+        "d_e_ratio":             [7.1,    7.4,    7.4,    7.4,    7.7,    7.6,    7.4,    7.5,    6.9   ],
+        "car_pct":               [18.56,  19.0,   19.5,   19.7,   19.75,  19.96,  20.00,  19.16,  19.21 ],
+        "t1_pct":                [15.09,  14.8,   14.5,   14.4,   14.41,  14.31,  14.59,  14.21,  14.73 ],
+        "t2_pct":                [3.47,   4.2,    5.0,    5.3,    5.34,   5.65,   5.41,   4.95,   4.48  ],
+        "bvps_inr":              [232,    243,    252,    267,    280,    292,    306,    327,    357   ],  # Q4FY26: equity ₹30,458 Cr ÷ 85.3 Cr shares (Screener)
     },
     "Aditya Birla Capital": {
         "aum_cr":                [105639, 107306, 114710, 119437, 126351, 131227, 139585, 148182, 159916],
@@ -342,7 +343,8 @@ NBFC_TIMESERIES = {
 
 # ── Data quality flags ─────────────────────────────────────────────────────────
 # ~ = estimated / interpolated from adjacent quarters or rating reports
-# Chola Finance / Muthoot Finance / Mahindra Finance: Q4FY26 PDFs not yet received; None values in Q9
+# Muthoot Finance / Mahindra Finance: Q4FY26 PDFs not yet received; None values in Q9
+# Chola Finance Q4FY26: all metrics from Screener.in; BVPS = equity ₹30,458 Cr ÷ 85.3 Cr shares = ₹357
 # Bajaj Finance Q4FY26: consolidated basis; BVPS estimate from standalone equity/shares; NIM = annualised Q4 NTI/avg AUM
 # AB Capital Q4FY26: NNPA derived (GNPA × (1−PCR)); T2 = CAR − T1
 # Piramal AUM: Q1-Q1FY26 not from screener; only Q2FY26+ confirmed
