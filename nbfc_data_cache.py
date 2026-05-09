@@ -135,7 +135,7 @@ NBFC_Q4FY26 = [
         "gnpa_pct": 2.88,
         "nnpa_pct": 0.96,
         "pcr_pct": 67.0,
-        "cost_of_borrowing_pct": 6.6,
+        "cost_of_borrowing_pct": 7.17,
         "d_e_ratio": 3.93,
         "car_pct": 18.34,
         "bvps_inr": 111.7,
@@ -283,7 +283,7 @@ NBFC_TIMESERIES = {
         "nim_pct":               [11.25,  11.08,  10.86,  10.33,  10.15,  10.22,  10.22,  10.41,  10.47 ],  # NIM + Fees, from Q4FY26 investor deck (RoA trajectory table)
         "roa_pct":               [2.68,   2.60,   2.27,   2.22,   2.37,   2.41,   2.41,   2.37,   2.40  ],
         "roe_pct":               [10.5,   10.86,  11.65,  10.2,   10.5,   11.33,  11.33,  11.38,  11.71 ],
-        "cost_of_borrowing_pct": [7.68,   7.84,   7.83,   7.80,   7.68,   7.40,   7.32,   7.25,   6.6   ],  # Q4FY26 derived
+        "cost_of_borrowing_pct": [7.68,   7.84,   7.83,   7.80,   7.68,   7.40,   7.32,   7.25,   7.17  ],  # WACB from Q4FY26 investor deck (ALM slide)
         "d_e_ratio":             [3.46,   3.50,   3.50,   3.46,   3.66,   3.71,   3.78,   3.78,   3.93  ],
         "car_pct":               [22.84,  22.10,  22.16,  22.0,   22.27,  20.68,  20.0,   19.10,  18.34 ],
         "t1_pct":                [21.02,  20.37,  20.53,  None,   20.76,  19.54,  None,   18.43,  17.60 ],
@@ -348,7 +348,7 @@ NBFC_TIMESERIES = {
 # Piramal AUM: Q1-Q1FY26 not from screener; only Q2FY26+ confirmed
 # Muthoot Finance: NNPA and PCR not disclosed at all
 # Poonawalla: ROE not reported; NIM = NII/Avg-AUM annualized
-# L&T Finance Q4FY26: all metrics from investor deck; CoB derived from quarterly interest expense
+# L&T Finance Q4FY26: all metrics from investor deck; CoB = WACB 7.17% (ALM slide)
 # Shriram/Chola Q4FY24-Q1FY25: several metrics ~estimated
 
 # ── Metric-based cross-NBFC lookup (convenience) ──────────────────────────────
