@@ -1,11 +1,14 @@
 # ─── SHAREHOLDING PATTERN DATA ─────────────────────────────────────────────────
-# Source: BSE quarterly shareholding pattern filings
-# Quarters: Q4FY24 → Q3FY26  (8 quarters, index 0 = oldest)
-# Add each NBFC once its BSE filing URL is confirmed.
+# Source: Screener.in consolidated shareholding pattern
+# Quarters: Q4FY24 → Q4FY26 + Apr'26  (10 periods, index 0 = oldest)
+# Quarter mapping: Q4FY24=Mar-24, Q1FY25=Jun-24, Q2FY25=Sep-24, Q3FY25=Dec-24,
+#                  Q4FY25=Mar-25, Q1FY26=Jun-25, Q2FY26=Sep-25, Q3FY26=Dec-25,
+#                  Q4FY26=Mar-26, Apr'26=Apr-26 (separate — significant stake change)
 
 SH_QUARTERS = [
     "Q4FY24", "Q1FY25", "Q2FY25", "Q3FY25",
     "Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26",
+    "Q4FY26", "Apr'26",
 ]
 
 # Category colours (shared across all NBFCs)
@@ -35,110 +38,148 @@ ENTITY_BADGE_TEXT_COLORS = {
 SHAREHOLDING = {
 
     # ── SHRIRAM FINANCE ────────────────────────────────────────────────────────
-    # BSE code 511218 · NSE: SHRIRAMFIN · Post-merger entity (Dec 2022)
+    # NSE: SHRIRAMFIN · Source: Screener.in consolidated shareholding
+    # Notable: MUFG Bank Limited acquired ~20% in April 2026 (open offer);
+    # Promoter stake fell from 25.38% (Mar-26) to 20.30% (Apr-26).
+    # Array positions: [Q4FY24, Q1FY25, Q2FY25, Q3FY25, Q4FY25, Q1FY26, Q2FY26, Q3FY26, Q4FY26, Apr'26]
+    #                  [Mar-24, Jun-24, Sep-24, Dec-24, Mar-25, Jun-25, Sep-25, Dec-25, Mar-26, Apr-26]
     "Shriram Finance": {
 
-        # Top-level category % (should sum to ~100 each quarter)
         "category_pct": {
-            "Promoter": [25.40, 25.38, 25.38, 25.36, 25.38, 25.39, 25.39, 25.38],
-            "FII":      [53.88, 52.84, 51.62, 50.11, 49.20, 48.47, 47.82, 47.16],
-            "DII":      [15.73, 16.24, 17.14, 18.32, 19.11, 19.84, 20.54, 21.32],
-            "Public":   [ 4.99,  5.54,  5.86,  6.21,  6.31,  6.30,  6.25,  6.14],
+            "Promoter": [25.42, 25.41, 25.40, 25.40, 25.39, 25.39, 25.39, 25.38, 25.38, 20.30],
+            "FII":      [53.90, 54.28, 53.29, 53.08, 53.58, 52.61, 49.61, 47.21, 45.15, 56.14],
+            "DII":      [15.69, 15.24, 16.21, 15.93, 15.34, 16.32, 18.65, 21.29, 23.29, 18.62],
+            "Public":   [ 5.00,  5.07,  5.07,  5.58,  5.68,  5.64,  6.34,  6.11,  6.18,  4.94],
         },
 
-        # Named shareholders ≥1% at any point across the 8 quarters.
-        # None = below 1% threshold / not separately disclosed that quarter.
-        # Ordered by category, then by latest-quarter holding (desc).
+        # Named shareholders ≥1% at any point in Mar-24 → Apr-26.
+        # None = below 1% disclosure threshold that quarter.
         "named_entities": [
 
             # ── Promoter Group ──────────────────────────────────────────────
             {
-                "name":     "Shriram Capital Ltd",
+                "name":     "Shriram Capital Private Limited",
                 "category": "Promoter",
-                "pct": [17.87, 17.87, 17.87, 17.85, 17.87, 17.87, 17.87, 17.87],
+                "pct": [17.87, 17.86, 17.86, 17.86, 17.85, 17.85, 17.85, 17.84, 17.84, 14.27],
             },
             {
-                "name":     "Shriram Ownership Trust",
+                "name":     "Shriram Value Services Limited",
                 "category": "Promoter",
-                "pct": [ 7.53,  7.51,  7.51,  7.51,  7.51,  7.52,  7.52,  7.51],
+                "pct": [ 5.53,  7.12,  7.11,  7.11,  7.11,  7.11,  7.11,  7.11,  7.11,  5.69],
             },
 
             # ── FII ─────────────────────────────────────────────────────────
+            # MUFG Bank: new entry Apr-26 via open offer (formerly Sanlam held stake)
             {
-                "name":     "Govt of Singapore",
+                "name":     "MUFG Bank Limited",
                 "category": "FII",
-                "pct": [ 6.10,  5.92,  5.68,  5.43,  5.12,  4.89,  4.75,  4.66],
+                "pct": [ None,  None,  None,  None,  None,  None,  None,  None,  None, 20.02],
             },
             {
-                "name":     "Norges Bank (Norway SWF)",
+                "name":     "Government of Singapore",
                 "category": "FII",
-                "pct": [ 2.84,  2.91,  2.97,  3.02,  3.04,  3.08,  3.10,  3.13],
+                "pct": [ 6.10,  6.67,  6.40,  6.11,  5.67,  5.41,  4.73,  4.66,  4.47,  3.58],
             },
             {
-                "name":     "Vanguard Group",
+                "name":     "Govt Pension Fund Global (Norges Bank)",
                 "category": "FII",
-                "pct": [ 2.21,  2.18,  2.15,  2.11,  2.08,  2.05,  2.02,  1.99],
+                "pct": [ 1.69,  1.33,  1.19,  1.13,  None,  1.31,  1.41,  1.29,  1.50,  1.20],
             },
             {
-                "name":     "BlackRock Inc.",
+                "name":     "New World Fund Inc",
                 "category": "FII",
-                "pct": [ 2.07,  2.04,  2.01,  1.98,  1.96,  1.93,  1.91,  1.88],
+                "pct": [ 1.47,  1.47,  1.83,  1.52,  1.63,  1.21,  None,  None,  1.11,  None],
             },
             {
-                "name":     "Societe Generale",
+                "name":     "Kotak Funds – India Midcap Fund",
                 "category": "FII",
-                "pct": [  None,  None,  None,  1.21,  1.42,  1.60,  1.73,  1.82],
+                "pct": [ 1.18,  1.22,  1.20,  1.16,  1.13,  None,  None,  None,  None,  None],
             },
             {
-                "name":     "Fidelity (FMR LLC)",
+                "name":     "Monetary Authority of Singapore (A/c 1)",
                 "category": "FII",
-                "pct": [ 1.58,  1.61,  1.63,  1.64,  1.65,  1.63,  1.61,  1.58],
+                "pct": [ 1.26,  1.29,  1.30,  None,  None,  None,  None,  None,  None,  None],
             },
             {
-                "name":     "Capital Group",
+                "name":     "Monetary Authority of Singapore (A/c 2)",
                 "category": "FII",
-                "pct": [ 1.72,  1.69,  1.65,  1.60,  1.54,  1.47,  1.40,  1.33],
+                "pct": [ 1.03,  None,  None,  None,  None,  1.24,  1.20,  1.03,  None,  None],
             },
             {
-                "name":     "Templeton (Franklin)",
+                "name":     "Vanguard Intl Stock Index Fund",
                 "category": "FII",
-                "pct": [ 1.34,  1.30,  1.25,  1.19,  1.12,  1.05,  1.00,  None],
+                "pct": [ 1.02,  1.03,  1.04,  None,  None,  None,  None,  None,  None,  None],
+            },
+            {
+                "name":     "Vanguard Total Intl Stock Index Fund",
+                "category": "FII",
+                "pct": [ None,  None,  None,  None,  None,  None,  None,  None,  None,  1.09],
+            },
+            {
+                "name":     "Vanguard Emerging Markets Index Fund",
+                "category": "FII",
+                "pct": [ None,  None,  None,  None,  None,  None,  None,  None,  None,  1.03],
             },
 
             # ── DII – Mutual Funds ──────────────────────────────────────────
             {
-                "name":     "HDFC Mutual Fund",
+                "name":     "Aditya Birla Sun Life Trustee",
                 "category": "DII – MF",
-                "pct": [ 4.21,  4.58,  5.01,  5.67,  6.12,  6.48,  6.83,  7.14],
+                "pct": [ 1.44,  1.53,  1.49,  1.42,  1.15,  None,  None,  None,  None,  None],
+            },
+            {
+                "name":     "Kotak Equity Hybrid Fund",
+                "category": "DII – MF",
+                "pct": [ 1.54,  1.67,  None,  None,  None,  None,  None,  None,  None,  None],
+            },
+            {
+                "name":     "SBI Nifty 50 ETF",
+                "category": "DII – MF",
+                "pct": [ None,  1.45,  1.46,  1.72,  None,  None,  None,  None,  None,  None],
             },
             {
                 "name":     "SBI Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.83,  1.97,  2.14,  2.31,  2.47,  2.61,  2.73,  2.84],
+                "pct": [ None,  None,  None,  1.58,  1.61,  1.85,  2.33,  2.05,  None,  1.64],
             },
             {
-                "name":     "Nippon India MF",
+                "name":     "Kotak Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.24,  1.31,  1.38,  1.44,  1.48,  1.51,  1.53,  1.55],
+                "pct": [ None,  None,  None,  None,  1.18,  1.48,  2.09,  1.94,  2.32,  1.85],
             },
             {
-                "name":     "ICICI Pru Mutual Fund",
+                "name":     "Motilal Oswal Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.02,  1.09,  1.14,  1.19,  1.23,  1.25,  1.27,  1.28],
+                "pct": [ None,  None,  None,  None,  None,  None,  None,  None,  1.51,  1.21],
+            },
+            {
+                "name":     "UTI Mutual Fund",
+                "category": "DII – MF",
+                "pct": [ None,  None,  None,  None,  None,  None,  None,  None,  1.21,  None],
+            },
+            {
+                "name":     "UTI Mid Cap Fund",
+                "category": "DII – MF",
+                "pct": [ None,  None,  None,  None,  None,  None,  None,  1.11,  None,  None],
             },
 
             # ── DII – Insurance ─────────────────────────────────────────────
             {
                 "name":     "LIC of India",
                 "category": "DII – Insurance",
-                "pct": [ 3.87,  3.72,  3.60,  3.45,  3.31,  3.18,  3.08,  2.99],
+                "pct": [ None,  None,  None,  None,  None,  None,  1.29,  None,  None,  None],
+            },
+            {
+                "name":     "SBI Life Insurance Co. Ltd",
+                "category": "DII – Insurance",
+                "pct": [ None,  None,  None,  None,  None,  None,  None,  1.01,  None,  None],
             },
 
             # ── DII – Pension / NPS ─────────────────────────────────────────
             {
                 "name":     "NPS Trust",
                 "category": "DII – Pension",
-                "pct": [ 1.41,  1.52,  1.63,  1.74,  1.84,  1.93,  2.03,  2.18],
+                "pct": [ 1.11,  1.19,  1.36,  1.67,  1.81,  1.91,  2.18,  2.29,  1.83,  None],
             },
         ],
     },
@@ -151,10 +192,10 @@ SHAREHOLDING = {
 
         "category_pct": {
             #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-            "Promoter": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95],
-            "FII":      [ 7.76,   7.85,   7.72,   8.19,   9.99,  10.76,  10.56,  10.61],
-            "DII":      [ 5.81,   6.77,   9.63,  11.82,  11.12,  12.26,  12.28,  12.22],
-            "Public":   [24.31,  23.30,  20.77,  17.63,  16.36,  14.51,  13.20,  13.21],
+            "Promoter": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95,   None,   None],
+            "FII":      [ 7.76,   7.85,   7.72,   8.19,   9.99,  10.76,  10.56,  10.61,   None,   None],
+            "DII":      [ 5.81,   6.77,   9.63,  11.82,  11.12,  12.26,  12.28,  12.22,   None,   None],
+            "Public":   [24.31,  23.30,  20.77,  17.63,  16.36,  14.51,  13.20,  13.21,   None,   None],
         },
 
         "named_entities": [
@@ -164,58 +205,58 @@ SHAREHOLDING = {
                 "name":     "Rising Sun Holdings Pvt Ltd",
                 "category": "Promoter",
                 #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-                "pct": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95],
+                "pct": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95,   None,   None],
             },
 
             # ── FII ─────────────────────────────────────────────────────────────
             {
                 "name":     "Amansa Holdings Private Limited",
                 "category": "FII",
-                "pct": [ 2.20,   2.05,   2.07,   1.95,   1.95,   1.92,   1.75,   1.51],
+                "pct": [ 2.20,   2.05,   2.07,   1.95,   1.95,   1.92,   1.75,   1.51,   None,   None],
             },
             {
                 "name":     "Bank Muscat India Fund",
                 "category": "FII",
-                "pct": [ 1.13,   1.13,   1.13,   1.13,   1.13,   1.12,   1.08,   1.08],
+                "pct": [ 1.13,   1.13,   1.13,   1.13,   1.13,   1.12,   1.08,   1.08,   None,   None],
             },
             {
                 "name":     "Franklin Templeton Investment Funds – Franklin India Fund",
                 "category": "FII",
-                "pct": [ None,   None,   None,   None,   None,   1.19,   1.14,   1.14],
+                "pct": [ None,   None,   None,   None,   None,   1.19,   1.14,   1.14,   None,   None],
             },
 
             # ── DII – Mutual Funds ──────────────────────────────────────────────
             {
                 "name":     "Kotak Mahindra Trustee Co Ltd A/C Kotak Multicap Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   2.43,   2.81,   3.34,   4.24,   4.17],
+                "pct": [ None,   None,   None,   2.43,   2.81,   3.34,   4.24,   4.17,   None,   None],
             },
             {
                 "name":     "Quant Mutual Fund – Quant Mid Cap Fund",
                 "category": "DII – MF",
-                "pct": [ 1.91,   1.91,   1.90,   1.90,   None,   None,   None,   None],
+                "pct": [ 1.91,   1.91,   1.90,   1.90,   None,   None,   None,   None,   None,   None],
             },
             {
                 "name":     "Bandhan Value Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   1.05,   1.13,   1.23],
+                "pct": [ None,   None,   None,   None,   None,   1.05,   1.13,   1.23,   None,   None],
             },
             {
                 "name":     "Bandhan Sterling Value Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   1.06,   None,   1.02,   None,   None,   None],
+                "pct": [ None,   None,   1.06,   None,   1.02,   None,   None,   None,   None,   None],
             },
 
             # ── DII – Insurance ─────────────────────────────────────────────────
             {
                 "name":     "Life Insurance Corporation Of India",
                 "category": "DII – Insurance",
-                "pct": [ None,   1.47,   1.80,   1.97,   2.93,   3.21,   3.08,   3.07],
+                "pct": [ None,   1.47,   1.80,   1.97,   2.93,   3.21,   3.08,   3.07,   None,   None],
             },
             {
                 "name":     "SBI Life Insurance Co. Ltd",
                 "category": "DII – Insurance",
-                "pct": [ None,   None,   2.66,   2.66,   2.44,   2.53,   1.80,   1.56],
+                "pct": [ None,   None,   2.66,   2.66,   2.44,   2.53,   1.80,   1.56,   None,   None],
             },
 
             # ── Public ──────────────────────────────────────────────────────────
@@ -224,7 +265,7 @@ SHAREHOLDING = {
             {
                 "name":     "Mayank Poddar",
                 "category": "Public",
-                "pct": [ 2.12,   2.12,   2.12,   2.12,   2.12,   2.12,   1.06,   1.06],
+                "pct": [ 2.12,   2.12,   2.12,   2.12,   2.12,   2.12,   1.06,   1.06,   None,   None],
             },
         ],
     },
@@ -238,10 +279,10 @@ SHAREHOLDING = {
 
         "category_pct": {
             #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-            "Promoter": [54.69,  54.70,  54.70,  54.70,  54.73,  54.73,  54.67,  54.70],
-            "FII":      [20.55,  21.08,  20.81,  20.79,  21.45,  21.71,  21.97,  21.49],
-            "DII":      [14.40,  14.32,  15.10,  15.16,  14.86,  14.60,  14.47,  14.94],
-            "Public":   [10.35,   9.91,   9.41,   9.36,   8.94,   8.95,   8.90,   8.87],
+            "Promoter": [54.69,  54.70,  54.70,  54.70,  54.73,  54.73,  54.67,  54.70,   None,   None],
+            "FII":      [20.55,  21.08,  20.81,  20.79,  21.45,  21.71,  21.97,  21.49,   None,   None],
+            "DII":      [14.40,  14.32,  15.10,  15.16,  14.86,  14.60,  14.47,  14.94,   None,   None],
+            "Public":   [10.35,   9.91,   9.41,   9.36,   8.94,   8.95,   8.90,   8.87,   None,   None],
         },
 
         "named_entities": [
@@ -251,12 +292,12 @@ SHAREHOLDING = {
                 "name":     "Bajaj Finserv Limited",
                 "category": "Promoter",
                 #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-                "pct": [51.34,  51.34,  51.34,  51.34,  51.39,  51.39,  51.32,  51.32],
+                "pct": [51.34,  51.34,  51.34,  51.34,  51.39,  51.39,  51.32,  51.32,   None,   None],
             },
             {
                 "name":     "Maharashtra Scooters Limited",
                 "category": "Promoter",
-                "pct": [ 3.07,   3.07,   3.07,   3.07,   3.05,   3.05,   3.05,   3.05],
+                "pct": [ 3.07,   3.07,   3.07,   3.07,   3.05,   3.05,   3.05,   3.05,   None,   None],
             },
 
             # ── FII ─────────────────────────────────────────────────────────────
@@ -264,38 +305,38 @@ SHAREHOLDING = {
             {
                 "name":     "Government of Singapore (GIC)",
                 "category": "FII",
-                "pct": [ 3.41,   3.31,   3.08,   3.03,   2.55,   2.42,   2.50,   2.16],
+                "pct": [ 3.41,   3.31,   3.08,   3.03,   2.55,   2.42,   2.50,   2.16,   None,   None],
             },
 
             # ── DII – Mutual Funds ──────────────────────────────────────────────
             {
                 "name":     "SBI Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 3.06,   2.76,   2.61,   2.53,   2.37,   2.04,   1.98,   2.31],
+                "pct": [ 3.06,   2.76,   2.61,   2.53,   2.37,   2.04,   1.98,   2.31,   None,   None],
             },
             {
                 "name":     "Axis Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.64,   1.40,   1.32,   1.04,   1.07,   1.08,   1.05,   None],
+                "pct": [ 1.64,   1.40,   1.32,   1.04,   1.07,   1.08,   1.05,   None,   None,   None],
             },
             {
                 "name":     "UTI Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.05,   1.05,   1.06,   1.03,   None,   1.13,   1.14,   1.13],
+                "pct": [ 1.05,   1.05,   1.06,   1.03,   None,   1.13,   1.14,   1.13,   None,   None],
             },
 
             # ── DII – Insurance ─────────────────────────────────────────────────
             {
                 "name":     "Life Insurance Corporation Of India",
                 "category": "DII – Insurance",
-                "pct": [ 1.51,   1.93,   2.49,   2.84,   2.77,   2.62,   2.35,   2.38],
+                "pct": [ 1.51,   1.93,   2.49,   2.84,   2.77,   2.62,   2.35,   2.38,   None,   None],
             },
 
             # ── DII – Pension / NPS ─────────────────────────────────────────────
             {
                 "name":     "NPS Trust",
                 "category": "DII – Pension",
-                "pct": [ None,   None,   None,   None,   None,   None,   1.07,   1.37],
+                "pct": [ None,   None,   None,   None,   None,   None,   1.07,   1.37,   None,   None],
             },
         ],
     },
@@ -307,10 +348,10 @@ SHAREHOLDING = {
 
         "category_pct": {
             #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-            "Promoter": [50.35,  50.33,  50.24,  49.93,  49.92,  49.90,  49.88,  49.72],
-            "FII":      [26.00,  26.62,  27.18,  27.43,  28.23,  27.96,  26.85,  26.55],
-            "DII":      [17.04,  16.86,  16.58,  16.10,  15.49,  16.06,  17.27,  17.55],
-            "Public":   [ 6.61,   6.19,   6.01,   6.54,   6.36,   6.08,   6.00,   6.17],
+            "Promoter": [50.35,  50.33,  50.24,  49.93,  49.92,  49.90,  49.88,  49.72,   None,   None],
+            "FII":      [26.00,  26.62,  27.18,  27.43,  28.23,  27.96,  26.85,  26.55,   None,   None],
+            "DII":      [17.04,  16.86,  16.58,  16.10,  15.49,  16.06,  17.27,  17.55,   None,   None],
+            "Public":   [ 6.61,   6.19,   6.01,   6.54,   6.36,   6.08,   6.00,   6.17,   None,   None],
         },
 
         # Named shareholders ≥1% at any point across the 8 quarters.
@@ -322,83 +363,83 @@ SHAREHOLDING = {
                 "name":     "Cholamandalam Financial Holdings Ltd",
                 "category": "Promoter",
                 #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-                "pct": [44.39,  44.38,  44.37,  44.35,  44.34,  44.33,  44.32,  44.18],
+                "pct": [44.39,  44.38,  44.37,  44.35,  44.34,  44.33,  44.32,  44.18,   None,   None],
             },
             {
                 "name":     "Ambadi Investments Limited",
                 "category": "Promoter",
-                "pct": [ 4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.00],
+                "pct": [ 4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.01,   4.00,   None,   None],
             },
 
             # ── FII ─────────────────────────────────────────────────────────────
             {
                 "name":     "New World Fund Inc (Capital Group)",
                 "category": "FII",
-                "pct": [ 1.71,   1.90,   1.94,   2.02,   1.86,   1.72,   1.72,   1.71],
+                "pct": [ 1.71,   1.90,   1.94,   2.02,   1.86,   1.72,   1.72,   1.71,   None,   None],
             },
             {
                 "name":     "Smallcap World Fund, Inc (Capital Group)",
                 "category": "FII",
-                "pct": [ 1.44,   1.38,   1.38,   1.34,   1.31,   1.29,   1.29,   1.07],
+                "pct": [ 1.44,   1.38,   1.38,   1.34,   1.31,   1.29,   1.29,   1.07,   None,   None],
             },
             {
                 "name":     "Government Pension Fund Global (Norges)",
                 "category": "FII",
-                "pct": [ 1.19,   1.24,   1.07,   1.63,   1.39,   1.09,   1.12,   1.06],
+                "pct": [ 1.19,   1.24,   1.07,   1.63,   1.39,   1.09,   1.12,   1.06,   None,   None],
             },
             {
                 "name":     "EuroPacific Growth Fund (Capital Group)",
                 "category": "FII",
-                "pct": [ 1.01,   1.15,   1.15,   None,   None,   None,   None,   None],
+                "pct": [ 1.01,   1.15,   1.15,   None,   None,   None,   None,   None,   None,   None],
             },
 
             # ── DII – Mutual Funds ──────────────────────────────────────────────
             {
                 "name":     "Axis Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 3.98,   3.86,   3.43,   2.57,   2.39,   2.23,   2.04,   1.93],
+                "pct": [ 3.98,   3.86,   3.43,   2.57,   2.39,   2.23,   2.04,   1.93,   None,   None],
             },
             {
                 "name":     "SBI Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.57,   2.02,   1.82,   1.54,   1.62,   1.50,   1.39,   1.22],
+                "pct": [ 1.57,   2.02,   1.82,   1.54,   1.62,   1.50,   1.39,   1.22,   None,   None],
             },
             {
                 "name":     "HDFC Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.23,   1.21,   1.22,   1.33,   1.25,   1.12,   None,   None],
+                "pct": [ 1.23,   1.21,   1.22,   1.33,   1.25,   1.12,   None,   None,   None,   None],
             },
             {
                 "name":     "Aditya Birla Sun Life Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ 1.15,   1.09,   1.00,   1.03,   1.02,   None,   None,   None],
+                "pct": [ 1.15,   1.09,   1.00,   1.03,   1.02,   None,   None,   None,   None,   None],
             },
             {
                 "name":     "Canara Robeco Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   1.08,   1.24,   1.13,   None,   None,   None,   None],
+                "pct": [ None,   1.08,   1.24,   1.13,   None,   None,   None,   None,   None,   None],
             },
             {
                 "name":     "Invesco India Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   1.01,   1.20,   1.21],
+                "pct": [ None,   None,   None,   None,   None,   1.01,   1.20,   1.21,   None,   None],
             },
             {
                 "name":     "Motilal Oswal Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   1.14,   1.15,   1.08],
+                "pct": [ None,   None,   None,   None,   None,   1.14,   1.15,   1.08,   None,   None],
             },
             {
                 "name":     "Kotak Mahindra Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.16],
+                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.16,   None,   None],
             },
 
             # ── DII – Pension / NPS ─────────────────────────────────────────────
             {
                 "name":     "NPS Trust (SBI Pension Fund)",
                 "category": "DII – Pension",
-                "pct": [ None,   None,   None,   None,   None,   1.31,   1.31,   2.56],
+                "pct": [ None,   None,   None,   None,   None,   1.31,   1.31,   2.56,   None,   None],
             },
         ],
     },
@@ -410,10 +451,10 @@ SHAREHOLDING = {
 
         "category_pct": {
             #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-            "Promoter": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03],
-            "FII":      [11.05,   7.33,   6.73,   5.30,   5.48,   6.19,   6.41,   6.66],
-            "DII":      [ 8.70,  11.64,  12.33,  12.17,  13.29,  14.11,  14.32,  15.33],
-            "Public":   [14.40,  14.65,  14.65,  16.27,  15.00,  13.54,  13.17,  11.98],
+            "Promoter": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03,   None,   None],
+            "FII":      [11.05,   7.33,   6.73,   5.30,   5.48,   6.19,   6.41,   6.66,   None,   None],
+            "DII":      [ 8.70,  11.64,  12.33,  12.17,  13.29,  14.11,  14.32,  15.33,   None,   None],
+            "Public":   [14.40,  14.65,  14.65,  16.27,  15.00,  13.54,  13.17,  11.98,   None,   None],
         },
 
         "named_entities": [
@@ -423,7 +464,7 @@ SHAREHOLDING = {
                 "name":     "Larsen and Toubro Limited",
                 "category": "Promoter",
                 #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-                "pct": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03],
+                "pct": [65.86,  66.37,  66.29,  66.25,  66.24,  66.16,  66.10,  66.03,   None,   None],
             },
 
             # ── FII ─────────────────────────────────────────────────────────────
@@ -432,51 +473,51 @@ SHAREHOLDING = {
             {
                 "name":     "BNP Paribas Financial Markets (ODI)",
                 "category": "FII",
-                "pct": [ 2.43,   None,   None,   None,   None,   None,   None,   None],
+                "pct": [ 2.43,   None,   None,   None,   None,   None,   None,   None,   None,   None],
             },
 
             # ── DII – Mutual Funds ──────────────────────────────────────────────
             {
                 "name":     "Mirae Asset Large & Midcap Fund",
                 "category": "DII – MF",
-                "pct": [ None,   1.74,   2.57,   2.88,   3.46,   3.47,   2.88,   1.80],
+                "pct": [ None,   1.74,   2.57,   2.88,   3.46,   3.47,   2.88,   1.80,   None,   None],
             },
             {
                 "name":     "Invesco India Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   1.23,   1.07,   1.17,   1.29,   1.65,   1.72,   1.75],
+                "pct": [ None,   1.23,   1.07,   1.17,   1.29,   1.65,   1.72,   1.75,   None,   None],
             },
             {
                 "name":     "Kotak Midcap Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   None,   1.31,   1.80],
+                "pct": [ None,   None,   None,   None,   None,   None,   1.31,   1.80,   None,   None],
             },
             {
                 "name":     "Axis Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   None,   1.10,   1.29],
+                "pct": [ None,   None,   None,   None,   None,   None,   1.10,   1.29,   None,   None],
             },
             {
                 "name":     "Motilal Oswal Mutual Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.63],
+                "pct": [ None,   None,   None,   None,   None,   None,   None,   1.63,   None,   None],
             },
 
             # ── DII – Insurance ─────────────────────────────────────────────────
             {
                 "name":     "Life Insurance Corporation Of India",
                 "category": "DII – Insurance",
-                "pct": [ 1.94,   1.94,   1.94,   2.07,   2.28,   1.70,   None,   None],
+                "pct": [ 1.94,   1.94,   1.94,   2.07,   2.28,   1.70,   None,   None,   None,   None],
             },
             {
                 "name":     "ICICI Prudential Life Insurance",
                 "category": "DII – Insurance",
-                "pct": [ 1.51,   1.50,   1.46,   1.44,   1.44,   1.47,   None,   1.17],
+                "pct": [ 1.51,   1.50,   1.46,   1.44,   1.44,   1.47,   None,   1.17,   None,   None],
             },
             {
                 "name":     "Tata AIA Life Insurance",
                 "category": "DII – Insurance",
-                "pct": [ None,   None,   None,   1.46,   1.54,   1.58,   None,   None],
+                "pct": [ None,   None,   None,   1.46,   1.54,   1.58,   None,   None,   None,   None],
             },
         ],
     },
