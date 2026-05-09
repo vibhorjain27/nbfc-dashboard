@@ -7,7 +7,7 @@
 #   - Muthoot GNPA = Stage-3 proxy; NNPA not separately disclosed
 #   - Bajaj NIM = annualised net total income / avg AUM (before one-time actions); ROA/ROE annualized Q4
 #   - Bajaj ROA/ROE = consolidated Q4 FY26 annualized, before one-time actions
-#   - Poonawalla ROE = not reported; NIM = NII/Avg-AUM annualized
+#   - Poonawalla ROE = annualised estimate (PAT×4/Avg Equity, Screener.in); NIM = NII/Avg-AUM annualized
 #   - AB Capital CAR/T1/T2 = investor deck; NNPA derived (GNPA × (1−PCR)); T2 = CAR−T1
 #   - L&T Finance CAR/T1/T2 = investor deck Q4FY26
 #   - Chola Finance, Muthoot Finance, Mahindra Finance: Q4FY26 PDFs pending — Q3FY26 values retained
@@ -167,7 +167,7 @@ NBFC_Q4FY26 = [
         "pat_cr": 255,
         "nim_pct": 9.05,
         "roa_pct": 1.81,
-        "roe_pct": None,          # Not reported
+        "roe_pct": 10.1,          # annualised: PAT×4/Avg Equity (Screener.in)
         "gnpa_pct": 1.44,
         "nnpa_pct": 0.74,
         "pcr_pct": 49.0,
@@ -202,7 +202,7 @@ NBFC_TIMESERIES = {
         "pat_cr":                [332,    292,    -471,   19,     62,     63,     74,     150,    255   ],
         "nim_pct":               [10.90,  10.40,  9.30,   9.00,   8.60,   8.32,   8.40,   8.62,   9.05  ],  # Q4FY24–Q4FY25 estimated; Q1FY26+ official
         "roa_pct":               [5.73,   4.62,   0.00,   0.26,   0.76,   0.68,   0.69,   1.20,   1.81  ],  # Q2FY25 = 0 (negative PAT quarter, avoids line break)
-        "roe_pct":               [None,   None,   None,   None,   None,   None,   None,   None,   None  ],  # not reported
+        "roe_pct":               [16.4,   14.2,   -23.0,  0.9,    3.1,    3.1,    3.3,    6.1,    10.1  ],  # annualised: PAT×4/Avg Equity (Screener.in estimate)
         "cost_of_borrowing_pct": [8.17,   8.16,   8.10,   8.06,   8.07,   8.04,   7.69,   7.65,   7.63  ],
         "d_e_ratio":             [1.86,   2.05,   2.26,   2.65,   3.19,   3.72,   3.64,   4.25,   4.67  ],
         "car_pct":               [33.80,  31.57,  29.22,  25.89,  22.94,  20.55,  20.85,  18.17,  16.83 ],
