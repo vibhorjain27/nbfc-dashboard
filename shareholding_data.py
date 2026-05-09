@@ -185,17 +185,17 @@ SHAREHOLDING = {
     },
 
     # ── POONAWALLA FINCORP ─────────────────────────────────────────────────────
-    # BSE code 524000 · NSE: POONAWALLA
-    # Source: Screener.in quarterly shareholding pattern (fetched Feb 2026)
-    # "Others" (warrants/ESOPs ~0.52–0.66%) merged into Public.
+    # NSE: POONAWALLA · Source: Screener.in consolidated shareholding
+    # "Others" (warrants/ESOPs 0.52–0.66%) excluded — Screener shows separately.
+    # Array positions: [Q4FY24, Q1FY25, Q2FY25, Q3FY25, Q4FY25, Q1FY26, Q2FY26, Q3FY26, Q4FY26, Apr'26]
+    #                  [Mar-24, Jun-24, Sep-24, Dec-24, Mar-25, Jun-25, Sep-25, Dec-25, Mar-26, Apr-26]
     "Poonawalla Fincorp": {
 
         "category_pct": {
-            #                Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-            "Promoter": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95,   None,   None],
-            "FII":      [ 7.76,   7.85,   7.72,   8.19,   9.99,  10.76,  10.56,  10.61,   None,   None],
-            "DII":      [ 5.81,   6.77,   9.63,  11.82,  11.12,  12.26,  12.28,  12.22,   None,   None],
-            "Public":   [24.31,  23.30,  20.77,  17.63,  16.36,  14.51,  13.20,  13.21,   None,   None],
+            "Promoter": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95,  63.93,  59.03],
+            "FII":      [ 7.76,   7.85,   7.72,   8.19,   9.99,  10.76,  10.56,  10.61,  10.21,  11.25],
+            "DII":      [ 5.81,   6.77,   9.63,  11.82,  11.12,  12.26,  12.28,  12.22,  12.14,  16.67],
+            "Public":   [23.79,  22.64,  20.12,  16.98,  15.71,  13.86,  12.58,  12.62,  13.15,  12.49],
         },
 
         "named_entities": [
@@ -204,30 +204,35 @@ SHAREHOLDING = {
             {
                 "name":     "Rising Sun Holdings Pvt Ltd",
                 "category": "Promoter",
-                #             Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26
-                "pct": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95,   None,   None],
+                "pct": [62.13,  62.09,  61.87,  62.36,  62.53,  62.46,  63.96,  63.95,  63.93,  59.03],
             },
 
             # ── FII ─────────────────────────────────────────────────────────────
             {
                 "name":     "Amansa Holdings Private Limited",
                 "category": "FII",
-                "pct": [ 2.20,   2.05,   2.07,   1.95,   1.95,   1.92,   1.75,   1.51,   None,   None],
+                "pct": [ 2.20,   2.05,   2.07,   1.95,   1.95,   1.92,   1.75,   1.51,   1.51,   1.29],
+            },
+            {
+                "name":     "Franklin Templeton – Franklin India Fund",
+                "category": "FII",
+                "pct": [ None,   None,   None,   None,   None,   1.19,   1.14,   1.14,   1.14,   1.05],
             },
             {
                 "name":     "Bank Muscat India Fund",
                 "category": "FII",
-                "pct": [ 1.13,   1.13,   1.13,   1.13,   1.13,   1.12,   1.08,   1.08,   None,   None],
-            },
-            {
-                "name":     "Franklin Templeton Investment Funds – Franklin India Fund",
-                "category": "FII",
-                "pct": [ None,   None,   None,   None,   None,   1.19,   1.14,   1.14,   None,   None],
+                "pct": [ 1.13,   1.13,   1.13,   1.13,   1.13,   1.12,   1.08,   1.08,   1.08,   None],
             },
 
             # ── DII – Mutual Funds ──────────────────────────────────────────────
+            # Kotak shifted from Multicap → Midcap Fund between Q3FY26 and Q4FY26
             {
-                "name":     "Kotak Mahindra Trustee Co Ltd A/C Kotak Multicap Fund",
+                "name":     "Kotak Midcap Fund",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   None,   None,   None,   4.91,   6.40],
+            },
+            {
+                "name":     "Kotak Multicap Fund",
                 "category": "DII – MF",
                 "pct": [ None,   None,   None,   2.43,   2.81,   3.34,   4.24,   4.17,   None,   None],
             },
@@ -239,19 +244,24 @@ SHAREHOLDING = {
             {
                 "name":     "Bandhan Value Fund",
                 "category": "DII – MF",
-                "pct": [ None,   None,   None,   None,   None,   1.05,   1.13,   1.23,   None,   None],
+                "pct": [ None,   None,   None,   None,   None,   1.05,   1.13,   1.23,   1.40,   1.70],
             },
             {
                 "name":     "Bandhan Sterling Value Fund",
                 "category": "DII – MF",
                 "pct": [ None,   None,   1.06,   None,   1.02,   None,   None,   None,   None,   None],
             },
+            {
+                "name":     "Nippon Life India Trustee – Nippon India Small Cap",
+                "category": "DII – MF",
+                "pct": [ None,   None,   None,   None,   None,   None,   None,   None,   None,   1.07],
+            },
 
             # ── DII – Insurance ─────────────────────────────────────────────────
             {
                 "name":     "Life Insurance Corporation Of India",
                 "category": "DII – Insurance",
-                "pct": [ None,   1.47,   1.80,   1.97,   2.93,   3.21,   3.08,   3.07,   None,   None],
+                "pct": [ None,   1.47,   1.80,   1.97,   2.93,   3.21,   3.08,   3.07,   2.92,   2.70],
             },
             {
                 "name":     "SBI Life Insurance Co. Ltd",
@@ -260,12 +270,16 @@ SHAREHOLDING = {
             },
 
             # ── Public ──────────────────────────────────────────────────────────
-            # Mayank Poddar appears under two separate demat accounts in BSE filings;
-            # combined % shown here.
+            # Mayank Poddar holds via two separate demat accounts; shown separately.
             {
-                "name":     "Mayank Poddar",
+                "name":     "Mayank Poddar (A/c 1)",
                 "category": "Public",
-                "pct": [ 2.12,   2.12,   2.12,   2.12,   2.12,   2.12,   1.06,   1.06,   None,   None],
+                "pct": [ 1.11,   1.11,   1.11,   1.11,   1.11,   1.11,   1.06,   1.06,   None,   None],
+            },
+            {
+                "name":     "Mayank Poddar (A/c 2)",
+                "category": "Public",
+                "pct": [ 1.01,   1.01,   1.01,   1.01,   1.01,   1.01,   None,   None,   None,   None],
             },
         ],
     },
