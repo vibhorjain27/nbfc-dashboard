@@ -2328,7 +2328,7 @@ with tab10:
         cat_pct = sh_data.get('category_pct', {})
         row = {'name': name}
         for cat in ['Promoter', 'FII', 'DII', 'Public']:
-            vals = cat_pct.get(cat, [None] * 8)
+            vals = cat_pct.get(cat, [None] * len(SH_QUARTERS))
             row[cat] = vals[Q3_IDX] if Q3_IDX < len(vals) else None
         snapshot_rows.append(row)
 
@@ -2413,7 +2413,7 @@ with tab10:
         # ── Section 3 — Summary Cards ──────────────────────────────────────────
         sum_cols = st.columns(4)
         for ci, cat in enumerate(['Promoter', 'FII', 'DII', 'Public']):
-            vals = cat_pct.get(cat, [None] * 8)
+            vals = cat_pct.get(cat, [None] * len(SH_QUARTERS))
             lv = sh_latest(vals)
             _, delta_html = sh_delta_str(vals)
             cat_color = CATEGORY_COLORS.get(cat, '#94a3b8')
