@@ -1145,7 +1145,7 @@ def make_deep_dive(nbfc_disp):
                 tickvals=list(range(len(Q_LABELS))),
                 ticktext=Q_LABELS,
                 range=[-0.5, len(Q_LABELS) - 0.5],
-                tickangle=45,
+                tickangle=-45,
                 tickfont=dict(size=8),
                 showgrid=True,
                 gridcolor='#f1f5f9',
@@ -1160,6 +1160,7 @@ def make_deep_dive(nbfc_disp):
         font=dict(family='Inter'),
         paper_bgcolor='white',
         plot_bgcolor='#fafafa',
+        margin=dict(l=40, r=60, t=60, b=20),
     )
 
     return fig
