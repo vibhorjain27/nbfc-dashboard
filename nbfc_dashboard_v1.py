@@ -621,6 +621,7 @@ def make_pb_chart(selected, height=520):
         (_date(2025, 6, 30), 5),
         (_date(2025, 9, 30), 6),
         (_date(2025, 12, 31), 7),
+        (_date(2026, 3, 31), 8),
     ]
 
     fig = go.Figure()
@@ -629,7 +630,7 @@ def make_pb_chart(selected, height=520):
     for name in selected:
         symbol = NBFCS[name]
         cache_name = CACHE_KEY[name]
-        bvps_series = NBFC_TIMESERIES[cache_name].get('bvps_inr', [None] * 8)
+        bvps_series = NBFC_TIMESERIES[cache_name].get('bvps_inr', [None] * 9)
         hist = fetch_stock_data(symbol, period='2y')
         if hist is None or len(hist) == 0:
             continue
