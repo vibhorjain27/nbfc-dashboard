@@ -149,7 +149,12 @@ def _fmt_val(v, fmt):
     if fmt == 'pct':
         return f"{v:.2f}%"
     elif fmt == 'cr':
-        return f"₹{v:,.0f} Cr"
+        if abs(v) >= 100000:
+            return f"₹{v/1000:.0f}k Cr"
+        elif abs(v) >= 1000:
+            return f"₹{v/1000:.1f}k Cr"
+        else:
+            return f"₹{int(v)} Cr"
     elif fmt == 'ratio':
         return f"{v:.2f}x"
     elif fmt == 'inr':
@@ -1791,8 +1796,8 @@ with tab2:
 
     st.markdown('<div class="section-label">Scale</div>', unsafe_allow_html=True)
 
-    aum_bar = make_bar_chart('aum_cr', sel2, 'Assets Under Management (AUM)', '₹ Crore')
-    st.plotly_chart(aum_bar, use_container_width=True, key="fin_aum_bar")
+    aum_line = make_trend_chart('aum_cr', sel2, 'Assets Under Management (AUM)', '₹ Crore', fmt='cr', height=380)
+    st.plotly_chart(aum_line, use_container_width=True, key="fin_aum_line")
 
     col_a, col_b = st.columns(2)
     with col_a:
@@ -1802,8 +1807,8 @@ with tab2:
         yoy_aum = make_yoy_chart('aum_cr', sel2, 'AUM')
         st.plotly_chart(yoy_aum, use_container_width=True, key="fin_aum_yoy")
 
-    pat_bar = make_bar_chart('pat_cr', sel2, 'Profit After Tax (PAT)', '₹ Crore')
-    st.plotly_chart(pat_bar, use_container_width=True, key="fin_pat_bar")
+    pat_line = make_trend_chart('pat_cr', sel2, 'Profit After Tax (PAT)', '₹ Crore', fmt='cr', height=380)
+    st.plotly_chart(pat_line, use_container_width=True, key="fin_pat_line")
 
     col_c, col_d = st.columns(2)
     with col_c:
