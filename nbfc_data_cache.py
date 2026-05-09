@@ -245,9 +245,9 @@ NBFC_TIMESERIES = {
     },
     "Chola Finance": {
         "aum_cr":                [153718, 155442, 164642, 174567, 199876, 192148, 199159, 227770, 242630],
-        "gnpa_pct":              [2.48,   None,   None,   2.91,   2.81,   3.16,   3.35,   3.36,   4.36  ],
-        "nnpa_pct":              [1.33,   None,   None,   1.65,   1.54,   1.78,   1.90,   1.91,   2.87  ],
-        "pcr_pct":               [44,     45.5,   44.5,   44.1,   45.3,   43.7,   43.2,   43.0,   34.2  ],  # Q4FY26: PCR from GNPA/NNPA (1 - 2.87/4.36); Stage-3 coverage = 47.3%
+        "gnpa_pct":              [3.54,   3.60,   3.78,   4.00,   3.97,   4.20,   4.57,   4.63,   4.36  ],  # RBI IRACP norms throughout
+        "nnpa_pct":              [2.30,   2.40,   2.48,   2.66,   2.63,   2.80,   3.07,   3.13,   2.87  ],  # RBI IRACP norms; Q1FY25/Q1FY26 interpolated (~)
+        "pcr_pct":               [35.0,   33.3,   34.4,   33.5,   33.7,   33.3,   32.8,   32.4,   34.2  ],  # derived: 1 − NNPA/GNPA (IRACP basis); Stage-3 coverage Q4FY26 = 47.3%
         "pat_cr":                [1336,   942,    963,    1087,   1587,   1136,   1155,   1288,   1641  ],
         "nim_pct":               [7.5,    7.6,    7.5,    7.7,    7.7,    7.8,    7.9,    8.0,    8.4   ],
         "roa_pct":               [2.8,    3.2,    3.0,    3.2,    2.39,   3.1,    3.0,    3.2,    2.9   ],
@@ -345,6 +345,7 @@ NBFC_TIMESERIES = {
 # ~ = estimated / interpolated from adjacent quarters or rating reports
 # Muthoot Finance / Mahindra Finance: Q4FY26 PDFs not yet received; None values in Q9
 # Chola Finance Q4FY26: all metrics from Screener.in; BVPS = equity ₹30,458 Cr ÷ 85.3 Cr shares = ₹357
+# Chola Finance GNPA/NNPA/PCR: restated to RBI IRACP norms across all quarters; Q1FY25 and Q1FY26 values interpolated (~)
 # Bajaj Finance Q4FY26: consolidated basis; BVPS estimate from standalone equity/shares; NIM = annualised Q4 NTI/avg AUM
 # AB Capital Q4FY26: NNPA derived (GNPA × (1−PCR)); T2 = CAR − T1
 # Piramal AUM: Q1-Q1FY26 not from screener; only Q2FY26+ confirmed
