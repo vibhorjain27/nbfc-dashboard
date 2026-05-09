@@ -633,6 +633,7 @@ def make_pb_chart(selected, height=520):
 
     fig = go.Figure()
     series_info = []
+    trace_data = []
 
     for name in selected:
         symbol = NBFCS[name]
@@ -674,10 +675,15 @@ def make_pb_chart(selected, height=520):
         if not dates:
             continue
 
-        custom_data = _np.column_stack([prices, bvps_vals])
-
-        color = COLORS[name]
         lv = pb_vals[-1]
+        trace_data.append((name, lv, dates, pb_vals, prices, bvps_vals))
+
+    # Sort by current P/B descending so tooltip order matches visual chart order
+    trace_data.sort(key=lambda x: -x[1])
+
+    for name, lv, dates, pb_vals, prices, bvps_vals in trace_data:
+        custom_data = _np.column_stack([prices, bvps_vals])
+        color = COLORS[name]
         series_info.append((name, lv))
 
         fig.add_trace(go.Scatter(
