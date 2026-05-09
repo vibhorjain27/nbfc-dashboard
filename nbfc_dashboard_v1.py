@@ -1684,7 +1684,7 @@ with tab1:
 
     # Period buttons
     periods = ['1W', '1M', '3M', '6M', '1Y', '3Y', '5Y']
-    btn_cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 3.5])
+    btn_cols = st.columns([1, 1, 1, 1, 1, 1, 1, 16], gap="small")
     for i, p in enumerate(periods):
         with btn_cols[i]:
             if st.button(p, key=f"period_{p}"):
@@ -1737,6 +1737,7 @@ with tab1:
     fmt_from = s_date.strftime('%-d %b\'%y')
     fmt_to = e_date.strftime('%-d %b\'%y')
 
+    st.markdown('<div style="height:14px;"></div>', unsafe_allow_html=True)
     with st.spinner("Loading comparison chart…"):
         cmp_fig, _, _ = create_comparison_chart(
             st.session_state.time_period,
