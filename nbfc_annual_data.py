@@ -42,18 +42,23 @@ NBFC_ANNUAL = {
         "roe_pct": [7.83,   10.35,  10.87,  11.25 ],
     },
     # ── Chola Finance ─────────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1697950)
+    # AUM = Business AUM from corporate presentations; ROA/ROE company-disclosed
     "Chola Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [112782, 153718, 199876, 242630],
+        "pat_cr":  [2666,   3423,   4259,   5220  ],
+        "roa_pct": [2.8,    2.6,    2.4,    2.5   ],
+        "roe_pct": [20.6,   20.6,   19.8,   19.7  ],
     },
     # ── Aditya Birla Capital ──────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1697958)
+    # FY23 PAT/ROA/ROE normalized (ex one-time ₹2,739 Cr health-ins. fair-value gain)
+    # FY26 ROA/ROE: N/A (consolidated balance sheet data unavailable)
     "Aditya Birla Capital": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [359922, 436442, 511260, 591343],
+        "pat_cr":  [2057,   3335,   3332,   3764  ],
+        "roa_pct": [1.28,   1.62,   1.30,   None  ],
+        "roe_pct": [11.5,   14.16,  11.65,  None  ],
     },
     # ── Piramal Finance ───────────────────────────────────────────────────────
     "Piramal Finance": {
