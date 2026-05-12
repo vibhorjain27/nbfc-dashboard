@@ -17,11 +17,13 @@ NBFC_ANNUAL = {
         "roe_pct": [9.7,   13.4,  -1.2,  5.9  ],
     },
     # ── Bajaj Finance ─────────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1697821)
+    # ROA/ROE = core (before one-time items); FY23/FY24 AUM interpolated (~)
     "Bajaj Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [247400, 330600, 416661, 509975],
+        "pat_cr":  [14451,  16779,  16779,  19332 ],
+        "roa_pct": [5.3,    5.1,    4.5,    4.6   ],
+        "roe_pct": [23.5,   22.1,   19.1,   19.2  ],
     },
     # ── Shriram Finance ───────────────────────────────────────────────────────
     # Source: Screener.in AI summary (usage/1696752)
@@ -32,11 +34,12 @@ NBFC_ANNUAL = {
         "roe_pct": [17.30,  16.08,  18.16,  16.39 ],
     },
     # ── L&T Finance ───────────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1697879)
     "L&T Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [80893,  81359,  97762,  121728],
+        "pat_cr":  [1623,   2320,   2644,   2981  ],
+        "roa_pct": [1.52,   2.32,   2.44,   2.37  ],
+        "roe_pct": [7.83,   10.35,  10.87,  11.25 ],
     },
     # ── Chola Finance ─────────────────────────────────────────────────────────
     "Chola Finance": {
