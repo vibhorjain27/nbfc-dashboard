@@ -21,7 +21,7 @@ NBFC_ANNUAL = {
     # ROA/ROE = core (before one-time items); FY23/FY24 AUM interpolated (~)
     "Bajaj Finance": {
         "aum_cr":  [247400, 330600, 416661, 509975],
-        "pat_cr":  [14451,  16779,  16779,  19332 ],
+        "pat_cr":  [11508,  14451,  16779,  19332 ],
         "roa_pct": [5.3,    5.1,    4.5,    4.6   ],
         "roe_pct": [23.5,   22.1,   19.1,   19.2  ],
     },
