@@ -17,6 +17,7 @@ import pytz
 from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS, METRIC_LABELS
 from nbfc_ai_data import NBFC_AI_INITIATIVES, FUNCTION_TAXONOMY
 from shareholding_data import SHAREHOLDING, SH_QUARTERS, CATEGORY_COLORS, ENTITY_CATEGORY_COLORS, ENTITY_BADGE_TEXT_COLORS
+from nbfc_annual_data import NBFC_ANNUAL, ANNUAL_YEARS
 
 st.set_page_config(
     page_title="NBFC Dashboard",
@@ -138,6 +139,15 @@ def latest_val(series_list):
         if series_list[i] is not None:
             return series_list[i], i
     return None, -1
+
+
+def get_annual_series(metric: str) -> dict:
+    """Returns {display_name: [4 values aligned to ANNUAL_YEARS]}."""
+    out = {}
+    for disp in DISPLAY_NAMES:
+        cache = CACHE_KEY[disp]
+        out[disp] = NBFC_ANNUAL.get(cache, {}).get(metric, [None] * 4)
+    return out
 
 
 # ── CHART FACTORIES ────────────────────────────────────────────────────────────
@@ -275,6 +285,122 @@ def make_trend_chart(metric, selected, title, ylabel, fmt='pct', note=None, heig
             tickmode='array',
             tickvals=list(range(len(Q_LABELS))),
             ticktext=Q_LABELS,
+            showgrid=True,
+            gridcolor='#f1f5f9',
+            showline=True,
+            linecolor='#cbd5e1',
+            tickangle=0,
+        ),
+        yaxis=dict(
+            title=dict(text=ylabel, font=dict(size=11, color='#64748b')),
+            showgrid=True,
+            gridcolor='#f1f5f9',
+            showline=True,
+            linecolor='#cbd5e1',
+        ),
+        font=dict(family='Inter'),
+    )
+
+    return fig
+
+
+def make_annual_chart(metric, selected, title, ylabel, fmt='pct', note=None, height=420, lower_is_better=False):
+    """Line chart for a single metric across selected NBFCs over 4 full years (FY23–FY26)."""
+    data = get_annual_series(metric)
+
+    series_info = []
+    for name in selected:
+        vals = data[name]
+        lv, li = latest_val(vals)
+        if lv is not None:
+            series_info.append((name, vals, lv, li))
+        else:
+            series_info.append((name, vals, -1e9, -1))
+
+    if lower_is_better:
+        series_info.sort(key=lambda x: x[2])
+    else:
+        series_info.sort(key=lambda x: -x[2])
+
+    fig = go.Figure()
+
+    for name, vals, lv, li in series_info:
+        if lv == -1e9:
+            continue  # skip NBFCs with no annual data at all
+        color = COLORS[name]
+        x_vals = list(range(len(ANNUAL_YEARS)))
+        hover_text = [_fmt_val(v, fmt) if v is not None else "—" for v in vals]
+        fig.add_trace(go.Scatter(
+            x=x_vals,
+            y=vals,
+            name=name,
+            mode='lines+markers',
+            line=dict(color=color, width=2.5),
+            marker=dict(color=color, size=8),
+            connectgaps=False,
+            hovertemplate=f"<b>{name}</b><br>%{{x}}<br>{ylabel}: %{{customdata}}<extra></extra>",
+            customdata=hover_text,
+        ))
+
+    # Right-side annotations
+    ann_points = [(name, li, lv) for name, vals, lv, li in series_info if lv not in (None, -1e9)]
+    if ann_points:
+        all_y = [v for _, vals, _, _ in series_info for v in vals if v is not None]
+        if all_y:
+            y_min, y_max = min(all_y), max(all_y)
+            y_range = y_max - y_min if y_max != y_min else 1.0
+        else:
+            y_range = 1.0
+        GAP = max(y_range * 0.11, 0.2)
+
+        ann_points_sorted = sorted(ann_points, key=lambda x: -x[2])
+        label_positions = []
+        for name, xi, yv in ann_points_sorted:
+            pos = yv
+            for prev_pos in label_positions:
+                if abs(pos - prev_pos) < GAP:
+                    pos = prev_pos - GAP
+            label_positions.append(pos)
+
+        for idx, (name, xi, yv) in enumerate(ann_points_sorted):
+            label_y = label_positions[idx]
+            color = COLORS[name]
+            fig.add_annotation(
+                x=len(ANNUAL_YEARS) - 1,
+                y=label_y,
+                text=f"<b>{name}</b>  {_fmt_val(yv, fmt)}",
+                showarrow=False,
+                xanchor='left',
+                xshift=12,
+                font=dict(size=10.5, color='#0a2540'),
+                bgcolor='white',
+                bordercolor=color,
+                borderwidth=1,
+                borderpad=3,
+            )
+            if abs(label_y - yv) > GAP * 0.3:
+                fig.add_shape(
+                    type='line',
+                    x0=len(ANNUAL_YEARS) - 1, x1=len(ANNUAL_YEARS) - 1,
+                    y0=yv, y1=label_y,
+                    line=dict(color=color, width=0.8, dash='dot'),
+                )
+
+    title_html = f'<b style="color:#0a2540;font-size:15px;">{title}</b>'
+    if note:
+        title_html += f'<br><span style="color:#94a3b8;font-size:10px;">{note}</span>'
+
+    fig.update_layout(
+        template='plotly_white',
+        height=height,
+        hovermode='x unified',
+        showlegend=False,
+        margin=dict(l=55, r=230, t=55, b=45),
+        title=dict(text=title_html, x=0, xref='paper', font=dict(family='Inter')),
+        xaxis=dict(
+            tickmode='array',
+            tickvals=list(range(len(ANNUAL_YEARS))),
+            ticktext=ANNUAL_YEARS,
             showgrid=True,
             gridcolor='#f1f5f9',
             showline=True,
@@ -1579,10 +1705,10 @@ st.markdown(f"""
 
 
 # ── TABS ───────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
     "Market", "Financials", "Asset Quality", "Capital & Leverage",
     "Profitability Ratios", "Valuation Metrics", "Deep Dive", "Rankings",
-    "AI Bulletin", "Shareholding",
+    "AI Bulletin", "Shareholding", "Annual Trends",
 ])
 
 
@@ -2518,6 +2644,45 @@ with tab10:
           Shaded total rows include all holders (named + sub-1%)
         </div>
         """, unsafe_allow_html=True)
+
+
+# ── TAB 11 — ANNUAL TRENDS ─────────────────────────────────────────────────────
+with tab11:
+    st.markdown("""
+    <div class="tab-intro">
+      <div class="tab-intro-title">Annual Trends — Year-on-Year</div>
+      <div class="tab-intro-sub">FY23 – FY26 · AUM · PAT · ROA · ROE · Full fiscal year (April–March)</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    sel11 = nbfc_selector('ann', default_on=['Shriram Finance'])
+    st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="section-label">Scale</div>', unsafe_allow_html=True)
+
+    ann_aum = make_annual_chart('aum_cr', sel11, 'Assets Under Management (AUM)', '₹ Crore', fmt='cr', height=400)
+    st.plotly_chart(ann_aum, use_container_width=True, key="ann_aum")
+
+    ann_pat = make_annual_chart('pat_cr', sel11, 'Profit After Tax (PAT)', '₹ Crore', fmt='cr', height=400)
+    st.plotly_chart(ann_pat, use_container_width=True, key="ann_pat")
+
+    st.markdown('<div class="section-label">Returns</div>', unsafe_allow_html=True)
+
+    col_ann_a, col_ann_b = st.columns(2)
+    with col_ann_a:
+        ann_roa = make_annual_chart('roa_pct', sel11, 'Return on Assets (ROA)', 'ROA (%)', height=380)
+        st.plotly_chart(ann_roa, use_container_width=True, key="ann_roa")
+    with col_ann_b:
+        ann_roe = make_annual_chart('roe_pct', sel11, 'Return on Equity (ROE)', 'ROE (%)', height=380)
+        st.plotly_chart(ann_roe, use_container_width=True, key="ann_roe")
+
+    st.markdown("""
+    <div class="metric-note">
+      Full-year data (April–March). FY26 = FY2025-26.
+      Poonawalla FY25 PAT/ROA/ROE reflect one-time ₹666 Cr provision impact.
+      NBFCs without full-year data yet are hidden from charts — data will be added as received.
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # ── FOOTER ─────────────────────────────────────────────────────────────────────
