@@ -66,11 +66,15 @@ NBFC_ANNUAL = {
         "roe_pct": [11.5,   14.16,  11.65,  None  ],
     },
     # ── Piramal Finance ───────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1700511)
+    # FY23: large loss from DHFL legacy clean-up / one-time provisions (~₹7,400 Cr)
+    # FY23–FY25 ROA/ROE: not computable (PEL amalgamation restatements, missing opening B/S)
+    # FY26: first year with reliable audited consolidated financials post-amalgamation
     "Piramal Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [64000,  69000,  81000,  101230],
+        "pat_cr":  [-7400,  383,    485,    1506  ],
+        "roa_pct": [None,   None,   None,   1.47  ],
+        "roe_pct": [None,   None,   None,   5.45  ],
     },
     # ── Muthoot Finance ───────────────────────────────────────────────────────
     # Source: Screener.in AI summary (usage/1697996); consolidated basis
