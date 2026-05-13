@@ -51,14 +51,16 @@ NBFC_ANNUAL = {
         "roe_pct": [20.6,   20.6,   19.8,   19.7  ],
     },
     # ── Aditya Birla Capital ──────────────────────────────────────────────────
-    # Source: Screener.in AI summary (usage/1697958); AUM from press releases / quarterly cache
-    # AUM = NBFC lending book only (Aditya Birla Finance / ABFL), excluding HFC and AMC
-    #   FY23: AB Capital FY23 results press release (Mar 2023)
-    #   FY24–FY26: quarterly cache Q4 values (105,639 / 126,351 / 159,916)
+    # Source: Screener.in AI summary (usage/1697958); AUM from AB Capital press releases
+    # AUM = total lending portfolio (NBFC + HFC), consistent with Bajaj Finance consolidated
+    #   FY23: AB Capital FY23 PR (NBFC ₹80,556 + HFC ₹13,808 = ₹94,364 Cr)
+    #   FY24: AB Capital Q4FY24 PR (NBFC+HFC combined = ₹1,24,059 Cr)
+    #   FY25: AB Capital Q4FY25 PR (NBFC ₹1,26,351 + HFC ₹31,053 = ₹1,57,404 Cr)
+    #   FY26: AB Capital Q4FY26 results (NBFC+HFC = ₹2,07,368 Cr)
     # FY23 PAT/ROA/ROE normalized (ex one-time ₹2,739 Cr health-ins. fair-value gain)
     # FY26 ROA/ROE: N/A (consolidated balance sheet data unavailable)
     "Aditya Birla Capital": {
-        "aum_cr":  [80556,  105639, 126351, 159916],
+        "aum_cr":  [94364,  124059, 157404, 207368],
         "pat_cr":  [2057,   3335,   3332,   3764  ],
         "roa_pct": [1.28,   1.62,   1.30,   None  ],
         "roe_pct": [11.5,   14.16,  11.65,  None  ],
