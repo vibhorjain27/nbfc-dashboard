@@ -73,17 +73,21 @@ NBFC_ANNUAL = {
         "roe_pct": [None, None, None, None],
     },
     # ── Muthoot Finance ───────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1697996); consolidated basis
+    # FY26: full-year results not yet declared as of May 2026
     "Muthoot Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [71502,  89079,  122000, None  ],
+        "pat_cr":  [3670,   4468,   5352,   None  ],
+        "roa_pct": [4.69,   5.06,   4.67,   None  ],
+        "roe_pct": [18.15,  18.50,  19.62,  None  ],
     },
     # ── Mahindra Finance ──────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1697997); consolidated (includes MRHFL)
+    # FY23/FY24 AUM interpolated (~); ROA/ROE derived from PAT / avg assets & equity
     "Mahindra Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [90105,  110026, 119673, 139264],
+        "pat_cr":  [2072,   1933,   2262,   2861  ],
+        "roa_pct": [2.3,    1.7,    1.7,    1.9   ],
+        "roe_pct": [12.1,   10.0,   10.9,   11.9  ],
     },
 }
