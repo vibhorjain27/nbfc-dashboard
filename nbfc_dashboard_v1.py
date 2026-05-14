@@ -80,6 +80,39 @@ st.markdown("""
 .sh-summary-num { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: #0a2540; }
 .sh-summary-label { font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
 .sh-summary-delta { font-size: 11px; font-weight: 600; }
+/* ── Peer Pulse & NBFC Lens ─────────────────────────────────────────────── */
+.macro-card { background:white; border-radius:6px; padding:14px 16px 12px; box-shadow:0 1px 3px rgba(0,0,0,.06); text-align:center; }
+.macro-label { font-size:10px; font-weight:700; text-transform:uppercase; color:#94a3b8; letter-spacing:.04em; }
+.macro-val { font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:#0a2540; line-height:1.2; margin:4px 0 2px; }
+.macro-sub { font-size:11px; color:#64748b; }
+.macro-winner { font-size:11px; font-weight:600; }
+.pulse-card { background:white; border-radius:6px; padding:14px 16px 12px; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:0; height:100%; }
+.pulse-name { font-size:15px; font-weight:700; color:#0a2540; }
+.pulse-seg { display:inline-block; font-size:10px; font-weight:600; color:#64748b; background:#f1f5f9; padding:2px 8px; border-radius:10px; margin-top:3px; }
+.pm-table { width:100%; border-collapse:collapse; margin:10px 0 8px; }
+.pm-table td { padding:3px 0; font-size:11.5px; vertical-align:middle; }
+.pm-lbl { color:#64748b; width:34%; }
+.pm-val { font-family:'JetBrains Mono',monospace; font-weight:600; color:#0a2540; width:30%; }
+.pm-qoq { font-family:'JetBrains Mono',monospace; font-size:10.5px; width:20%; }
+.pm-vs  { font-size:11px; font-weight:700; width:16%; text-align:right; }
+.vs-g { color:#16a34a; } .vs-r { color:#dc2626; } .vs-n { color:#94a3b8; }
+.qoq-g { color:#16a34a; } .qoq-r { color:#dc2626; } .qoq-n { color:#94a3b8; }
+.pb-row { font-size:11px; color:#374151; line-height:1.7; padding:1px 0; display:flex; gap:6px; }
+.pb-icon { flex-shrink:0; }
+.swot-box { background:white; border-radius:6px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+.swot-hdr { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+.swot-s { border-top:3px solid #16a34a; } .swot-s .swot-hdr { color:#16a34a; }
+.swot-w { border-top:3px solid #dc2626; } .swot-w .swot-hdr { color:#dc2626; }
+.swot-o { border-top:3px solid #0284c7; } .swot-o .swot-hdr { color:#0284c7; }
+.swot-t { border-top:3px solid #f97316; } .swot-t .swot-hdr { color:#f97316; }
+.swot-item { font-size:11.5px; color:#374151; line-height:1.65; padding:2px 0; border-bottom:1px solid #f8fafc; }
+.bm-table { border-collapse:collapse; width:100%; font-size:11.5px; }
+.bm-table th { background:#0a2540; color:white; padding:7px 10px; font-size:10px; text-align:center; white-space:nowrap; }
+.bm-table th:first-child { text-align:left; }
+.bm-table td { padding:5px 10px; border-bottom:1px solid #f1f5f9; font-family:'JetBrains Mono',monospace; text-align:center; }
+.bm-table td:first-child { font-family:'Inter',sans-serif; font-size:11.5px; font-weight:500; color:#0a2540; text-align:left; }
+.bm-g { color:#16a34a; font-weight:700; } .bm-r { color:#dc2626; font-weight:700; } .bm-n { color:#94a3b8; }
+.mover-up { color:#16a34a; font-weight:700; } .mover-dn { color:#dc2626; font-weight:700; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1630,6 +1663,518 @@ def nbfc_selector(tab_key: str, default_on=None) -> list:
     return selected
 
 
+# ── INSIGHT ENGINE ─────────────────────────────────────────────────────────────
+# Hard-coded to Q4FY26 as base quarter (index 8).  Update INSIGHT_BASE_Q each
+# quarter release to auto-shift all narratives forward.
+
+INSIGHT_BASE_Q = 8   # Q4FY26
+INSIGHT_PREV_Q = 7   # Q3FY26
+INSIGHT_YOY_Q  = 4   # Q4FY25
+POON_KEY = 'Poonawalla Fincorp'
+
+# (display_label, roa_norm_low, roa_norm_high, segment_context_note)
+SEGMENT_META = {
+    'Poonawalla Fincorp':    ('Consumer & Personal Finance', 1.0, 3.0,  ''),
+    'Bajaj Finance':         ('Diversified Retail',          3.5, 5.5,  ''),
+    'Shriram Finance':       ('Commercial Vehicle & MSME',   2.5, 4.0,  ''),
+    'L&T Finance':           ('Retail / Home Loans',         1.5, 2.5,  ''),
+    'Cholamandalam Finance': ('Vehicle, Home & SME',         2.0, 3.5,  ''),
+    'Aditya Birla Capital':  ('Diversified Lending',         1.0, 2.0,  ''),
+    'Piramal Finance':       ('Real Estate / Corporate',     0.5, 2.0,  'Transitioning from wholesale; legacy DHFL book still winding down'),
+    'Muthoot Finance':       ('Gold Loans',                  4.0, 7.0,  'Gold-loan ROA structurally 4–7%; direct Poonawalla ROA comparison not meaningful'),
+    'Mahindra Finance':      ('Rural & Vehicle Finance',     1.5, 2.5,  ''),
+}
+
+# ── low-level data accessors ────────────────────────────────────────────────
+
+def _iq(nbfc_disp, metric, idx):
+    cache = CACHE_KEY[nbfc_disp]
+    series = NBFC_TIMESERIES.get(cache, {}).get(metric, [])
+    return series[idx] if idx < len(series) else None
+
+def _qoq_diff(nbfc_disp, metric):
+    c, p = _iq(nbfc_disp, metric, INSIGHT_BASE_Q), _iq(nbfc_disp, metric, INSIGHT_PREV_Q)
+    return (c - p) if (c is not None and p is not None) else None
+
+def _qoq_pct(nbfc_disp, metric):
+    c, p = _iq(nbfc_disp, metric, INSIGHT_BASE_Q), _iq(nbfc_disp, metric, INSIGHT_PREV_Q)
+    return ((c - p) / abs(p) * 100) if (c is not None and p is not None and p != 0) else None
+
+def _yoy_pct(nbfc_disp, metric):
+    c, p = _iq(nbfc_disp, metric, INSIGHT_BASE_Q), _iq(nbfc_disp, metric, INSIGHT_YOY_Q)
+    return ((c - p) / abs(p) * 100) if (c is not None and p is not None and p != 0) else None
+
+def _vs_poon_diff(nbfc_disp, metric):
+    nv, pv = _iq(nbfc_disp, metric, INSIGHT_BASE_Q), _iq(POON_KEY, metric, INSIGHT_BASE_Q)
+    return (nv - pv) if (nv is not None and pv is not None) else None
+
+def _scr(v, fmt='pct'):
+    """Short display formatter for insight text."""
+    if v is None: return '—'
+    if fmt == 'cr':
+        if abs(v) >= 100000: return f'₹{v/1000:.0f}k Cr'
+        if abs(v) >= 1000:   return f'₹{v/1000:.1f}k Cr'
+        return f'₹{int(v)} Cr'
+    if fmt == 'pp':
+        s = '+' if v > 0 else ''
+        return f'{s}{v:.2f}pp'
+    if fmt == 'bps':
+        bps = v * 100
+        s = '+' if bps > 0 else ''
+        return f'{s}{bps:.0f} bps'
+    return f'{v:.2f}%'
+
+# ── scorecard headline bullets (max 3, priority: GNPA > PAT > AUM > ROA) ───
+
+def scorecard_bullets(nbfc_disp):
+    bullets = []
+    seg_lbl, roa_lo, roa_hi, _ = SEGMENT_META[nbfc_disp]
+    is_gold = 'Gold' in seg_lbl
+
+    # GNPA — always call out if moved > 15 bps
+    gnpa     = _iq(nbfc_disp, 'gnpa_pct', INSIGHT_BASE_Q)
+    gnpa_qoq = _qoq_diff(nbfc_disp, 'gnpa_pct')
+    if gnpa is not None and gnpa_qoq is not None:
+        bps = gnpa_qoq * 100
+        if abs(bps) >= 15:
+            icon = '▲' if bps > 0 else '▼'
+            col  = 'qoq-r' if bps > 0 else 'qoq-g'
+            bullets.append((col, f'GNPA <span class="{col}">{icon} {abs(bps):.0f} bps QoQ</span> → {gnpa:.2f}%'))
+
+    # NNPA — call out if moved > 15 bps
+    nnpa     = _iq(nbfc_disp, 'nnpa_pct', INSIGHT_BASE_Q)
+    nnpa_qoq = _qoq_diff(nbfc_disp, 'nnpa_pct')
+    if nnpa is not None and nnpa_qoq is not None and len(bullets) < 3:
+        bps = nnpa_qoq * 100
+        if abs(bps) >= 15:
+            icon = '▲' if bps > 0 else '▼'
+            col  = 'qoq-r' if bps > 0 else 'qoq-g'
+            bullets.append((col, f'NNPA <span class="{col}">{icon} {abs(bps):.0f} bps QoQ</span> → {nnpa:.2f}%'))
+
+    # PAT — if moved > 8% QoQ
+    pat     = _iq(nbfc_disp, 'pat_cr', INSIGHT_BASE_Q)
+    pat_qoq = _qoq_pct(nbfc_disp, 'pat_cr')
+    if pat is not None and pat_qoq is not None and abs(pat_qoq) >= 8 and len(bullets) < 3:
+        col  = 'qoq-g' if pat_qoq > 0 else 'qoq-r'
+        sign = '+' if pat_qoq > 0 else ''
+        bullets.append((col, f'PAT <span class="{col}">{sign}{pat_qoq:.1f}% QoQ</span> → {_scr(pat, "cr")}'))
+
+    # AUM — if QoQ > 4%
+    aum     = _iq(nbfc_disp, 'aum_cr', INSIGHT_BASE_Q)
+    aum_qoq = _qoq_pct(nbfc_disp, 'aum_cr')
+    if aum is not None and aum_qoq is not None and abs(aum_qoq) >= 4 and len(bullets) < 3:
+        col  = 'qoq-g' if aum_qoq > 0 else 'qoq-r'
+        sign = '+' if aum_qoq > 0 else ''
+        bullets.append((col, f'AUM <span class="{col}">{sign}{aum_qoq:.1f}% QoQ</span> → {_scr(aum, "cr")}'))
+
+    # ROA vs Poonawalla (skip for gold loans)
+    roa      = _iq(nbfc_disp, 'roa_pct', INSIGHT_BASE_Q)
+    poon_roa = _iq(POON_KEY, 'roa_pct', INSIGHT_BASE_Q)
+    if roa is not None and poon_roa is not None and nbfc_disp != POON_KEY and not is_gold and len(bullets) < 3:
+        gap = roa - poon_roa
+        if abs(gap) >= 0.4:
+            col  = 'vs-g' if gap > 0 else 'vs-r'
+            sign = '+' if gap > 0 else ''
+            bullets.append((col, f'ROA {roa:.2f}% (<span class="{col}">{sign}{gap:.2f}pp vs Poon</span>)'))
+
+    if not bullets:
+        bullets.append(('vs-n', 'Metrics broadly stable QoQ — no major moves'))
+    return bullets[:3]
+
+
+# ── SWOT generation ─────────────────────────────────────────────────────────
+
+def generate_swot(nbfc_disp):
+    S, W, O, T = [], [], [], []
+    seg_lbl, roa_lo, roa_hi, seg_note = SEGMENT_META[nbfc_disp]
+    is_gold = 'Gold' in seg_lbl
+    is_poon = nbfc_disp == POON_KEY
+
+    poon_roa  = _iq(POON_KEY, 'roa_pct',  INSIGHT_BASE_Q)
+    poon_gnpa = _iq(POON_KEY, 'gnpa_pct', INSIGHT_BASE_Q)
+    poon_nnpa = _iq(POON_KEY, 'nnpa_pct', INSIGHT_BASE_Q)
+
+    # ── ROA ──────────────────────────────────────────────────────────────────
+    roa     = _iq(nbfc_disp, 'roa_pct', INSIGHT_BASE_Q)
+    roa_qoq = _qoq_diff(nbfc_disp, 'roa_pct')
+    if roa is not None:
+        if is_gold:
+            if roa >= roa_lo:
+                S.append(f'ROA {roa:.2f}% — within gold-loan norms ({roa_lo}–{roa_hi}%); structurally not comparable to Poonawalla')
+            else:
+                W.append(f'ROA {roa:.2f}% — below gold-loan sector floor of {roa_lo}%')
+        elif not is_poon and poon_roa is not None:
+            gap = roa - poon_roa
+            if roa >= roa_lo and gap > 0.3:
+                S.append(f'ROA {roa:.2f}% — {abs(gap):.2f}pp ahead of Poonawalla ({poon_roa:.2f}%); within {seg_lbl} norms')
+            elif roa >= roa_hi:
+                S.append(f'ROA {roa:.2f}% — top of {seg_lbl} range ({roa_lo}–{roa_hi}%)')
+            elif roa < roa_lo:
+                W.append(f'ROA {roa:.2f}% — below {seg_lbl} norms ({roa_lo}–{roa_hi}%)')
+            if gap < -0.5 and roa < roa_lo:
+                W.append(f'Trails Poonawalla by {abs(gap):.2f}pp on ROA despite different segment')
+        elif is_poon:
+            if roa >= roa_lo:
+                S.append(f'ROA {roa:.2f}% — in line with consumer-finance norms ({roa_lo}–{roa_hi}%)')
+            else:
+                W.append(f'ROA {roa:.2f}% — still rebuilding post FY25 one-time provisions; expected to recover')
+    if roa_qoq is not None:
+        if roa_qoq > 0.15:
+            O.append(f'ROA expanding +{roa_qoq:.2f}pp QoQ — profitability trajectory positive')
+        elif roa_qoq < -0.2:
+            W.append(f'ROA compressed {abs(roa_qoq):.2f}pp QoQ — monitor earnings quality')
+
+    # ── GNPA ─────────────────────────────────────────────────────────────────
+    gnpa     = _iq(nbfc_disp, 'gnpa_pct', INSIGHT_BASE_Q)
+    gnpa_qoq = _qoq_diff(nbfc_disp, 'gnpa_pct')
+    gnpa_yoy = _iq(nbfc_disp, 'gnpa_pct', INSIGHT_YOY_Q)
+    if gnpa is not None:
+        if not is_poon and poon_gnpa is not None:
+            gap_bps = (gnpa - poon_gnpa) * 100
+            if gap_bps > 150:
+                W.append(f'GNPA {gnpa:.2f}% — {gap_bps:.0f} bps above Poonawalla ({poon_gnpa:.2f}%)')
+            elif gap_bps < -50:
+                S.append(f'GNPA {gnpa:.2f}% — {abs(gap_bps):.0f} bps below Poonawalla ({poon_gnpa:.2f}%)')
+        if gnpa > 4.5:
+            T.append(f'GNPA at {gnpa:.2f}% — elevated; credit quality under scrutiny')
+        elif gnpa < 1.5:
+            S.append(f'GNPA {gnpa:.2f}% — best-in-class asset quality')
+        if gnpa_qoq is not None:
+            bps = gnpa_qoq * 100
+            if bps > 25:
+                T.append(f'GNPA deteriorated {bps:.0f} bps QoQ to {gnpa:.2f}% — watch credit trend')
+            elif bps < -25:
+                S.append(f'GNPA improved {abs(bps):.0f} bps QoQ to {gnpa:.2f}%')
+        if gnpa_yoy is not None:
+            yoy_bps = (gnpa - gnpa_yoy) * 100
+            if yoy_bps > 50:
+                T.append(f'GNPA up {yoy_bps:.0f} bps YoY (Q4FY25 to Q4FY26) — systemic pressure building')
+            elif yoy_bps < -50:
+                O.append(f'GNPA down {abs(yoy_bps):.0f} bps YoY — sustained asset-quality improvement')
+
+    # ── NNPA ─────────────────────────────────────────────────────────────────
+    nnpa     = _iq(nbfc_disp, 'nnpa_pct', INSIGHT_BASE_Q)
+    nnpa_qoq = _qoq_diff(nbfc_disp, 'nnpa_pct')
+    if nnpa is not None:
+        if not is_poon and poon_nnpa is not None:
+            gap_bps = (nnpa - poon_nnpa) * 100
+            if gap_bps > 100:
+                W.append(f'NNPA {nnpa:.2f}% — net credit exposure {gap_bps:.0f} bps above Poonawalla ({poon_nnpa:.2f}%)')
+        if nnpa > 2.5:
+            T.append(f'NNPA at {nnpa:.2f}% — net credit risk elevated; provisioning adequacy key watch')
+        if nnpa_qoq is not None:
+            bps = nnpa_qoq * 100
+            if bps > 20:
+                T.append(f'NNPA widened {bps:.0f} bps QoQ — provisioning may need to catch up')
+            elif bps < -20:
+                O.append(f'NNPA easing {abs(bps):.0f} bps QoQ — net credit risk declining')
+
+    # ── AUM ──────────────────────────────────────────────────────────────────
+    aum     = _iq(nbfc_disp, 'aum_cr', INSIGHT_BASE_Q)
+    aum_qoq = _qoq_pct(nbfc_disp, 'aum_cr')
+    aum_yoy = _yoy_pct(nbfc_disp, 'aum_cr')
+    if aum_yoy is not None:
+        if aum_yoy > 20:
+            O.append(f'AUM growing {aum_yoy:.1f}% YoY to {_scr(aum, "cr")} — strong volume momentum')
+        elif aum_yoy > 10:
+            O.append(f'AUM expanding {aum_yoy:.1f}% YoY — healthy growth')
+        elif aum_yoy < 5:
+            W.append(f'AUM growth tepid at {aum_yoy:.1f}% YoY — volume expansion needed')
+    if aum_qoq is not None and aum_qoq > 8:
+        S.append(f'AUM +{aum_qoq:.1f}% QoQ — one of the stronger sequential expansions in the peer set')
+
+    # ── PAT ──────────────────────────────────────────────────────────────────
+    pat     = _iq(nbfc_disp, 'pat_cr', INSIGHT_BASE_Q)
+    pat_yoy = _yoy_pct(nbfc_disp, 'pat_cr')
+    pat_qoq = _qoq_pct(nbfc_disp, 'pat_cr')
+    if pat_yoy is not None:
+        if pat_yoy > 20:
+            S.append(f'PAT grew {pat_yoy:.1f}% YoY to {_scr(pat, "cr")} — strong earnings growth')
+        elif pat_yoy < -10:
+            W.append(f'PAT down {abs(pat_yoy):.1f}% YoY — earnings under pressure')
+    if pat_qoq is not None and pat_qoq < -10:
+        W.append(f'PAT fell {abs(pat_qoq):.1f}% QoQ — watch sequential profitability')
+
+    # ── PCR ──────────────────────────────────────────────────────────────────
+    pcr     = _iq(nbfc_disp, 'pcr_pct', INSIGHT_BASE_Q)
+    pcr_qoq = _qoq_diff(nbfc_disp, 'pcr_pct')
+    if pcr is not None:
+        if pcr > 55:
+            S.append(f'PCR {pcr:.1f}% — strong provisioning buffer absorbs credit stress well')
+        elif pcr < 35:
+            W.append(f'PCR {pcr:.1f}% — thin provisioning buffer; vulnerable to credit deterioration')
+    if pcr_qoq is not None and pcr_qoq < -3:
+        T.append(f'PCR declined {abs(pcr_qoq):.1f}pp QoQ — coverage eroding even as GNPA moves')
+
+    # ── CAR ──────────────────────────────────────────────────────────────────
+    car = _iq(nbfc_disp, 'car_pct', INSIGHT_BASE_Q)
+    if car is not None:
+        if car > 20:
+            S.append(f'CAR {car:.2f}% — well above RBI 15% minimum; strong capital buffer')
+        elif car < 16.5:
+            W.append(f'CAR {car:.2f}% — limited headroom above RBI 15% minimum; capital raise may be needed')
+
+    # ── D/E ──────────────────────────────────────────────────────────────────
+    de     = _iq(nbfc_disp, 'd_e_ratio', INSIGHT_BASE_Q)
+    de_qoq = _qoq_diff(nbfc_disp, 'd_e_ratio')
+    if de is not None:
+        if de < 4.5:
+            S.append(f'D/E {de:.1f}x — conservatively levered; significant room to grow the book')
+        elif de > 8:
+            T.append(f'D/E {de:.1f}x — leverage elevated; limits ability to raise incremental debt cheaply')
+    if de_qoq is not None and de_qoq < -0.3:
+        O.append(f'Leverage declining: D/E down {abs(de_qoq):.1f}x QoQ — balance sheet strengthening')
+
+    # ── CoB ──────────────────────────────────────────────────────────────────
+    cob     = _iq(nbfc_disp, 'cost_of_borrowing_pct', INSIGHT_BASE_Q)
+    cob_qoq = _qoq_diff(nbfc_disp, 'cost_of_borrowing_pct')
+    if cob_qoq is not None:
+        if cob_qoq < -0.1:
+            O.append(f'Funding cost easing: CoB down {abs(cob_qoq):.2f}pp QoQ to {cob:.2f}% — NIM support in rate-cut cycle')
+        elif cob_qoq > 0.1:
+            T.append(f'CoB up {cob_qoq:.2f}pp QoQ to {cob:.2f}% — funding cost pressure may squeeze margins')
+
+    # ── Segment context note ──────────────────────────────────────────────────
+    if seg_note:
+        O.append(f'📌 Segment note: {seg_note}')
+
+    # Minimum content
+    if not S: S.append('No clear outperformance vs peers in Q4FY26 — watch next quarter')
+    if not W: W.append('No significant weaknesses flagged vs sector in Q4FY26')
+    if not O: O.append('Monitor AUM growth and margin trajectory into FY27')
+    if not T: T.append('No acute threats flagged in Q4FY26 data')
+
+    return S[:5], W[:5], O[:5], T[:5]
+
+
+# ── Radar chart for NBFC Lens ───────────────────────────────────────────────
+
+def make_radar_chart(nbfc_disp):
+    RADAR_METRICS = [
+        ('roa_pct',              'ROA',        False),
+        ('roe_pct',              'ROE',        False),
+        ('nim_pct',              'NIM',        False),
+        ('gnpa_pct',             'GNPA',       True ),   # lower = better → invert
+        ('nnpa_pct',             'NNPA',       True ),
+        ('pcr_pct',              'PCR',        False),
+        ('car_pct',              'CAR',        False),
+        ('cost_of_borrowing_pct','CoB',        True ),
+    ]
+    labels = [m[1] for m in RADAR_METRICS]
+
+    # Collect all peer values for min-max normalisation
+    all_vals = {}
+    for key, lbl, inv in RADAR_METRICS:
+        vals = [_iq(n, key, INSIGHT_BASE_Q) for n in DISPLAY_NAMES]
+        clean = [v for v in vals if v is not None]
+        all_vals[key] = (min(clean) if clean else 0, max(clean) if clean else 1)
+
+    def _norm(key, val, inv):
+        lo, hi = all_vals[key]
+        if hi == lo or val is None: return 0.5
+        score = (val - lo) / (hi - lo)
+        return 1 - score if inv else score
+
+    def _get_scores(name):
+        return [_norm(k, _iq(name, k, INSIGHT_BASE_Q), inv) for k, _, inv in RADAR_METRICS]
+
+    fig = go.Figure()
+    # Poonawalla baseline (always shown)
+    poon_scores = _get_scores(POON_KEY)
+    fig.add_trace(go.Scatterpolar(
+        r=poon_scores + [poon_scores[0]],
+        theta=labels + [labels[0]],
+        fill='toself',
+        fillcolor='rgba(2,132,199,0.10)',
+        line=dict(color='#0284c7', width=2, dash='dot'),
+        name='Poonawalla Fincorp',
+    ))
+    # Selected NBFC
+    if nbfc_disp != POON_KEY:
+        sc = _get_scores(nbfc_disp)
+        color = COLORS[nbfc_disp]
+        fig.add_trace(go.Scatterpolar(
+            r=sc + [sc[0]],
+            theta=labels + [labels[0]],
+            fill='toself',
+            fillcolor=f'rgba({int(color[1:3],16)},{int(color[3:5],16)},{int(color[5:7],16)},0.12)',
+            line=dict(color=color, width=2.5),
+            name=nbfc_disp,
+        ))
+
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(visible=False, range=[0, 1]),
+            angularaxis=dict(tickfont=dict(size=11, family='Inter', color='#0a2540')),
+            bgcolor='white',
+        ),
+        showlegend=True,
+        legend=dict(font=dict(size=11), orientation='h', y=-0.08),
+        margin=dict(l=30, r=30, t=30, b=50),
+        height=340,
+        paper_bgcolor='white',
+        font=dict(family='Inter'),
+        title=dict(
+            text='<b style="color:#0a2540;font-size:13px;">Peer-Normalised Scorecard</b>'
+                 '<br><span style="color:#94a3b8;font-size:9px;">0 = worst in peer group · 1 = best in peer group</span>',
+            x=0.5, xanchor='center',
+        ),
+    )
+    return fig
+
+
+# ── macro signals for Peer Pulse top strip ──────────────────────────────────
+
+def _macro_signals():
+    """Returns list of (label, value_html, sub_html) for top strip cards."""
+    signals = []
+
+    # Best AUM growth QoQ
+    aum_moves = [(n, _qoq_pct(n, 'aum_cr')) for n in DISPLAY_NAMES]
+    aum_moves = [(n, v) for n, v in aum_moves if v is not None]
+    if aum_moves:
+        best = max(aum_moves, key=lambda x: x[1])
+        signals.append(('Fastest AUM Growth QoQ',
+                         f'<span class="mover-up">+{best[1]:.1f}%</span>',
+                         best[0]))
+
+    # Best PAT growth QoQ
+    pat_moves = [(n, _qoq_pct(n, 'pat_cr')) for n in DISPLAY_NAMES]
+    pat_moves = [(n, v) for n, v in pat_moves if v is not None]
+    if pat_moves:
+        best = max(pat_moves, key=lambda x: x[1])
+        signals.append(('Highest PAT Growth QoQ',
+                         f'<span class="mover-up">+{best[1]:.1f}%</span>',
+                         best[0]))
+
+    # GNPA: most improved
+    gnpa_moves = [(n, _qoq_diff(n, 'gnpa_pct')) for n in DISPLAY_NAMES]
+    gnpa_moves = [(n, v) for n, v in gnpa_moves if v is not None]
+    if gnpa_moves:
+        best = min(gnpa_moves, key=lambda x: x[1])  # most negative = most improved
+        bps = best[1] * 100
+        col = 'mover-up' if bps < 0 else 'mover-dn'
+        sign = '' if bps < 0 else '+'
+        signals.append(('Biggest GNPA Move QoQ',
+                         f'<span class="{col}">{sign}{bps:.0f} bps</span>',
+                         best[0]))
+
+    # Poonawalla headline
+    poon_aum     = _iq(POON_KEY, 'aum_cr',  INSIGHT_BASE_Q)
+    poon_roa     = _iq(POON_KEY, 'roa_pct', INSIGHT_BASE_Q)
+    poon_aum_qoq = _qoq_pct(POON_KEY, 'aum_cr')
+    sub = f'AUM {_scr(poon_aum, "cr")} · {f"+{poon_aum_qoq:.1f}% QoQ" if poon_aum_qoq else ""}'
+    signals.append(('Poonawalla Q4FY26',
+                     f'ROA <span style="color:#0284c7;font-weight:700;">{poon_roa:.2f}%</span>',
+                     sub))
+    return signals
+
+
+# ── benchmark table HTML ────────────────────────────────────────────────────
+
+def _benchmark_table_html(nbfc_disp):
+    BM_ROWS = [
+        ('aum_cr',              'AUM',              'cr',    False),
+        ('pat_cr',              'PAT',              'cr',    False),
+        ('nim_pct',             'NIM',              'pct',   False),
+        ('roa_pct',             'ROA',              'pct',   False),
+        ('roe_pct',             'ROE',              'pct',   False),
+        ('gnpa_pct',            'GNPA',             'pct',   True ),
+        ('nnpa_pct',            'NNPA',             'pct',   True ),
+        ('pcr_pct',             'PCR',              'pct',   False),
+        ('cost_of_borrowing_pct','CoB',             'pct',   True ),
+        ('d_e_ratio',           'D/E',              'ratio', True ),
+        ('car_pct',             'CAR',              'pct',   False),
+        ('bvps_inr',            'BVPS',             'inr',   False),
+    ]
+    seg_lbl, _, _, _ = SEGMENT_META[nbfc_disp]
+    is_gold = 'Gold' in seg_lbl
+
+    html = f'''<table class="bm-table">
+<thead><tr>
+  <th style="text-align:left;">Metric</th>
+  <th>Poonawalla</th>
+  <th>{nbfc_disp.split()[0] if nbfc_disp != POON_KEY else "Poonawalla"}</th>
+  <th>Gap</th>
+  <th>QoQ</th>
+  <th>Signal</th>
+</tr></thead><tbody>'''
+
+    for key, lbl, fmt, lib in BM_ROWS:
+        pv  = _iq(POON_KEY,   key, INSIGHT_BASE_Q)
+        nv  = _iq(nbfc_disp,  key, INSIGHT_BASE_Q)
+        qoq = _qoq_diff(nbfc_disp, key)
+
+        def _fv(v):
+            if v is None: return '—'
+            if fmt == 'cr':
+                if abs(v) >= 100000: return f'₹{v/1000:.0f}k'
+                if abs(v) >= 1000:   return f'₹{v/1000:.1f}k'
+                return f'₹{int(v)}'
+            if fmt == 'ratio': return f'{v:.1f}x'
+            if fmt == 'inr':   return f'₹{v:.0f}'
+            return f'{v:.2f}%'
+
+        gap_html = '—'
+        sig_html = '—'
+        if pv is not None and nv is not None and nbfc_disp != POON_KEY:
+            diff = nv - pv
+            better = (diff < 0) if lib else (diff > 0)
+            # for gold loan ROA, suppress vs-Poonawalla signal
+            skip_sig = is_gold and key == 'roa_pct'
+            if fmt == 'cr':
+                adiff = abs(diff)
+                s = '+' if diff > 0 else ''
+                if adiff >= 1000: gstr = f'{s}₹{diff/1000:.1f}k'
+                else:             gstr = f'{s}₹{int(diff)}'
+            elif fmt == 'ratio':
+                s = '+' if diff > 0 else ''
+                gstr = f'{s}{diff:.1f}x'
+            elif fmt == 'inr':
+                s = '+' if diff > 0 else ''
+                gstr = f'{s}₹{abs(diff):.0f}'
+            else:
+                bps = diff * 100
+                s = '+' if bps > 0 else ''
+                gstr = f'{s}{bps:.0f} bps'
+            if skip_sig:
+                gap_html = f'<span class="bm-n">{gstr} ⚠seg</span>'
+                sig_html = '<span class="bm-n" title="Gold loan ROA not comparable">—</span>'
+            elif better:
+                gap_html = f'<span class="bm-g">{gstr}</span>'
+                sig_html = '<span class="bm-g">✓ ahead</span>'
+            else:
+                gap_html = f'<span class="bm-r">{gstr}</span>'
+                sig_html = '<span class="bm-r">✗ behind</span>'
+
+        qoq_html = '—'
+        if qoq is not None:
+            if fmt == 'cr':
+                qstr = f'+{qoq/1000:.1f}k' if qoq > 0 else f'{qoq/1000:.1f}k'
+            elif fmt == 'ratio':
+                qstr = f'+{qoq:.2f}x' if qoq > 0 else f'{qoq:.2f}x'
+            elif fmt == 'inr':
+                qstr = f'+₹{qoq:.0f}' if qoq > 0 else f'₹{qoq:.0f}'
+            else:
+                bps = qoq * 100
+                qstr = f'+{bps:.0f}bps' if bps > 0 else f'{bps:.0f}bps'
+            improving = (qoq < 0) if lib else (qoq > 0)
+            qcls = 'qoq-g' if improving else 'qoq-r'
+            qoq_html = f'<span class="{qcls}">{qstr}</span>'
+
+        html += f'''<tr>
+  <td>{lbl}</td>
+  <td>{_fv(pv)}</td>
+  <td>{_fv(nv)}</td>
+  <td>{gap_html}</td>
+  <td>{qoq_html}</td>
+  <td>{sig_html}</td>
+</tr>'''
+
+    html += '</tbody></table>'
+    return html
+
+
 # ── AUTO-REFRESH JS ────────────────────────────────────────────────────────────
 components.html("""
 <script>
@@ -1705,10 +2250,11 @@ st.markdown(f"""
 
 
 # ── TABS ───────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 = st.tabs([
     "Market", "Financials", "Asset Quality", "Capital & Leverage",
     "Profitability Ratios", "Valuation Metrics", "Deep Dive", "Rankings",
     "AI Bulletin", "Shareholding", "Annual Trends",
+    "Peer Pulse", "NBFC Lens",
 ])
 
 
@@ -2681,6 +3227,265 @@ with tab11:
       Full-year data (April–March). FY26 = FY2025-26.
       Poonawalla FY25 PAT/ROA/ROE reflect one-time ₹666 Cr provision impact.
       NBFCs without full-year data yet are hidden from charts — data will be added as received.
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ── TAB 12 — PEER PULSE ────────────────────────────────────────────────────────
+with tab12:
+    st.markdown("""
+    <div class="tab-intro">
+      <div class="tab-intro-title">Peer Pulse — Q4FY26 Snapshot</div>
+      <div class="tab-intro-sub">Data-driven highlights · Benchmarked vs Poonawalla · GNPA / NNPA flagged automatically</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Macro signal strip ─────────────────────────────────────────────────────
+    signals = _macro_signals()
+    sig_cols = st.columns(len(signals))
+    for col, (lbl, val_html, sub_html) in zip(sig_cols, signals):
+        col.markdown(f"""
+        <div class="macro-card">
+          <div class="macro-label">{lbl}</div>
+          <div class="macro-val">{val_html}</div>
+          <div class="macro-sub">{sub_html}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown('<div style="height:18px;"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-label">NBFC Scorecards — Q4FY26 vs Poonawalla</div>', unsafe_allow_html=True)
+
+    # ── Scorecard grid (3 per row) ─────────────────────────────────────────────
+    others = [n for n in DISPLAY_NAMES if n != POON_KEY]
+    # Poonawalla card first, then others
+    all_cards = [POON_KEY] + others
+    PULSE_METRICS = [
+        ('aum_cr',   'AUM',  'cr',  False),
+        ('roa_pct',  'ROA',  'pct', False),
+        ('gnpa_pct', 'GNPA', 'pct', True ),
+        ('pat_cr',   'PAT',  'cr',  False),
+    ]
+
+    for row_start in range(0, len(all_cards), 3):
+        row_names = all_cards[row_start:row_start + 3]
+        cols = st.columns(3)
+        for col, name in zip(cols, row_names):
+            color  = COLORS[name]
+            seg_lbl, _, _, _ = SEGMENT_META[name]
+            bullets = scorecard_bullets(name)
+            is_poon = name == POON_KEY
+
+            # Build metric rows
+            metric_rows_html = ''
+            for key, lbl, fmt, lib in PULSE_METRICS:
+                val  = _iq(name, key, INSIGHT_BASE_Q)
+                qoq  = _qoq_diff(name, key)
+                vp   = _vs_poon_diff(name, key)
+
+                # format display value
+                if val is None:
+                    dval = '—'
+                elif fmt == 'cr':
+                    dval = _scr(val, 'cr')
+                elif fmt == 'ratio':
+                    dval = f'{val:.1f}x'
+                else:
+                    dval = f'{val:.2f}%'
+
+                # QoQ cell
+                if qoq is None:
+                    qoq_html = '<span class="qoq-n">—</span>'
+                else:
+                    improving = (qoq < 0) if lib else (qoq > 0)
+                    qcls = 'qoq-g' if improving else 'qoq-r'
+                    arrow = '↑' if qoq > 0 else '↓'
+                    if fmt == 'cr':
+                        qstr = f'{arrow}{abs(qoq)/1000:.1f}k' if abs(qoq) >= 1000 else f'{arrow}₹{abs(int(qoq))}'
+                    else:
+                        bps = qoq * 100
+                        qstr = f'{arrow}{abs(bps):.0f}bp'
+                    qoq_html = f'<span class="{qcls}">{qstr}</span>'
+
+                # vs Poonawalla cell
+                if is_poon or vp is None:
+                    vs_html = '<span class="vs-n">★</span>' if is_poon else '<span class="vs-n">—</span>'
+                else:
+                    is_gold = 'Gold' in seg_lbl
+                    skip = is_gold and key == 'roa_pct'
+                    better = (vp < 0) if lib else (vp > 0)
+                    if skip:
+                        vs_html = '<span class="vs-n" title="Segment ROA not comparable">⚠</span>'
+                    elif better:
+                        vs_html = '<span class="vs-g">▲ Poon</span>'
+                    else:
+                        vs_html = '<span class="vs-r">▼ Poon</span>'
+
+                metric_rows_html += f'''<tr>
+  <td class="pm-lbl">{lbl}</td>
+  <td class="pm-val">{dval}</td>
+  <td class="pm-qoq">{qoq_html}</td>
+  <td class="pm-vs">{vs_html}</td>
+</tr>'''
+
+            # Build bullet HTML
+            bullet_html = ''
+            for bcls, btext in bullets:
+                bullet_html += f'<div class="pb-row"><span class="pb-icon" style="color:{"#16a34a" if "g" in bcls else "#dc2626" if "r" in bcls else "#94a3b8"};">●</span><span class="pulse-bullet">{btext}</span></div>'
+
+            poon_label = ' <span style="font-size:9px;color:#0284c7;font-weight:700;background:#e0f2fe;padding:1px 6px;border-radius:8px;">BENCHMARK</span>' if is_poon else ''
+            col.markdown(f"""
+<div class="pulse-card" style="border-top:3px solid {color};">
+  <div>
+    <span class="pulse-name">{name}{poon_label}</span><br>
+    <span class="pulse-seg">{seg_lbl}</span>
+  </div>
+  <table class="pm-table">{metric_rows_html}</table>
+  {bullet_html}
+</div>
+""", unsafe_allow_html=True)
+
+    # ── Biggest movers table ────────────────────────────────────────────────────
+    st.markdown('<div style="height:20px;"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-label">Quarter\'s Biggest Movers — QoQ</div>', unsafe_allow_html=True)
+
+    MOVER_METRICS = [
+        ('aum_cr',   'AUM',   'cr',   False),
+        ('pat_cr',   'PAT',   'cr',   False),
+        ('roa_pct',  'ROA',   'pct',  False),
+        ('gnpa_pct', 'GNPA',  'pct',  True ),
+        ('nnpa_pct', 'NNPA',  'pct',  True ),
+        ('nim_pct',  'NIM',   'pct',  False),
+    ]
+
+    mv_col_a, mv_col_b = st.columns(2)
+    with mv_col_a:
+        st.markdown('<div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:6px;">▲ Top Improvers</div>', unsafe_allow_html=True)
+        improvers = []
+        for key, lbl, fmt, lib in MOVER_METRICS:
+            for name in DISPLAY_NAMES:
+                d = _qoq_diff(name, key)
+                if d is None: continue
+                improved = d < 0 if lib else d > 0
+                if improved:
+                    if fmt == 'cr':
+                        ds = f'+₹{abs(d)/1000:.1f}k Cr' if abs(d)>=1000 else f'+₹{abs(int(d))} Cr'
+                    else:
+                        ds = f'{abs(d*100):.0f} bps better'
+                    improvers.append((abs(d) if fmt!='cr' else abs(d)/1000000, name, lbl, ds))
+        improvers.sort(reverse=True)
+        rows = '<table class="rank-table"><tr><th>NBFC</th><th>Metric</th><th>Change</th></tr>'
+        for _, name, lbl, ds in improvers[:6]:
+            dot = f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{COLORS[name]};margin-right:5px;"></span>'
+            rows += f'<tr><td>{dot}{name}</td><td>{lbl}</td><td style="color:#16a34a;font-weight:700;">{ds}</td></tr>'
+        rows += '</table>'
+        st.markdown(rows, unsafe_allow_html=True)
+
+    with mv_col_b:
+        st.markdown('<div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px;">▼ Biggest Deteriorators</div>', unsafe_allow_html=True)
+        deters = []
+        for key, lbl, fmt, lib in MOVER_METRICS:
+            for name in DISPLAY_NAMES:
+                d = _qoq_diff(name, key)
+                if d is None: continue
+                worsened = d > 0 if lib else d < 0
+                if worsened:
+                    if fmt == 'cr':
+                        ds = f'-₹{abs(d)/1000:.1f}k Cr' if abs(d)>=1000 else f'-₹{abs(int(d))} Cr'
+                    else:
+                        ds = f'{abs(d*100):.0f} bps worse'
+                    deters.append((abs(d) if fmt!='cr' else abs(d)/1000000, name, lbl, ds))
+        deters.sort(reverse=True)
+        rows = '<table class="rank-table"><tr><th>NBFC</th><th>Metric</th><th>Change</th></tr>'
+        for _, name, lbl, ds in deters[:6]:
+            dot = f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{COLORS[name]};margin-right:5px;"></span>'
+            rows += f'<tr><td>{dot}{name}</td><td>{lbl}</td><td style="color:#dc2626;font-weight:700;">{ds}</td></tr>'
+        rows += '</table>'
+        st.markdown(rows, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="metric-note">
+      Scorecards use Q4FY26 (base) vs Q3FY26 (prior). ▲/▼ Poon = better or worse than Poonawalla on the same metric.
+      ⚠ on ROA for Muthoot Finance: gold-loan ROA (4–7%) is structurally not comparable to consumer-finance ROA.
+      QoQ arrows: green = improving, red = deteriorating (direction-adjusted per metric).
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ── TAB 13 — NBFC LENS ─────────────────────────────────────────────────────────
+with tab13:
+    st.markdown("""
+    <div class="tab-intro">
+      <div class="tab-intro-title">NBFC Lens — Deep Dive &amp; SWOT</div>
+      <div class="tab-intro-sub">Select any NBFC · Benchmark vs Poonawalla · Radar scorecard · Auto-generated SWOT</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    lens_name = st.selectbox(
+        'Select NBFC',
+        DISPLAY_NAMES,
+        index=0,
+        key='lens_nbfc',
+        label_visibility='collapsed',
+    )
+
+    seg_lbl_lens, roa_lo_lens, roa_hi_lens, seg_note_lens = SEGMENT_META[lens_name]
+    lens_color = COLORS[lens_name]
+
+    st.markdown(f"""
+    <div style="display:flex;align-items:center;gap:12px;margin:10px 0 16px;">
+      <span style="width:14px;height:14px;border-radius:50%;background:{lens_color};display:inline-block;"></span>
+      <span style="font-size:17px;font-weight:700;color:#0a2540;">{lens_name}</span>
+      <span class="pulse-seg">{seg_lbl_lens}</span>
+      {"<span style='font-size:11px;color:#64748b;background:#f8fafc;padding:3px 10px;border-radius:4px;'>"+seg_note_lens+"</span>" if seg_note_lens else ""}
+    </div>
+    """, unsafe_allow_html=True)
+
+    left_col, mid_col, right_col = st.columns([5, 4, 5])
+
+    with left_col:
+        st.markdown('<div style="font-size:12px;font-weight:700;color:#0a2540;margin-bottom:8px;">Metric Benchmark vs Poonawalla</div>', unsafe_allow_html=True)
+        bm_html = _benchmark_table_html(lens_name)
+        st.markdown(bm_html, unsafe_allow_html=True)
+        if lens_name != POON_KEY:
+            st.markdown("""
+            <div style="font-size:10px;color:#94a3b8;margin-top:6px;">
+              ✓ ahead = better than Poonawalla · ✗ behind = trails Poonawalla ·
+              ⚠seg = segment structural difference (direct comparison not meaningful) ·
+              QoQ = Q4FY26 vs Q3FY26
+            </div>""", unsafe_allow_html=True)
+
+    with mid_col:
+        radar_fig = make_radar_chart(lens_name)
+        st.plotly_chart(radar_fig, use_container_width=True, key='lens_radar')
+        st.markdown("""
+        <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:-8px;">
+          Scores normalised within peer group (0=worst · 1=best).
+          Lower-is-better metrics (GNPA, NNPA, CoB) inverted so outward = better.
+        </div>""", unsafe_allow_html=True)
+
+    with right_col:
+        sw, st_col = st.columns(2)
+        S, W, O, T = generate_swot(lens_name)
+
+        def _swot_box(cls, title, icon, items):
+            bullets = ''.join(f'<div class="swot-item">{icon} {it}</div>' for it in items)
+            return f'<div class="swot-box {cls}"><div class="swot-hdr">{title}</div>{bullets}</div>'
+
+        sw.markdown(_swot_box('swot-s', 'Strengths',    '✓', S), unsafe_allow_html=True)
+        st_col.markdown(_swot_box('swot-w', 'Weaknesses', '✗', W), unsafe_allow_html=True)
+
+        st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
+        ot_col_a, ot_col_b = st.columns(2)
+        ot_col_a.markdown(_swot_box('swot-o', 'Opportunities', '→', O), unsafe_allow_html=True)
+        ot_col_b.markdown(_swot_box('swot-t', 'Threats',       '⚠', T), unsafe_allow_html=True)
+
+    st.markdown('<div style="height:14px;"></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="metric-note">
+      SWOT is auto-generated from Q4FY26 data using rules (thresholds, QoQ deltas, YoY trends, segment norms).
+      Segment ROA ranges: Consumer Finance 1–3% · Diversified Retail 3.5–5.5% · Comm. Vehicle 2.5–4% ·
+      Gold Loans 4–7% (structurally not compared to Poonawalla) · Real Estate / Corporate 0.5–2%.
+      Update INSIGHT_BASE_Q each quarter to auto-refresh all narratives.
     </div>
     """, unsafe_allow_html=True)
 
