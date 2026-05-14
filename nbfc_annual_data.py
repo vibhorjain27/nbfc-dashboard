@@ -51,37 +51,47 @@ NBFC_ANNUAL = {
         "roe_pct": [20.6,   20.6,   19.8,   19.7  ],
     },
     # ── Aditya Birla Capital ──────────────────────────────────────────────────
-    # Source: Screener.in AI summary (usage/1697958); AUM from press releases / quarterly cache
-    # AUM = NBFC lending book only (Aditya Birla Finance / ABFL), excluding HFC and AMC
-    #   FY23: AB Capital FY23 results press release (Mar 2023)
-    #   FY24–FY26: quarterly cache Q4 values (105,639 / 126,351 / 159,916)
+    # Source: Screener.in AI summary (usage/1697958); AUM from AB Capital press releases
+    # AUM = total lending portfolio (NBFC + HFC), consistent with Bajaj Finance consolidated
+    #   FY23: AB Capital FY23 PR (NBFC ₹80,556 + HFC ₹13,808 = ₹94,364 Cr)
+    #   FY24: AB Capital Q4FY24 PR (NBFC+HFC combined = ₹1,24,059 Cr)
+    #   FY25: AB Capital Q4FY25 PR (NBFC ₹1,26,351 + HFC ₹31,053 = ₹1,57,404 Cr)
+    #   FY26: AB Capital Q4FY26 results (NBFC+HFC = ₹2,07,368 Cr)
     # FY23 PAT/ROA/ROE normalized (ex one-time ₹2,739 Cr health-ins. fair-value gain)
     # FY26 ROA/ROE: N/A (consolidated balance sheet data unavailable)
     "Aditya Birla Capital": {
-        "aum_cr":  [80556,  105639, 126351, 159916],
+        "aum_cr":  [94364,  124059, 157404, 207368],
         "pat_cr":  [2057,   3335,   3332,   3764  ],
         "roa_pct": [1.28,   1.62,   1.30,   None  ],
         "roe_pct": [11.5,   14.16,  11.65,  None  ],
     },
     # ── Piramal Finance ───────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1700511)
+    # FY23: large loss from DHFL legacy clean-up / one-time provisions (~₹7,400 Cr)
+    # FY23–FY25 ROA/ROE: not computable (PEL amalgamation restatements, missing opening B/S)
+    # FY26: first year with reliable audited consolidated financials post-amalgamation
     "Piramal Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [64000,  69000,  81000,  101230],
+        "pat_cr":  [-7400,  383,    485,    1506  ],
+        "roa_pct": [None,   None,   None,   1.47  ],
+        "roe_pct": [None,   None,   None,   5.45  ],
     },
     # ── Muthoot Finance ───────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1697996); consolidated basis
+    # FY26: full-year results not yet declared as of May 2026
     "Muthoot Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [71502,  89079,  122000, None  ],
+        "pat_cr":  [3670,   4468,   5352,   None  ],
+        "roa_pct": [4.69,   5.06,   4.67,   None  ],
+        "roe_pct": [18.15,  18.50,  19.62,  None  ],
     },
     # ── Mahindra Finance ──────────────────────────────────────────────────────
+    # Source: Screener.in AI summary (usage/1697997); consolidated (includes MRHFL)
+    # FY23/FY24 AUM interpolated (~); ROA/ROE derived from PAT / avg assets & equity
     "Mahindra Finance": {
-        "aum_cr":  [None, None, None, None],
-        "pat_cr":  [None, None, None, None],
-        "roa_pct": [None, None, None, None],
-        "roe_pct": [None, None, None, None],
+        "aum_cr":  [90105,  110026, 119673, 139264],
+        "pat_cr":  [2072,   1933,   2262,   2861  ],
+        "roa_pct": [2.3,    1.7,    1.7,    1.9   ],
+        "roe_pct": [12.1,   10.0,   10.9,   11.9  ],
     },
 }
