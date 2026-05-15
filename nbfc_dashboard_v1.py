@@ -3201,7 +3201,7 @@ with tab11:
     </div>
     """, unsafe_allow_html=True)
 
-    sel11 = nbfc_selector('ann', default_on=['Shriram Finance'])
+    sel11 = nbfc_selector('ann', default_on=['Bajaj Finance', 'Shriram Finance', 'L&T Finance'])
     st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
 
     st.markdown('<div class="section-label">Scale</div>', unsafe_allow_html=True)
