@@ -10,7 +10,8 @@
 #   - Poonawalla ROE = annualised estimate (PAT×4/Avg Equity, Screener.in); NIM = NII/Avg-AUM annualized
 #   - AB Capital CAR/T1/T2 = investor deck; NNPA derived (GNPA × (1−PCR)); T2 = CAR−T1
 #   - L&T Finance NIM = NIM + Fees (from RoA trajectory table in Q4FY26 investor deck); CAR/T1/T2 = investor deck Q4FY26
-#   - Muthoot Finance, Mahindra Finance: Q4FY26 PDFs pending — Q3FY26 values retained
+#   - Muthoot Finance: updated from Q4FY26 investor deck (standalone; ROA = PAT/Avg Loan Assets)
+#   - Mahindra Finance: Q4FY26 PDF pending — Q3FY26 values retained
 #   - Chola Finance Q4FY26: all metrics from Screener.in (Screener AI summary); BVPS verified via consolidated balance sheet
 #   - Piramal CAR = investor deck (consolidated); T1/T2 not disclosed; CoB = explicit 6.41%
 #   - Piramal PCR = Stage-3 PCR (29.6%); total provisions/AUM higher
@@ -74,19 +75,19 @@ NBFC_Q4FY26 = [
         "name": "Muthoot Finance",
         "ticker": "MUTHOOTFIN",
         "segment": "Gold Loans",
-        "aum_cr": 164720,         # Q3FY26 retained — Q4FY26 PDF pending
-        "pat_cr": 2824,
-        "nim_pct": 12.77,
-        "roa_pct": 7.59,
-        "roe_pct": 32.03,
-        "gnpa_pct": 1.58,         # Stage-3 proxy
+        "aum_cr": 162826,         # Q4FY26 standalone loan AUM (principal), from investor deck
+        "pat_cr": 3086,           # Q4FY26 standalone PAT (30,862 Mn)
+        "nim_pct": 13.38,         # NIM on avg loan assets, annualized Q4FY26
+        "roa_pct": 7.95,          # PAT / Avg Loan Assets annualized (Muthoot-disclosed metric)
+        "roe_pct": 34.17,         # Return on Avg Equity annualized Q4FY26
+        "gnpa_pct": 2.35,         # Stage-3 proxy (% Stage-III on total loan assets)
         "nnpa_pct": None,         # Not disclosed
-        "pcr_pct": None,          # Stage-3 PCR not separately given
-        "cost_of_borrowing_pct": 8.9,
-        "d_e_ratio": 3.40,
-        "car_pct": None,
-        "bvps_inr": 859,
-        "net_worth_cr": None,
+        "pcr_pct": None,          # Not disclosed (gold-loan structure)
+        "cost_of_borrowing_pct": 8.58,  # Interest expense on avg borrowings, annualized Q4FY26
+        "d_e_ratio": 3.46,        # Capital gearing = net debt / tangible networth (investor deck)
+        "car_pct": 20.75,         # Standalone CAR; T1=19.84%, T2=0.91%
+        "bvps_inr": 940.05,       # Standalone BVPS (₹37,742 Cr / 40.15 Cr shares)
+        "net_worth_cr": 37742,    # Standalone tangible networth Mar-26 (377,425 Mn)
     },
     {
         "name": "Aditya Birla Capital",
@@ -181,8 +182,9 @@ NBFC_Q4FY26 = [
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 8-QUARTER TIME SERIES  (Q4FY24 → Q3FY26)
-# Source: Screener.in AI presentations per company  |  Last updated: Feb 2026
+# 9-QUARTER TIME SERIES  (Q4FY24 → Q4FY26)
+# Source: Screener.in AI presentations per company; Q4FY26 investor decks
+# Last updated: May 2026
 # Conventions:
 #   None  = not disclosed / not available in source
 #   ~     = estimate / interpolated (flagged in comment)
@@ -191,7 +193,7 @@ NBFC_Q4FY26 = [
 
 QUARTERS = ["Q4FY24", "Q1FY25", "Q2FY25", "Q3FY25", "Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26", "Q4FY26"]
 
-# Each entry: list of 8 values aligned to QUARTERS above
+# Each entry: list of 9 values aligned to QUARTERS above
 # None = not available
 
 NBFC_TIMESERIES = {
@@ -308,20 +310,25 @@ NBFC_TIMESERIES = {
         "bvps_inr":              [None,   None,   None,   None,   None,   None,   None,   1232,   1247  ],
     },
     "Muthoot Finance": {
-        "aum_cr":                [89079,  98048,  104149, 111308, 122181, 133938, 147673, 164720, None  ],  # Q4FY26 pending
-        "gnpa_pct":              [3.28,   3.98,   4.30,   4.22,   3.41,   2.58,   2.25,   1.58,   None  ],  # Stage-3 proxy
+        # AUM: Q4FY25-Q4FY26 = standalone principal AUM from Q4FY26 investor deck
+        #       Q4FY24-Q3FY25 = from Screener.in; may differ slightly in basis
+        # PAT: Q4FY25-Q4FY26 = standalone from Q4FY26 investor deck
+        #       Q4FY24-Q3FY25 = from Screener.in (may include consolidated figures)
+        # ROA / NIM = PAT or NII on Avg Loan Assets (Muthoot-disclosed; higher than standard PAT/Avg Total Assets)
+        "aum_cr":                [89079,  98048,  104149, 111308, 108648, 120031, 132305, 147552, 162826],
+        "gnpa_pct":              [3.28,   3.98,   4.30,   4.22,   3.41,   2.58,   2.25,   1.58,   2.35  ],  # Stage-3 proxy
         "nnpa_pct":              [None,   None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed
         "pcr_pct":               [None,   None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed
-        "pat_cr":                [1182,   1196,   1321,   1392,   1444,   1974,   2412,   2824,   None  ],
-        "nim_pct":               [11.62,  11.51,  11.54,  11.60,  11.27,  12.15,  12.66,  12.77,  None  ],
-        "roa_pct":               [5.86,   5.39,   5.74,   5.81,   5.85,   7.16,   7.44,   7.59,   None  ],
-        "roe_pct":               [18.09,  17.73,  19.99,  20.70,  21.76,  28.28,  30.61,  32.03,  None  ],
-        "cost_of_borrowing_pct": [8.51,   8.74,   9.01,   8.81,   8.99,   8.68,   8.90,   8.85,   None  ],
-        "d_e_ratio":             [2.29,   2.61,   2.66,   2.75,   2.95,   3.18,   3.27,   3.40,   None  ],
-        "car_pct":               [None,   None,   None,   None,   None,   None,   None,   None,   None  ],  # not reported
-        "t1_pct":                [None,   None,   None,   None,   None,   None,   None,   None,   None  ],  # not reported
-        "t2_pct":                [None,   None,   None,   None,   None,   None,   None,   None,   None  ],  # not reported
-        "bvps_inr":              [604.95, 607.21, 639.67, 672.47, 708.26, 733.64, 793.09, 859.33, None  ],
+        "pat_cr":                [1182,   1196,   1321,   1392,   1508,   2046,   2345,   2656,   3086  ],
+        "nim_pct":               [11.62,  11.51,  11.54,  11.60,  11.27,  12.15,  12.66,  12.77,  13.38 ],  # NII / Avg Loan Assets
+        "roa_pct":               [5.86,   5.39,   5.74,   5.81,   5.85,   7.16,   7.44,   7.59,   7.95  ],  # PAT / Avg Loan Assets
+        "roe_pct":               [18.09,  17.73,  19.99,  20.70,  21.76,  28.28,  30.61,  32.03,  34.17 ],
+        "cost_of_borrowing_pct": [8.51,   8.74,   9.01,   8.81,   8.99,   8.88,   8.78,   8.84,   8.58  ],  # interest exp / avg borrowings; Q1-Q4FY26 from investor deck
+        "d_e_ratio":             [2.29,   2.61,   2.66,   2.75,   2.95,   3.18,   3.27,   3.40,   3.46  ],  # capital gearing (net debt / tangible networth)
+        "car_pct":               [None,   None,   None,   None,   None,   None,   None,   None,   20.75 ],  # Q4FY26 from investor deck; prior quarters not reported
+        "t1_pct":                [None,   None,   None,   None,   None,   None,   None,   None,   19.84 ],
+        "t2_pct":                [None,   None,   None,   None,   None,   None,   None,   None,   0.91  ],
+        "bvps_inr":              [604.95, 607.21, 639.67, 672.47, 708.26, 733.64, 793.09, 859.33, 940.05],
     },
     "Mahindra Finance": {
         "aum_cr":                [102597, 106339, 112454, 115126, 119673, 122008, 127246, 128965, None  ],  # Q4FY26 pending
@@ -343,14 +350,18 @@ NBFC_TIMESERIES = {
 
 # ── Data quality flags ─────────────────────────────────────────────────────────
 # ~ = estimated / interpolated from adjacent quarters or rating reports
-# Muthoot Finance / Mahindra Finance: Q4FY26 PDFs not yet received; None values in Q9
+# Mahindra Finance: Q4FY26 PDF pending — Q3FY26 values retained in snapshot; None at index 8 in timeseries
+# Muthoot Finance: Q4FY26 fully updated from May-14-2026 investor deck (standalone basis)
+#   AUM/PAT Q4FY24-Q3FY25 (indices 0-3) from Screener.in — may differ slightly in basis
+#   AUM/PAT Q4FY25-Q4FY26 (indices 4-8) standalone principal from Q4FY26 investor deck
+#   NNPA/PCR not disclosed (gold-loan structure); CAR reported only from Q4FY26 onwards
+#   ROA = PAT/Avg Loan Assets (Muthoot's own metric; structurally higher than standard ROA/Avg Total Assets)
 # Chola Finance Q4FY26: all metrics from Screener.in; BVPS = equity ₹30,458 Cr ÷ 85.3 Cr shares = ₹357
 # Chola Finance GNPA/NNPA/PCR: restated to RBI IRACP norms across all quarters; Q1FY25 and Q1FY26 values interpolated (~)
 # Bajaj Finance Q4FY26: consolidated basis; BVPS estimate from standalone equity/shares; NIM = annualised Q4 NTI/avg AUM
 # AB Capital Q4FY26: NNPA derived (GNPA × (1−PCR)); T2 = CAR − T1
-# Piramal AUM: Q1-Q1FY26 not from screener; only Q2FY26+ confirmed
-# Muthoot Finance: NNPA and PCR not disclosed at all
-# Poonawalla: ROE not reported; NIM = NII/Avg-AUM annualized
+# Piramal AUM: Q4FY24-Q1FY26 not confirmed from source; only Q2FY26+ from investor deck
+# Poonawalla: ROE not directly reported; NIM = NII/Avg-AUM annualized
 # L&T Finance Q4FY26: all metrics from investor deck; CoB = WACB 7.17% (ALM slide)
 # Shriram/Chola Q4FY24-Q1FY25: several metrics ~estimated
 

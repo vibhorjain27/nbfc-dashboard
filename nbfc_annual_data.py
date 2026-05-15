@@ -77,13 +77,18 @@ NBFC_ANNUAL = {
         "roe_pct": [None,   None,   None,   5.45  ],
     },
     # ── Muthoot Finance ───────────────────────────────────────────────────────
-    # Source: Screener.in AI summary (usage/1697996); consolidated basis
-    # FY26: full-year results not yet declared as of May 2026
+    # Source: Q4FY26 investor presentation (May 14, 2026); standalone basis throughout
+    # AUM = standalone loan AUM (principal, year-end Q4)
+    # FY25 AUM corrected from investor deck (₹1,08,648 Cr standalone); prior Screener estimate was ₹1,22,000 Cr
+    # PAT FY23/FY24 corrected to standalone from investor deck (Screener had consolidated figures)
+    # ROA = PAT/Avg Loan Assets (Muthoot-disclosed metric — consistent with quarterly series)
+    # ROE = Return on Avg Equity (annualised)
+    # NNPA and PCR not disclosed (gold-loan structure)
     "Muthoot Finance": {
-        "aum_cr":  [71502,  89079,  122000, None  ],
-        "pat_cr":  [3670,   4468,   5352,   None  ],
-        "roa_pct": [4.69,   5.06,   4.67,   None  ],
-        "roe_pct": [18.15,  18.50,  19.62,  None  ],
+        "aum_cr":  [71502,  89079,  108648, 162826],
+        "pat_cr":  [3474,   4050,   5201,   10134 ],
+        "roa_pct": [5.93,   5.84,   5.70,   7.55  ],  # PAT / Avg Loan Assets (Muthoot-disclosed)
+        "roe_pct": [17.63,  17.86,  19.73,  30.63 ],
     },
     # ── Mahindra Finance ──────────────────────────────────────────────────────
     # Source: Screener.in AI summary (usage/1697997); consolidated (includes MRHFL)
