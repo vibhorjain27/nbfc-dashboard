@@ -2015,7 +2015,6 @@ def make_radar_chart(nbfc_disp):
             radialaxis=dict(visible=False, range=[0, 1]),
             angularaxis=dict(
                 tickfont=dict(size=11, family='Inter', color='#0a2540'),
-                ticklabeloverflow='allow',
             ),
             bgcolor='white',
             domain=dict(x=[0.08, 0.92], y=[0.08, 0.92]),
