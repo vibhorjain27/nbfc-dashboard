@@ -2005,13 +2005,17 @@ def make_radar_chart(nbfc_disp):
     fig.update_layout(
         polar=dict(
             radialaxis=dict(visible=False, range=[0, 1]),
-            angularaxis=dict(tickfont=dict(size=11, family='Inter', color='#0a2540')),
+            angularaxis=dict(
+                tickfont=dict(size=11, family='Inter', color='#0a2540'),
+                ticklabeloverflow='allow',
+            ),
             bgcolor='white',
+            domain=dict(x=[0.08, 0.92], y=[0.08, 0.92]),
         ),
         showlegend=True,
-        legend=dict(font=dict(size=11), orientation='h', y=-0.08),
-        margin=dict(l=30, r=30, t=30, b=50),
-        height=340,
+        legend=dict(font=dict(size=11), orientation='h', y=-0.12),
+        margin=dict(l=60, r=60, t=60, b=70),
+        height=390,
         paper_bgcolor='white',
         font=dict(family='Inter'),
         title=dict(
@@ -3316,9 +3320,9 @@ with tab12:
                     if skip:
                         vs_html = '<span class="vs-n" title="Segment ROA not comparable">⚠</span>'
                     elif better:
-                        vs_html = '<span class="vs-g">▲ Poon</span>'
+                        vs_html = '<span class="vs-g">▲ PFL</span>'
                     else:
-                        vs_html = '<span class="vs-r">▼ Poon</span>'
+                        vs_html = '<span class="vs-r">▼ PFL</span>'
 
                 metric_rows_html += f'''<tr>
   <td class="pm-lbl">{lbl}</td>
@@ -3404,7 +3408,7 @@ with tab12:
 
     st.markdown("""
     <div class="metric-note">
-      Scorecards use Q4FY26 (base) vs Q3FY26 (prior). ▲/▼ Poon = better or worse than Poonawalla on the same metric.
+      Scorecards use Q4FY26 (base) vs Q3FY26 (prior). ▲/▼ PFL = better or worse than Poonawalla Fincorp on the same metric.
       ⚠ on ROA for Muthoot Finance: gold-loan ROA (4–7%) is structurally not comparable to consumer-finance ROA.
       QoQ arrows: green = improving, red = deteriorating (direction-adjusted per metric).
     </div>
