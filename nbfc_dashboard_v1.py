@@ -18,6 +18,7 @@ from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS, METRIC_
 from nbfc_ai_data import NBFC_AI_INITIATIVES, FUNCTION_TAXONOMY
 from shareholding_data import SHAREHOLDING, SH_QUARTERS, CATEGORY_COLORS, ENTITY_CATEGORY_COLORS, ENTITY_BADGE_TEXT_COLORS
 from nbfc_annual_data import NBFC_ANNUAL, ANNUAL_YEARS
+from nbfc_transcript_data import TRANSCRIPT_DATA
 
 st.set_page_config(
     page_title="NBFC Dashboard",
@@ -1938,6 +1939,13 @@ def generate_swot(nbfc_disp):
     if seg_note:
         O.append(f'📌 Segment note: {seg_note}')
 
+    # Prepend transcript-sourced items (higher signal than rule-based)
+    td_swot = TRANSCRIPT_DATA.get(nbfc_disp, {}).get('swot_prepend', {})
+    for bucket, lst in [('S', S), ('W', W), ('O', O), ('T', T)]:
+        prepend = td_swot.get(bucket, [])
+        # Insert transcript items at front, deduplicate by keeping unique items
+        lst[:0] = prepend
+
     # Minimum content
     if not S: S.append('No clear outperformance vs peers in Q4FY26 — watch next quarter')
     if not W: W.append('No significant weaknesses flagged vs sector in Q4FY26')
@@ -2005,13 +2013,17 @@ def make_radar_chart(nbfc_disp):
     fig.update_layout(
         polar=dict(
             radialaxis=dict(visible=False, range=[0, 1]),
-            angularaxis=dict(tickfont=dict(size=11, family='Inter', color='#0a2540')),
+            angularaxis=dict(
+                tickfont=dict(size=11, family='Inter', color='#0a2540'),
+                ticklabeloverflow='allow',
+            ),
             bgcolor='white',
+            domain=dict(x=[0.08, 0.92], y=[0.08, 0.92]),
         ),
         showlegend=True,
-        legend=dict(font=dict(size=11), orientation='h', y=-0.08),
-        margin=dict(l=30, r=30, t=30, b=50),
-        height=340,
+        legend=dict(font=dict(size=11), orientation='h', y=-0.12),
+        margin=dict(l=60, r=60, t=60, b=70),
+        height=390,
         paper_bgcolor='white',
         font=dict(family='Inter'),
         title=dict(
@@ -2250,11 +2262,11 @@ st.markdown(f"""
 
 
 # ── TABS ───────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
     "Market", "Financials", "Asset Quality", "Capital & Leverage",
     "Profitability Ratios", "Valuation Metrics", "Deep Dive", "Rankings",
     "AI Bulletin", "Shareholding", "Annual Trends",
-    "Peer Pulse", "NBFC Lens",
+    "NBFC Lens",
 ])
 
 
@@ -3201,7 +3213,7 @@ with tab11:
     </div>
     """, unsafe_allow_html=True)
 
-    sel11 = nbfc_selector('ann', default_on=['Shriram Finance'])
+    sel11 = nbfc_selector('ann', default_on=['Bajaj Finance', 'Shriram Finance', 'L&T Finance'])
     st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
 
     st.markdown('<div class="section-label">Scale</div>', unsafe_allow_html=True)
@@ -3231,192 +3243,15 @@ with tab11:
     """, unsafe_allow_html=True)
 
 
-# ── TAB 12 — PEER PULSE ────────────────────────────────────────────────────────
+# ── TAB 12 — NBFC LENS ─────────────────────────────────────────────────────────
 with tab12:
     st.markdown("""
     <div class="tab-intro">
-      <div class="tab-intro-title">Peer Pulse — Q4FY26 Snapshot</div>
-      <div class="tab-intro-sub">Data-driven highlights · Benchmarked vs Poonawalla · GNPA / NNPA flagged automatically</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ── Macro signal strip ─────────────────────────────────────────────────────
-    signals = _macro_signals()
-    sig_cols = st.columns(len(signals))
-    for col, (lbl, val_html, sub_html) in zip(sig_cols, signals):
-        col.markdown(f"""
-        <div class="macro-card">
-          <div class="macro-label">{lbl}</div>
-          <div class="macro-val">{val_html}</div>
-          <div class="macro-sub">{sub_html}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown('<div style="height:18px;"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-label">NBFC Scorecards — Q4FY26 vs Poonawalla</div>', unsafe_allow_html=True)
-
-    # ── Scorecard grid (3 per row) ─────────────────────────────────────────────
-    others = [n for n in DISPLAY_NAMES if n != POON_KEY]
-    # Poonawalla card first, then others
-    all_cards = [POON_KEY] + others
-    PULSE_METRICS = [
-        ('aum_cr',   'AUM',  'cr',  False),
-        ('roa_pct',  'ROA',  'pct', False),
-        ('gnpa_pct', 'GNPA', 'pct', True ),
-        ('pat_cr',   'PAT',  'cr',  False),
-    ]
-
-    for row_start in range(0, len(all_cards), 3):
-        row_names = all_cards[row_start:row_start + 3]
-        cols = st.columns(3)
-        for col, name in zip(cols, row_names):
-            color  = COLORS[name]
-            seg_lbl, _, _, _ = SEGMENT_META[name]
-            bullets = scorecard_bullets(name)
-            is_poon = name == POON_KEY
-
-            # Build metric rows
-            metric_rows_html = ''
-            for key, lbl, fmt, lib in PULSE_METRICS:
-                val  = _iq(name, key, INSIGHT_BASE_Q)
-                qoq  = _qoq_diff(name, key)
-                vp   = _vs_poon_diff(name, key)
-
-                # format display value
-                if val is None:
-                    dval = '—'
-                elif fmt == 'cr':
-                    dval = _scr(val, 'cr')
-                elif fmt == 'ratio':
-                    dval = f'{val:.1f}x'
-                else:
-                    dval = f'{val:.2f}%'
-
-                # QoQ cell
-                if qoq is None:
-                    qoq_html = '<span class="qoq-n">—</span>'
-                else:
-                    improving = (qoq < 0) if lib else (qoq > 0)
-                    qcls = 'qoq-g' if improving else 'qoq-r'
-                    arrow = '↑' if qoq > 0 else '↓'
-                    if fmt == 'cr':
-                        qstr = f'{arrow}{abs(qoq)/1000:.1f}k' if abs(qoq) >= 1000 else f'{arrow}₹{abs(int(qoq))}'
-                    else:
-                        bps = qoq * 100
-                        qstr = f'{arrow}{abs(bps):.0f}bp'
-                    qoq_html = f'<span class="{qcls}">{qstr}</span>'
-
-                # vs Poonawalla cell
-                if is_poon or vp is None:
-                    vs_html = '<span class="vs-n">★</span>' if is_poon else '<span class="vs-n">—</span>'
-                else:
-                    is_gold = 'Gold' in seg_lbl
-                    skip = is_gold and key == 'roa_pct'
-                    better = (vp < 0) if lib else (vp > 0)
-                    if skip:
-                        vs_html = '<span class="vs-n" title="Segment ROA not comparable">⚠</span>'
-                    elif better:
-                        vs_html = '<span class="vs-g">▲ Poon</span>'
-                    else:
-                        vs_html = '<span class="vs-r">▼ Poon</span>'
-
-                metric_rows_html += f'''<tr>
-  <td class="pm-lbl">{lbl}</td>
-  <td class="pm-val">{dval}</td>
-  <td class="pm-qoq">{qoq_html}</td>
-  <td class="pm-vs">{vs_html}</td>
-</tr>'''
-
-            # Build bullet HTML
-            bullet_html = ''
-            for bcls, btext in bullets:
-                bullet_html += f'<div class="pb-row"><span class="pb-icon" style="color:{"#16a34a" if "g" in bcls else "#dc2626" if "r" in bcls else "#94a3b8"};">●</span><span class="pulse-bullet">{btext}</span></div>'
-
-            poon_label = ' <span style="font-size:9px;color:#0284c7;font-weight:700;background:#e0f2fe;padding:1px 6px;border-radius:8px;">BENCHMARK</span>' if is_poon else ''
-            col.markdown(f"""
-<div class="pulse-card" style="border-top:3px solid {color};">
-  <div>
-    <span class="pulse-name">{name}{poon_label}</span><br>
-    <span class="pulse-seg">{seg_lbl}</span>
-  </div>
-  <table class="pm-table">{metric_rows_html}</table>
-  {bullet_html}
-</div>
-""", unsafe_allow_html=True)
-
-    # ── Biggest movers table ────────────────────────────────────────────────────
-    st.markdown('<div style="height:20px;"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-label">Quarter\'s Biggest Movers — QoQ</div>', unsafe_allow_html=True)
-
-    MOVER_METRICS = [
-        ('aum_cr',   'AUM',   'cr',   False),
-        ('pat_cr',   'PAT',   'cr',   False),
-        ('roa_pct',  'ROA',   'pct',  False),
-        ('gnpa_pct', 'GNPA',  'pct',  True ),
-        ('nnpa_pct', 'NNPA',  'pct',  True ),
-        ('nim_pct',  'NIM',   'pct',  False),
-    ]
-
-    mv_col_a, mv_col_b = st.columns(2)
-    with mv_col_a:
-        st.markdown('<div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:6px;">▲ Top Improvers</div>', unsafe_allow_html=True)
-        improvers = []
-        for key, lbl, fmt, lib in MOVER_METRICS:
-            for name in DISPLAY_NAMES:
-                d = _qoq_diff(name, key)
-                if d is None: continue
-                improved = d < 0 if lib else d > 0
-                if improved:
-                    if fmt == 'cr':
-                        ds = f'+₹{abs(d)/1000:.1f}k Cr' if abs(d)>=1000 else f'+₹{abs(int(d))} Cr'
-                    else:
-                        ds = f'{abs(d*100):.0f} bps better'
-                    improvers.append((abs(d) if fmt!='cr' else abs(d)/1000000, name, lbl, ds))
-        improvers.sort(reverse=True)
-        rows = '<table class="rank-table"><tr><th>NBFC</th><th>Metric</th><th>Change</th></tr>'
-        for _, name, lbl, ds in improvers[:6]:
-            dot = f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{COLORS[name]};margin-right:5px;"></span>'
-            rows += f'<tr><td>{dot}{name}</td><td>{lbl}</td><td style="color:#16a34a;font-weight:700;">{ds}</td></tr>'
-        rows += '</table>'
-        st.markdown(rows, unsafe_allow_html=True)
-
-    with mv_col_b:
-        st.markdown('<div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px;">▼ Biggest Deteriorators</div>', unsafe_allow_html=True)
-        deters = []
-        for key, lbl, fmt, lib in MOVER_METRICS:
-            for name in DISPLAY_NAMES:
-                d = _qoq_diff(name, key)
-                if d is None: continue
-                worsened = d > 0 if lib else d < 0
-                if worsened:
-                    if fmt == 'cr':
-                        ds = f'-₹{abs(d)/1000:.1f}k Cr' if abs(d)>=1000 else f'-₹{abs(int(d))} Cr'
-                    else:
-                        ds = f'{abs(d*100):.0f} bps worse'
-                    deters.append((abs(d) if fmt!='cr' else abs(d)/1000000, name, lbl, ds))
-        deters.sort(reverse=True)
-        rows = '<table class="rank-table"><tr><th>NBFC</th><th>Metric</th><th>Change</th></tr>'
-        for _, name, lbl, ds in deters[:6]:
-            dot = f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{COLORS[name]};margin-right:5px;"></span>'
-            rows += f'<tr><td>{dot}{name}</td><td>{lbl}</td><td style="color:#dc2626;font-weight:700;">{ds}</td></tr>'
-        rows += '</table>'
-        st.markdown(rows, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="metric-note">
-      Scorecards use Q4FY26 (base) vs Q3FY26 (prior). ▲/▼ Poon = better or worse than Poonawalla on the same metric.
-      ⚠ on ROA for Muthoot Finance: gold-loan ROA (4–7%) is structurally not comparable to consumer-finance ROA.
-      QoQ arrows: green = improving, red = deteriorating (direction-adjusted per metric).
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ── TAB 13 — NBFC LENS ─────────────────────────────────────────────────────────
-with tab13:
-    st.markdown("""
-    <div class="tab-intro">
-      <div class="tab-intro-title">NBFC Lens — Deep Dive &amp; SWOT</div>
-      <div class="tab-intro-sub">Select any NBFC · Benchmark vs Poonawalla · Radar scorecard · Auto-generated SWOT</div>
+      <div class="tab-intro-title">NBFC Lens</div>
+      <div class="tab-intro-sub">
+        Select any NBFC · Metric benchmark vs Poonawalla · Peer-normalised radar ·
+        SWOT enriched with Q4FY26 management commentary · FY27 guidance · Peer movers
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -3430,6 +3265,7 @@ with tab13:
 
     seg_lbl_lens, roa_lo_lens, roa_hi_lens, seg_note_lens = SEGMENT_META[lens_name]
     lens_color = COLORS[lens_name]
+    lens_td = TRANSCRIPT_DATA.get(lens_name, {})
 
     st.markdown(f"""
     <div style="display:flex;align-items:center;gap:12px;margin:10px 0 16px;">
@@ -3437,9 +3273,11 @@ with tab13:
       <span style="font-size:17px;font-weight:700;color:#0a2540;">{lens_name}</span>
       <span class="pulse-seg">{seg_lbl_lens}</span>
       {"<span style='font-size:11px;color:#64748b;background:#f8fafc;padding:3px 10px;border-radius:4px;'>"+seg_note_lens+"</span>" if seg_note_lens else ""}
+      {"<span style='font-size:10px;color:#94a3b8;margin-left:8px;'>Q4FY26 earnings call: "+lens_td.get('call_date','')+"</span>" if lens_td.get('call_date') else ""}
     </div>
     """, unsafe_allow_html=True)
 
+    # ── 3-column layout: benchmark | radar+guidance | SWOT ─────────────────────
     left_col, mid_col, right_col = st.columns([5, 4, 5])
 
     with left_col:
@@ -3450,8 +3288,7 @@ with tab13:
             st.markdown("""
             <div style="font-size:10px;color:#94a3b8;margin-top:6px;">
               ✓ ahead = better than Poonawalla · ✗ behind = trails Poonawalla ·
-              ⚠seg = segment structural difference (direct comparison not meaningful) ·
-              QoQ = Q4FY26 vs Q3FY26
+              ⚠seg = segment structural difference · QoQ = Q4FY26 vs Q3FY26
             </div>""", unsafe_allow_html=True)
 
     with mid_col:
@@ -3463,29 +3300,137 @@ with tab13:
           Lower-is-better metrics (GNPA, NNPA, CoB) inverted so outward = better.
         </div>""", unsafe_allow_html=True)
 
+        # FY27 Guidance callout
+        if lens_td.get('guidance'):
+            guidance_items = ''.join(f'<li style="margin-bottom:3px;">{g}</li>' for g in lens_td['guidance'])
+            st.markdown(f"""
+            <div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:10px 14px;
+                        border-radius:0 6px 6px 0;margin-top:14px;">
+              <div style="font-size:11px;font-weight:700;color:#16a34a;margin-bottom:6px;
+                          letter-spacing:0.03em;">FY27 MANAGEMENT GUIDANCE</div>
+              <ul style="margin:0;padding-left:16px;color:#0a2540;font-size:11px;line-height:1.75;">
+                {guidance_items}
+              </ul>
+              <div style="font-size:9px;color:#94a3b8;margin-top:6px;">
+                Source: {lens_td.get('call_date','Q4FY26 earnings call')}
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
     with right_col:
-        sw, st_col = st.columns(2)
+        sw_col, wk_col = st.columns(2)
         S, W, O, T = generate_swot(lens_name)
 
         def _swot_box(cls, title, icon, items):
             bullets = ''.join(f'<div class="swot-item">{icon} {it}</div>' for it in items)
             return f'<div class="swot-box {cls}"><div class="swot-hdr">{title}</div>{bullets}</div>'
 
-        sw.markdown(_swot_box('swot-s', 'Strengths',    '✓', S), unsafe_allow_html=True)
-        st_col.markdown(_swot_box('swot-w', 'Weaknesses', '✗', W), unsafe_allow_html=True)
+        sw_col.markdown(_swot_box('swot-s', 'Strengths',    '✓', S), unsafe_allow_html=True)
+        wk_col.markdown(_swot_box('swot-w', 'Weaknesses',   '✗', W), unsafe_allow_html=True)
 
         st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
         ot_col_a, ot_col_b = st.columns(2)
         ot_col_a.markdown(_swot_box('swot-o', 'Opportunities', '→', O), unsafe_allow_html=True)
         ot_col_b.markdown(_swot_box('swot-t', 'Threats',       '⚠', T), unsafe_allow_html=True)
 
-    st.markdown('<div style="height:14px;"></div>', unsafe_allow_html=True)
+    # ── Management Commentary (per-metric transcript quotes) ───────────────────
+    COMMENTARY_METRICS = [
+        ('aum_cr',               'AUM / Growth'),
+        ('roa_pct',              'ROA / Profitability'),
+        ('gnpa_pct',             'GNPA / Asset Quality'),
+        ('nim_pct',              'NIM / Margins'),
+        ('cost_of_borrowing_pct','Cost of Borrowing'),
+        ('car_pct',              'Capital Adequacy'),
+        ('pat_cr',               'PAT / Earnings'),
+    ]
+    mc = lens_td.get('metric_comments', {})
+    available = [(k, lbl) for k, lbl in COMMENTARY_METRICS if k in mc]
+
+    if available:
+        st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
+        with st.expander(
+            f'💬  Management Commentary by Metric — {lens_name} Q4FY26 Earnings Call',
+            expanded=False,
+        ):
+            mgmt_str = lens_td.get('management', '')
+            if mgmt_str:
+                st.markdown(
+                    f'<div style="font-size:10px;color:#64748b;margin-bottom:10px;">'
+                    f'Speakers: {mgmt_str}</div>',
+                    unsafe_allow_html=True,
+                )
+            for mk, mlbl in available:
+                st.markdown(f"""
+                <div style="border-left:3px solid {lens_color};padding:7px 14px;margin-bottom:8px;
+                            background:#f8fafc;border-radius:0 4px 4px 0;">
+                  <span style="font-size:10px;font-weight:700;color:#64748b;
+                               text-transform:uppercase;letter-spacing:0.04em;">{mlbl}</span><br>
+                  <span style="font-size:12px;color:#0a2540;line-height:1.65;">{mc[mk]}</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+    # ── Peer movers (QoQ) ──────────────────────────────────────────────────────
+    st.markdown('<div style="height:8px;"></div>', unsafe_allow_html=True)
+    with st.expander("📊  Peer Context — Quarter's Biggest Movers (QoQ)", expanded=False):
+        MOVER_METRICS = [
+            ('aum_cr',   'AUM',   'cr',   False),
+            ('pat_cr',   'PAT',   'cr',   False),
+            ('roa_pct',  'ROA',   'pct',  False),
+            ('gnpa_pct', 'GNPA',  'pct',  True ),
+            ('nnpa_pct', 'NNPA',  'pct',  True ),
+            ('nim_pct',  'NIM',   'pct',  False),
+        ]
+        mv_col_a, mv_col_b = st.columns(2)
+        with mv_col_a:
+            st.markdown('<div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:6px;">▲ Top Improvers</div>', unsafe_allow_html=True)
+            improvers = []
+            for key, lbl, fmt, lib in MOVER_METRICS:
+                for name in DISPLAY_NAMES:
+                    d = _qoq_diff(name, key)
+                    if d is None: continue
+                    improved = d < 0 if lib else d > 0
+                    if improved:
+                        if fmt == 'cr':
+                            ds = f'+₹{abs(d)/1000:.1f}k Cr' if abs(d) >= 1000 else f'+₹{abs(int(d))} Cr'
+                        else:
+                            ds = f'{abs(d*100):.0f} bps better'
+                        improvers.append((abs(d) if fmt != 'cr' else abs(d) / 1000000, name, lbl, ds))
+            improvers.sort(reverse=True)
+            rows = '<table class="rank-table"><tr><th>NBFC</th><th>Metric</th><th>Change</th></tr>'
+            for _, name, lbl, ds in improvers[:6]:
+                dot = f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{COLORS[name]};margin-right:5px;"></span>'
+                rows += f'<tr><td>{dot}{name}</td><td>{lbl}</td><td style="color:#16a34a;font-weight:700;">{ds}</td></tr>'
+            rows += '</table>'
+            st.markdown(rows, unsafe_allow_html=True)
+
+        with mv_col_b:
+            st.markdown('<div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px;">▼ Biggest Deteriorators</div>', unsafe_allow_html=True)
+            deters = []
+            for key, lbl, fmt, lib in MOVER_METRICS:
+                for name in DISPLAY_NAMES:
+                    d = _qoq_diff(name, key)
+                    if d is None: continue
+                    worsened = d > 0 if lib else d < 0
+                    if worsened:
+                        if fmt == 'cr':
+                            ds = f'-₹{abs(d)/1000:.1f}k Cr' if abs(d) >= 1000 else f'-₹{abs(int(d))} Cr'
+                        else:
+                            ds = f'{abs(d*100):.0f} bps worse'
+                        deters.append((abs(d) if fmt != 'cr' else abs(d) / 1000000, name, lbl, ds))
+            deters.sort(reverse=True)
+            rows = '<table class="rank-table"><tr><th>NBFC</th><th>Metric</th><th>Change</th></tr>'
+            for _, name, lbl, ds in deters[:6]:
+                dot = f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{COLORS[name]};margin-right:5px;"></span>'
+                rows += f'<tr><td>{dot}{name}</td><td>{lbl}</td><td style="color:#dc2626;font-weight:700;">{ds}</td></tr>'
+            rows += '</table>'
+            st.markdown(rows, unsafe_allow_html=True)
+
     st.markdown("""
     <div class="metric-note">
-      SWOT is auto-generated from Q4FY26 data using rules (thresholds, QoQ deltas, YoY trends, segment norms).
+      SWOT items sourced from Q4FY26 earnings call transcripts (management commentary prepended) then
+      supplemented with data-driven signals (thresholds, QoQ deltas, YoY trends, segment norms).
       Segment ROA ranges: Consumer Finance 1–3% · Diversified Retail 3.5–5.5% · Comm. Vehicle 2.5–4% ·
       Gold Loans 4–7% (structurally not compared to Poonawalla) · Real Estate / Corporate 0.5–2%.
-      Update INSIGHT_BASE_Q each quarter to auto-refresh all narratives.
     </div>
     """, unsafe_allow_html=True)
 
