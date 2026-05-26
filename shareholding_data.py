@@ -827,4 +827,103 @@ SHAREHOLDING = {
             },
         ],
     },
+
+    "Mahindra Finance": {
+
+        "category_pct": {
+            #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+            # Source: Screener.in/company/M&MFIN/consolidated/#shareholding (Jun 2023–Mar 2026)
+            # Promoter increase in Q1FY26: M&M raised stake from 52.16%→52.49% (Jun 2025)
+            # Public includes Screener "Others" residual (~0.03–0.09%)
+            "Promoter": [ 52.16,  52.16,  52.16,  52.16,  52.16,  52.49,  52.49,  52.49,  52.49,  52.49],
+            "FII":      [ 11.95,  10.08,  10.19,  10.49,  10.68,   9.33,   9.59,   9.11,   9.40,   9.40],
+            "DII":      [ 28.61,  30.66,  31.58,  31.17,  31.31,  32.33,  32.29,  32.34,  32.09,  32.09],
+            "Public":   [  7.27,   7.09,   6.08,   6.20,   5.86,   5.84,   5.62,   6.06,   6.01,   6.01],
+        },
+
+        "named_entities": [
+
+            # ── Promoter ─────────────────────────────────────────────────────
+            {
+                "name":     "Mahindra & Mahindra Limited",
+                "category": "Promoter",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                # Increased from 52.16%→52.49% in Q1FY26 (Jun 2025)
+                "pct": [ 52.16,  52.16,  52.16,  52.16,  52.16,  52.49,  52.49,  52.49,  52.49,  52.49],
+            },
+
+            # ── FII ─────────────────────────────────────────────────────────
+            {
+                "name":     "Government Pension Fund Global",
+                "category": "FII",
+                # Intermittent: visible Sep-Dec 2025 only (other qtrs likely below 1% threshold)
+                "pct": [  None,   None,   None,   None,   None,   None,   1.03,   1.03,   None,   None],
+            },
+
+            # ── DII ─────────────────────────────────────────────────────────
+            {
+                "name":     "LIC – P&GS Fund",
+                "category": "DII – Insurance",
+                # Reported as 'LIC-P&GS Fund' (Mar 2024+); combined with 'LIC-P & GS Fund' (Jun-Dec 2023)
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [  9.89,  10.04,  10.24,  10.24,  10.24,  10.24,  10.53,  10.33,  10.26,  10.26],
+            },
+            {
+                "name":     "HDFC Mutual Fund",
+                "category": "DII – MF",
+                # Strong accumulation: 3.58% (Q4FY24) → 5.73% (Q4FY25); steady at ~5.2% since
+                "pct": [  3.58,   4.68,   5.24,   5.64,   5.73,   5.73,   5.51,   5.18,   5.18,   5.18],
+            },
+            {
+                "name":     "SBI Mutual Fund",
+                "category": "DII – MF",
+                # Rapid accumulation: 2.15% → 5.57% over 10 quarters
+                "pct": [  2.15,   2.35,   3.49,   3.73,   4.44,   5.05,   5.52,   5.44,   5.57,   5.57],
+            },
+            {
+                "name":     "HDFC Life Insurance Company",
+                "category": "DII – Insurance",
+                # Two reporting names combined: 'HDFC Life In...' (Q4FY24–Q3FY25) + new name (Q4FY25+)
+                "pct": [  2.43,   2.38,   2.43,   2.43,   2.53,   2.59,   2.56,   2.61,   2.51,   2.51],
+            },
+            {
+                "name":     "Kotak Mahindra Mutual Fund",
+                "category": "DII – MF",
+                # Exited below 1% threshold after Q4FY25 (Mar 2025)
+                "pct": [  1.73,   1.75,   1.75,   1.75,   1.85,   None,   None,   None,   None,   None],
+            },
+            {
+                "name":     "ICICI Prudential Mutual Fund",
+                "category": "DII – MF",
+                # Only Q4FY24–Q1FY25 above threshold
+                "pct": [  1.63,   1.77,   None,   None,   None,   None,   None,   None,   None,   None],
+            },
+            {
+                "name":     "Sundaram Mutual Fund",
+                "category": "DII – MF",
+                # Entered above 1% from Q1FY26 (Jun 2025)
+                "pct": [  None,   None,   None,   None,   None,   1.31,   1.37,   1.32,   1.32,   1.32],
+            },
+            {
+                "name":     "SBI Life Insurance Company",
+                "category": "DII – Insurance",
+                # New entrant from Q2FY26 (Sep 2025); rapidly growing
+                "pct": [  None,   None,   None,   None,   None,   None,   1.07,   1.59,   1.55,   1.55],
+            },
+            {
+                "name":     "Mirae Asset Mutual Fund",
+                "category": "DII – MF",
+                # Transient position Q1FY25–Q2FY25 only
+                "pct": [  None,   1.14,   1.44,   None,   None,   None,   None,   None,   None,   None],
+            },
+
+            # ── Public ──────────────────────────────────────────────────────
+            {
+                "name":     "Ashish Dhawan",
+                "category": "Public",
+                # Slightly trimmed from 1.18% to 1.05% in Q1FY26 (Jun 2025)
+                "pct": [  1.18,   1.18,   1.18,   1.18,   1.18,   1.05,   1.05,   1.05,   1.05,   1.05],
+            },
+        ],
+    },
 }
