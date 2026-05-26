@@ -724,4 +724,107 @@ SHAREHOLDING = {
             },
         ],
     },
+
+    "Piramal Finance": {
+
+        "category_pct": {
+            #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+            # Source: Screener.in/company/PIRAMALFIN/consolidated/#shareholding
+            # Q4FY24–Q1FY26: no data (Screener gap; entity restructured post-DHFL acquisition)
+            # Q2FY26 onward: Piramal family entities as promoter (post-restructuring listing)
+            # Public includes Screener "Others" residual (0.49%/0.41%/0.30% for Q2–Q4 FY26)
+            "Promoter": [  None,   None,   None,   None,   None,   None,  46.16,  46.16,  46.16,  46.16],
+            "FII":      [  None,   None,   None,   None,   None,   None,  15.10,  15.57,  14.63,  14.63],
+            "DII":      [  None,   None,   None,   None,   None,   None,  14.46,  16.26,  18.80,  18.80],
+            "Public":   [  None,   None,   None,   None,   None,   None,  24.27,  22.00,  20.40,  20.40],
+        },
+
+        "named_entities": [
+
+            # ── Promoter Group (Piramal family, post-restructuring) ──────────
+            # All promoter entities first appear from Q2FY26 (Sep 2025) after listing
+            {
+                "name":     "Anutham Realty Private Limited",
+                "category": "Promoter",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [  None,   None,   None,   None,   None,   None,  24.78,  24.78,  24.78,  24.78],
+            },
+            {
+                "name":     "The Sri Krishna Trust",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,  10.02,  10.02,  10.02,  10.02],
+            },
+            {
+                "name":     "V3 Designs LLP",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   4.28,   4.28,   4.28,   4.28],
+            },
+            {
+                "name":     "PRL Realtors LLP",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   3.96,   3.96,   3.96,   3.96],
+            },
+            {
+                "name":     "Semplice Corporate Solutions Private Limited",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   1.27,   1.27,   1.27,   1.27],
+            },
+            {
+                "name":     "Piramal Welfare Trust",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   1.05,   1.05,   1.05,   1.05],
+            },
+
+            # ── FII ─────────────────────────────────────────────────────────
+            {
+                "name":     "Government Pension Fund Global",
+                "category": "FII",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [  None,   None,   None,   None,   None,   None,   3.20,   3.09,   3.09,   3.09],
+            },
+            {
+                "name":     "East Bridge Capital Master Fund I Ltd",
+                "category": "FII",
+                # Declining from 2.10% at listing; still above 1% threshold
+                "pct": [  None,   None,   None,   None,   None,   None,   2.10,   2.01,   1.60,   1.60],
+            },
+
+            # ── DII ─────────────────────────────────────────────────────────
+            {
+                "name":     "Life Insurance Corporation of India",
+                "category": "DII – Insurance",
+                "pct": [  None,   None,   None,   None,   None,   None,   4.47,   4.47,   4.15,   4.15],
+            },
+            {
+                "name":     "Quant Mutual Fund – Quant Small Cap Fund",
+                "category": "DII – MF",
+                # Declining since listing; still significant position
+                "pct": [  None,   None,   None,   None,   None,   None,   4.31,   3.79,   3.48,   3.48],
+            },
+            {
+                "name":     "Kotak Midcap Fund",
+                "category": "DII – MF",
+                # First crossed 1% in Q4FY26 (Mar 2026)
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,   3.98,   3.98],
+            },
+            {
+                "name":     "HSBC Mutual Fund – HSBC Midcap Fund",
+                "category": "DII – MF",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   1.27,   1.43,   1.43],
+            },
+            {
+                "name":     "Motilal Oswal Flexi Cap Fund",
+                "category": "DII – MF",
+                # First crossed 1% in Q4FY26 (Mar 2026)
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,   1.36,   1.36],
+            },
+
+            # ── Public ──────────────────────────────────────────────────────
+            {
+                "name":     "Indiahold Limited",
+                "category": "Public",
+                "pct": [  None,   None,   None,   None,   None,   None,   1.91,   1.91,   1.91,   1.91],
+            },
+        ],
+    },
 }
