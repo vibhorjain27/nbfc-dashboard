@@ -533,4 +533,298 @@ SHAREHOLDING = {
             },
         ],
     },
+
+    # ── MUTHOOT FINANCE ────────────────────────────────────────────────────────
+    # BSE: 533398 · NSE: MUTHOOTFIN · Promoter = Muthoot family (HUF / individuals)
+    # Source Q4FY26: BSE XBRL filing SHP_1655952_21042026 (Mar 31, 2026)
+    # Prior quarters (Q4FY24–Q3FY26): to be sourced from BSE XBRL filings or Screener.in
+    # Array positions: [Q4FY24, Q1FY25, Q2FY25, Q3FY25, Q4FY25, Q1FY26, Q2FY26, Q3FY26, Q4FY26, Apr'26]
+    #                  [Mar-24, Jun-24, Sep-24, Dec-24, Mar-25, Jun-25, Sep-25, Dec-25, Mar-26, Apr-26]
+    # Total shares outstanding (Mar-26): 401,468,476
+    "Aditya Birla Capital": {
+
+        "category_pct": {
+            #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+            # Source: Screener.in investors tab (Jun 2023–Mar 2026)
+            # Note: Q4FY26 Public includes 0.12% Government category (new entrant)
+            "Promoter": [ 68.97,  68.98,  68.90,  68.85,  68.84,  68.76,  68.70,  68.57,  68.51,  68.51],
+            "FII":      [ 10.92,  10.12,  10.40,   8.57,   7.83,   6.47,   6.10,   5.15,   7.01,   7.01],
+            "DII":      [  7.55,   8.12,   8.47,   9.52,   9.79,  12.06,  12.82,  14.67,  13.71,  13.71],
+            "Public":   [ 12.59,  12.78,  12.23,  13.05,  13.53,  12.72,  12.37,  11.59,  10.76,  10.76],  # Q4FY26 includes 0.12% Govt
+        },
+
+        "named_entities": [
+
+            # ── Promoter Group ──────────────────────────────────────────────
+            {
+                "name":     "Grasim Industries Limited",
+                "category": "Promoter",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [ 52.68,  52.64,  52.58,  52.55,  52.54,  52.48,  52.43,  52.34,  52.29,  52.29],
+            },
+            {
+                "name":     "Birla Group Holdings Private Limited",
+                "category": "Promoter",
+                # Jumped from ~7.1% to ~8.5% in Q1FY25 (Jun 2024 stake increase)
+                "pct": [  7.10,   8.53,   8.52,   8.52,   8.51,   8.50,   8.50,   8.48,   8.47,   8.47],
+            },
+            {
+                "name":     "Essel Mining & Industries Ltd",
+                "category": "Promoter",
+                "pct": [  2.07,   2.06,   2.06,   2.06,   2.06,   2.06,   2.06,   2.05,   2.05,   2.05],
+            },
+            {
+                "name":     "Hindalco Industries Limited",
+                "category": "Promoter",
+                "pct": [  1.52,   1.52,   1.52,   1.52,   1.52,   1.51,   1.51,   1.51,   1.51,   1.51],
+            },
+            {
+                "name":     "Surya Kiran Investments Pte Limited",
+                "category": "Promoter",
+                "pct": [  1.45,   1.45,   1.45,   1.44,   1.44,   1.44,   1.44,   1.44,   1.44,   1.44],
+            },
+            {
+                "name":     "Pilani Investment And Industries",
+                "category": "Promoter",
+                "pct": [  1.29,   1.29,   1.29,   1.29,   1.29,   1.29,   1.29,   1.29,   1.28,   1.28],
+            },
+            {
+                "name":     "P.T. Indo Bharat Rayon",
+                "category": "Promoter",
+                "pct": [  1.08,   1.08,   1.08,   1.07,   1.07,   1.07,   1.07,   1.07,   1.07,   1.07],
+            },
+
+            # ── FII ─────────────────────────────────────────────────────────
+            {
+                "name":     "Jomei Investments Limited",
+                "category": "FII",
+                # Dropped from ~3.84% to 2.04% in Q1FY26 (Jun 2025); below 1% threshold by Q3FY26
+                "pct": [  3.85,   3.84,   3.84,   3.84,   3.84,   2.04,   2.04,   None,   None,   None],
+            },
+
+            # ── DII ─────────────────────────────────────────────────────────
+            {
+                "name":     "Pi Opportunities Fund I",
+                "category": "DII – MF",
+                "pct": [  3.05,   3.05,   3.05,   3.04,   3.04,   3.04,   3.04,   3.03,   3.03,   3.03],
+            },
+            {
+                "name":     "Life Insurance Corporation of India",
+                "category": "DII – Insurance",
+                # Reported as "LIC of India" (Jun 23–Dec 24) and "LICI" (Mar 25+) — same entity
+                "pct": [  1.98,   1.98,   1.97,   1.97,   1.97,   1.97,   1.74,   1.65,   1.55,   1.55],
+            },
+            {
+                "name":     "Motilal Oswal Nifty Midcap 100 ETF",
+                "category": "DII – MF",
+                # First crossed 1% threshold in Q3FY26 (Dec 2025); growing stake
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   2.06,   2.22,   2.22],
+            },
+        ],
+    },
+
+    "Muthoot Finance": {
+
+        "category_pct": {
+            #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+            # Source: Screener.in (Q4FY24–Q3FY26); BSE XBRL filing Apr-2026 (Q4FY26)
+            "Promoter": [ 73.35,  73.35,  73.35,  73.35,  73.35,  73.35,  73.35,  73.35,  73.35,  73.35],
+            "FII":      [  8.33,   8.68,   9.85,  10.26,  11.02,  10.84,  11.58,  11.75,  12.30,  12.30],
+            "DII":      [ 14.72,  14.55,  13.30,  12.99,  11.75,  12.21,  11.37,  11.13,  10.42,  10.42],
+            "Public":   [  3.59,   3.41,   3.50,   3.38,   3.87,   3.60,   3.70,   3.77,   3.93,   3.93],
+        },
+
+        "named_entities": [
+
+            # ── Promoter Group — Muthoot Family (HUF / Individuals) ─────────
+            # Promoter family holdings are unchanged across all quarters (Screener.in)
+            {
+                "name":     "George Jacob Muthoot",
+                "category": "Promoter",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [ 10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87],
+            },
+            {
+                "name":     "George Thomas",
+                "category": "Promoter",
+                "pct": [ 10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87],
+            },
+            {
+                "name":     "Susan Thomas",
+                "category": "Promoter",
+                "pct": [  7.47,   7.47,   7.47,   7.47,   7.47,   7.47,   7.47,   7.47,   7.47,   7.47],
+            },
+            {
+                "name":     "Sara George",
+                "category": "Promoter",
+                "pct": [  7.23,   7.23,   7.23,   7.23,   7.23,   7.23,   7.23,   7.23,   7.23,   7.23],
+            },
+            {
+                "name":     "George Alexander Muthoot",
+                "category": "Promoter",
+                "pct": [  5.89,   5.89,   5.89,   5.89,   5.89,   5.89,   5.89,   5.89,   5.89,   5.89],
+            },
+            {
+                "name":     "Alexander George",
+                "category": "Promoter",
+                "pct": [  5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55],
+            },
+            {
+                "name":     "George M George",
+                "category": "Promoter",
+                "pct": [  5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55],
+            },
+            {
+                "name":     "Eapen Alexander",
+                "category": "Promoter",
+                "pct": [  4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37],
+            },
+            {
+                "name":     "George M Alexander",
+                "category": "Promoter",
+                "pct": [  4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37],
+            },
+            {
+                "name":     "George M Jacob",
+                "category": "Promoter",
+                "pct": [  3.75,   3.75,   3.75,   3.75,   3.75,   3.75,   3.75,   3.75,   3.75,   3.75],
+            },
+            {
+                "name":     "Anna Alexander",
+                "category": "Promoter",
+                "pct": [  3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72],
+            },
+            {
+                "name":     "Elizabeth Jacob",
+                "category": "Promoter",
+                "pct": [  3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72],
+            },
+
+            # ── DII – Mutual Funds ──────────────────────────────────────────
+            # Source: Screener.in investors tab (full history)
+            {
+                "name":     "SBI Mutual Fund",
+                "category": "DII – MF",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [  8.79,   8.74,   7.70,   7.35,   6.27,   6.67,   5.19,   4.75,   4.72,   4.72],
+            },
+            {
+                "name":     "ICICI Prudential Mutual Fund",
+                "category": "DII – MF",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                # Dropped below 1% threshold after Q2FY25 (not reported in subsequent quarters)
+                "pct": [  4.13,   2.77,   1.83,   None,   None,   None,   None,   None,   None,   None],
+            },
+            {
+                "name":     "Government Pension Fund Global",
+                "category": "FII",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                # Dropped below 1% threshold after Q3FY25 (not reported in subsequent quarters)
+                "pct": [  None,   1.14,   1.35,   1.19,   None,   None,   None,   None,   None,   None],
+            },
+        ],
+    },
+
+    "Piramal Finance": {
+
+        "category_pct": {
+            #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+            # Source: Screener.in/company/PIRAMALFIN/consolidated/#shareholding
+            # Q4FY24–Q1FY26: no data (Screener gap; entity restructured post-DHFL acquisition)
+            # Q2FY26 onward: Piramal family entities as promoter (post-restructuring listing)
+            # Public includes Screener "Others" residual (0.49%/0.41%/0.30% for Q2–Q4 FY26)
+            "Promoter": [  None,   None,   None,   None,   None,   None,  46.16,  46.16,  46.16,  46.16],
+            "FII":      [  None,   None,   None,   None,   None,   None,  15.10,  15.57,  14.63,  14.63],
+            "DII":      [  None,   None,   None,   None,   None,   None,  14.46,  16.26,  18.80,  18.80],
+            "Public":   [  None,   None,   None,   None,   None,   None,  24.27,  22.00,  20.40,  20.40],
+        },
+
+        "named_entities": [
+
+            # ── Promoter Group (Piramal family, post-restructuring) ──────────
+            # All promoter entities first appear from Q2FY26 (Sep 2025) after listing
+            {
+                "name":     "Anutham Realty Private Limited",
+                "category": "Promoter",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [  None,   None,   None,   None,   None,   None,  24.78,  24.78,  24.78,  24.78],
+            },
+            {
+                "name":     "The Sri Krishna Trust",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,  10.02,  10.02,  10.02,  10.02],
+            },
+            {
+                "name":     "V3 Designs LLP",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   4.28,   4.28,   4.28,   4.28],
+            },
+            {
+                "name":     "PRL Realtors LLP",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   3.96,   3.96,   3.96,   3.96],
+            },
+            {
+                "name":     "Semplice Corporate Solutions Private Limited",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   1.27,   1.27,   1.27,   1.27],
+            },
+            {
+                "name":     "Piramal Welfare Trust",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   1.05,   1.05,   1.05,   1.05],
+            },
+
+            # ── FII ─────────────────────────────────────────────────────────
+            {
+                "name":     "Government Pension Fund Global",
+                "category": "FII",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [  None,   None,   None,   None,   None,   None,   3.20,   3.09,   3.09,   3.09],
+            },
+            {
+                "name":     "East Bridge Capital Master Fund I Ltd",
+                "category": "FII",
+                # Declining from 2.10% at listing; still above 1% threshold
+                "pct": [  None,   None,   None,   None,   None,   None,   2.10,   2.01,   1.60,   1.60],
+            },
+
+            # ── DII ─────────────────────────────────────────────────────────
+            {
+                "name":     "Life Insurance Corporation of India",
+                "category": "DII – Insurance",
+                "pct": [  None,   None,   None,   None,   None,   None,   4.47,   4.47,   4.15,   4.15],
+            },
+            {
+                "name":     "Quant Mutual Fund – Quant Small Cap Fund",
+                "category": "DII – MF",
+                # Declining since listing; still significant position
+                "pct": [  None,   None,   None,   None,   None,   None,   4.31,   3.79,   3.48,   3.48],
+            },
+            {
+                "name":     "Kotak Midcap Fund",
+                "category": "DII – MF",
+                # First crossed 1% in Q4FY26 (Mar 2026)
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,   3.98,   3.98],
+            },
+            {
+                "name":     "HSBC Mutual Fund – HSBC Midcap Fund",
+                "category": "DII – MF",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   1.27,   1.43,   1.43],
+            },
+            {
+                "name":     "Motilal Oswal Flexi Cap Fund",
+                "category": "DII – MF",
+                # First crossed 1% in Q4FY26 (Mar 2026)
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,   1.36,   1.36],
+            },
+
+            # ── Public ──────────────────────────────────────────────────────
+            {
+                "name":     "Indiahold Limited",
+                "category": "Public",
+                "pct": [  None,   None,   None,   None,   None,   None,   1.91,   1.91,   1.91,   1.91],
+            },
+        ],
+    },
 }
