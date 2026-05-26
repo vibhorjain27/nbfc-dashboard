@@ -545,83 +545,100 @@ SHAREHOLDING = {
 
         "category_pct": {
             #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
-            "Promoter": [  None,   None,   None,   None,   None,   None,   None,   None,   73.35,  73.35],
-            "FII":      [  None,   None,   None,   None,   None,   None,   None,   None,   12.30,  12.30],
-            "DII":      [  None,   None,   None,   None,   None,   None,   None,   None,   10.42,  10.42],
-            "Public":   [  None,   None,   None,   None,   None,   None,   None,   None,    3.93,   3.93],
+            # Source: Screener.in (Q4FY24–Q3FY26); BSE XBRL filing Apr-2026 (Q4FY26)
+            "Promoter": [ 73.35,  73.35,  73.35,  73.35,  73.35,  73.35,  73.35,  73.35,  73.35,  73.35],
+            "FII":      [  8.33,   8.68,   9.85,  10.26,  11.02,  10.84,  11.58,  11.75,  12.30,  12.30],
+            "DII":      [ 14.72,  14.55,  13.30,  12.99,  11.75,  12.21,  11.37,  11.13,  10.42,  10.42],
+            "Public":   [  3.59,   3.41,   3.50,   3.38,   3.87,   3.60,   3.70,   3.77,   3.93,   3.93],
         },
 
         "named_entities": [
 
             # ── Promoter Group — Muthoot Family (HUF / Individuals) ─────────
-            # All 12 promoters are family members; all holdings as at Mar-26 (Q4FY26)
+            # Promoter family holdings are unchanged across all quarters (Screener.in)
             {
                 "name":     "George Jacob Muthoot",
                 "category": "Promoter",
                 #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,   10.87,  10.87],
+                "pct": [ 10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87],
             },
             {
                 "name":     "George Thomas",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,   10.87,  10.87],
+                "pct": [ 10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87,  10.87],
             },
             {
                 "name":     "Susan Thomas",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    7.47,   7.47],
+                "pct": [  7.47,   7.47,   7.47,   7.47,   7.47,   7.47,   7.47,   7.47,   7.47,   7.47],
             },
             {
                 "name":     "Sara George",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    7.23,   7.23],
+                "pct": [  7.23,   7.23,   7.23,   7.23,   7.23,   7.23,   7.23,   7.23,   7.23,   7.23],
             },
             {
                 "name":     "George Alexander Muthoot",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    5.89,   5.89],
+                "pct": [  5.89,   5.89,   5.89,   5.89,   5.89,   5.89,   5.89,   5.89,   5.89,   5.89],
             },
             {
                 "name":     "Alexander George",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    5.55,   5.55],
+                "pct": [  5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55],
             },
             {
                 "name":     "George M George",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    5.55,   5.55],
+                "pct": [  5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55,   5.55],
             },
             {
                 "name":     "Eapen Alexander",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    4.37,   4.37],
+                "pct": [  4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37],
             },
             {
                 "name":     "George M Alexander",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    4.37,   4.37],
+                "pct": [  4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37,   4.37],
             },
             {
                 "name":     "George M Jacob",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    3.75,   3.75],
+                "pct": [  3.75,   3.75,   3.75,   3.75,   3.75,   3.75,   3.75,   3.75,   3.75,   3.75],
             },
             {
                 "name":     "Anna Alexander",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    3.72,   3.72],
+                "pct": [  3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72],
             },
             {
                 "name":     "Elizabeth Jacob",
                 "category": "Promoter",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    3.72,   3.72],
+                "pct": [  3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72,   3.72],
             },
 
             # ── DII – Mutual Funds ──────────────────────────────────────────
+            # Source: Screener.in investors tab (full history)
             {
                 "name":     "SBI Mutual Fund",
                 "category": "DII – MF",
-                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    4.72,   4.72],
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [  8.79,   8.74,   7.70,   7.35,   6.27,   6.67,   5.19,   4.75,   4.72,   4.72],
+            },
+            {
+                "name":     "ICICI Prudential Mutual Fund",
+                "category": "DII – MF",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                # Dropped below 1% threshold after Q2FY25 (not reported in subsequent quarters)
+                "pct": [  4.13,   2.77,   1.83,   None,   None,   None,   None,   None,   None,   None],
+            },
+            {
+                "name":     "Government Pension Fund Global",
+                "category": "FII",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                # Dropped below 1% threshold after Q3FY25 (not reported in subsequent quarters)
+                "pct": [  None,   1.14,   1.35,   1.19,   None,   None,   None,   None,   None,   None],
             },
         ],
     },
