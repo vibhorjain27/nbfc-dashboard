@@ -13,7 +13,7 @@
 #   - Muthoot Finance: updated from Q4FY26 investor deck (standalone; ROA = PAT/Avg Loan Assets)
 #   - Mahindra Finance: Q4FY26 PDF pending — Q3FY26 values retained
 #   - Chola Finance Q4FY26: all metrics from Screener.in (Screener AI summary); BVPS verified via consolidated balance sheet
-#   - Piramal CAR = investor deck (consolidated); T1/T2 not disclosed; CoB = explicit 6.41%
+#   - Piramal CAR = investor deck (consolidated); T1/T2 not disclosed; CoB = Screener.in (Q3FY26: 8.91%; Q4FY26 pending)
 #   - Piramal PCR = Stage-3 PCR (29.6%); total provisions/AUM higher
 
 NBFC_Q4FY26 = [
@@ -155,7 +155,7 @@ NBFC_Q4FY26 = [
         "gnpa_pct": 2.3,
         "nnpa_pct": 1.6,
         "pcr_pct": 29.6,          # Stage-3 PCR
-        "cost_of_borrowing_pct": 6.41,
+        "cost_of_borrowing_pct": 8.91,         # Q3FY26 (Screener.in); Q4FY26 not yet confirmed — prior 6.41% was erroneous
         "d_e_ratio": 2.8,
         "car_pct": 19.8,
         "bvps_inr": 1247,
@@ -302,7 +302,7 @@ NBFC_TIMESERIES = {
         "nim_pct":               [4.6,    4.9,    5.1,    5.8,    5.8,    5.9,    6.1,    6.3,    6.5   ],
         "roa_pct":               [None,   None,   None,   None,   None,   None,   None,   1.9,    2.1   ],  # RoAUM on growth book
         "roe_pct":               [None,   None,   None,   None,   2.0,    None,   2.0,    None,   None  ],
-        "cost_of_borrowing_pct": [None,   None,   None,   None,   None,   None,   None,   8.9,    6.41  ],  # Q4FY26 explicitly stated in deck
+        "cost_of_borrowing_pct": [8.93,   8.94,   9.12,   9.17,   9.13,   9.12,   8.93,   8.91,   None  ],  # Source: Screener.in (Q4FY24–Q3FY26); Q4FY26 not yet confirmed
         "d_e_ratio":             [None,   None,   None,   None,   None,   None,   None,   2.71,   2.8   ],
         "car_pct":               [25.60,  24.4,   23.3,   23.7,   23.6,   19.3,   20.7,   None,   19.8  ],
         "t1_pct":                [None,   None,   None,   None,   None,   None,   None,   None,   None  ],  # not disclosed
