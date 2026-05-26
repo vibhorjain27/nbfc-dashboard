@@ -533,4 +533,96 @@ SHAREHOLDING = {
             },
         ],
     },
+
+    # ── MUTHOOT FINANCE ────────────────────────────────────────────────────────
+    # BSE: 533398 · NSE: MUTHOOTFIN · Promoter = Muthoot family (HUF / individuals)
+    # Source Q4FY26: BSE XBRL filing SHP_1655952_21042026 (Mar 31, 2026)
+    # Prior quarters (Q4FY24–Q3FY26): to be sourced from BSE XBRL filings or Screener.in
+    # Array positions: [Q4FY24, Q1FY25, Q2FY25, Q3FY25, Q4FY25, Q1FY26, Q2FY26, Q3FY26, Q4FY26, Apr'26]
+    #                  [Mar-24, Jun-24, Sep-24, Dec-24, Mar-25, Jun-25, Sep-25, Dec-25, Mar-26, Apr-26]
+    # Total shares outstanding (Mar-26): 401,468,476
+    "Muthoot Finance": {
+
+        "category_pct": {
+            #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+            "Promoter": [  None,   None,   None,   None,   None,   None,   None,   None,   73.35,  73.35],
+            "FII":      [  None,   None,   None,   None,   None,   None,   None,   None,   12.30,  12.30],
+            "DII":      [  None,   None,   None,   None,   None,   None,   None,   None,   10.42,  10.42],
+            "Public":   [  None,   None,   None,   None,   None,   None,   None,   None,    3.93,   3.93],
+        },
+
+        "named_entities": [
+
+            # ── Promoter Group — Muthoot Family (HUF / Individuals) ─────────
+            # All 12 promoters are family members; all holdings as at Mar-26 (Q4FY26)
+            {
+                "name":     "George Jacob Muthoot",
+                "category": "Promoter",
+                #               Q4FY24  Q1FY25  Q2FY25  Q3FY25  Q4FY25  Q1FY26  Q2FY26  Q3FY26  Q4FY26  Apr'26
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,   10.87,  10.87],
+            },
+            {
+                "name":     "George Thomas",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,   10.87,  10.87],
+            },
+            {
+                "name":     "Susan Thomas",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    7.47,   7.47],
+            },
+            {
+                "name":     "Sara George",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    7.23,   7.23],
+            },
+            {
+                "name":     "George Alexander Muthoot",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    5.89,   5.89],
+            },
+            {
+                "name":     "Alexander George",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    5.55,   5.55],
+            },
+            {
+                "name":     "George M George",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    5.55,   5.55],
+            },
+            {
+                "name":     "Eapen Alexander",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    4.37,   4.37],
+            },
+            {
+                "name":     "George M Alexander",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    4.37,   4.37],
+            },
+            {
+                "name":     "George M Jacob",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    3.75,   3.75],
+            },
+            {
+                "name":     "Anna Alexander",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    3.72,   3.72],
+            },
+            {
+                "name":     "Elizabeth Jacob",
+                "category": "Promoter",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    3.72,   3.72],
+            },
+
+            # ── DII – Mutual Funds ──────────────────────────────────────────
+            {
+                "name":     "SBI Mutual Fund",
+                "category": "DII – MF",
+                "pct": [  None,   None,   None,   None,   None,   None,   None,   None,    4.72,   4.72],
+            },
+        ],
+    },
 }
