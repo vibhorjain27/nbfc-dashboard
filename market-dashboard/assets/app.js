@@ -207,7 +207,12 @@ async function renderTiles(force = false) {
     banner.replaceChildren();
     const b = document.createElement('div');
     b.className = 'banner';
-    b.textContent = `Could not reach the price feed (${err.message}). Charts below use the last data loaded.`;
+    // A 404 on /api/yahoo means the serverless function did not deploy — the
+    // usual cause is publishing the folder without netlify/functions alongside it.
+    b.textContent = /404/.test(err.message)
+      ? 'Price feed not found: the /api/yahoo function is not deployed. Re-deploy including the '
+        + 'netlify/functions folder and netlify.toml.'
+      : `Could not reach the price feed (${err.message}). Pull down to retry, or tap ↻.`;
     banner.appendChild(b);
     return;
   }

@@ -19,6 +19,21 @@ deliverable, not a replacement.
 
 ## Deploying to Netlify
 
+### Option A — drag and drop (no Git connection)
+
+Download **`nbfc-market-dashboard.zip`** from the repo root, unzip it, and drag the
+resulting `nbfc-market-dashboard` folder onto app.netlify.com. It is self-contained
+and carries its own `netlify.toml` with `publish = "."`. Instructions are in
+`DEPLOY.md` inside the zip.
+
+Rebuild that zip after changing anything here:
+
+```bash
+python market-dashboard/make_bundle.py
+```
+
+### Option B — connect the Git repo (auto-deploys on push)
+
 `netlify.toml` at the repo root already points Netlify at this folder, so there is
 nothing to configure in the UI.
 
