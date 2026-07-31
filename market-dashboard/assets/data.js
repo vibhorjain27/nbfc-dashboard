@@ -24,6 +24,7 @@ window.NBFC_DATA = {
     "2025-12-31",
     "2026-03-31"
   ],
+  "snapshotAt": null,
   "companies": [
     {
       "name": "Poonawalla Fincorp",
@@ -54,7 +55,8 @@ window.NBFC_DATA = {
         2.4895,
         3.9855,
         6.1895
-      ]
+      ],
+      "snapshot": null
     },
     {
       "name": "Bajaj Finance",
@@ -85,7 +87,8 @@ window.NBFC_DATA = {
         29.8607,
         31.4834,
         33.275
-      ]
+      ],
+      "snapshot": null
     },
     {
       "name": "Shriram Finance",
@@ -116,7 +119,8 @@ window.NBFC_DATA = {
         37.7866,
         39.6651,
         42.4956
-      ]
+      ],
+      "snapshot": null
     },
     {
       "name": "L&T Finance",
@@ -147,7 +151,8 @@ window.NBFC_DATA = {
         11.3007,
         11.7955,
         12.2185
-      ]
+      ],
+      "snapshot": null
     },
     {
       "name": "Cholamandalam Finance",
@@ -178,7 +183,8 @@ window.NBFC_DATA = {
         58.1373,
         60.4909,
         61.1232
-      ]
+      ],
+      "snapshot": null
     },
     {
       "name": "Aditya Birla Capital",
@@ -209,7 +215,8 @@ window.NBFC_DATA = {
         9.7036,
         10.3322,
         10.9645
-      ]
+      ],
+      "snapshot": null
     },
     {
       "name": "Piramal Finance",
@@ -240,7 +247,8 @@ window.NBFC_DATA = {
         32.9196,
         48.937,
         66.6357
-      ]
+      ],
+      "snapshot": null
     },
     {
       "name": "Muthoot Finance",
@@ -271,7 +279,8 @@ window.NBFC_DATA = {
         181.6083,
         213.0927,
         252.3984
-      ]
+      ],
+      "snapshot": null
     },
     {
       "name": "Mahindra Finance",
@@ -302,7 +311,8 @@ window.NBFC_DATA = {
         18.4305,
         17.79,
         null
-      ]
+      ],
+      "snapshot": null
     }
   ]
 };
