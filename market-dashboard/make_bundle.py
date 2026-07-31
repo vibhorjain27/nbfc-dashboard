@@ -79,36 +79,47 @@ makes it open full-screen like an app.
 
 Open the site. The **Prices** tab should list all nine companies with rupee prices.
 
-If you instead see an orange banner saying *"the /api/market function is not
-deployed"*, the serverless function did not come across. Re-drag the folder and
-confirm `netlify.toml` and `netlify/functions/market.mjs` are inside it. You can
-verify from the Netlify dashboard under **Site configuration → Functions** —
-`market` should be listed.
+If prices are missing, see the next section — it is almost certainly the feed, not
+the deploy. You can confirm the function itself deployed under **Site configuration
+→ Functions**, where `market` should be listed.
 
-## Why there is a function at all
+## Important: live prices need an API key
 
-The browser cannot call Yahoo Finance directly — Yahoo sends no CORS headers, so
-the request is blocked. `netlify/functions/market.mjs` is a small server-side
-pass-through to the same Yahoo endpoint the Python `yfinance` package uses, which
-is what the main Streamlit dashboard reads. Both dashboards therefore show the
-same numbers.
+Yahoo Finance rate-limits cloud/datacenter IP addresses — which is exactly where
+this function runs. It answers `HTTP 429` more or less permanently from Netlify,
+even though the same request works from a home machine. (That is why the Streamlit
+dashboard is unaffected: it runs on your own laptop.)
 
-It only proxies the nine whitelisted NBFC tickers, and replies are cached at the
-CDN for 10 minutes, so all visitor traffic collapses into a handful of upstream
-fetches per hour and the page loads instantly.
+The fix is a free **Twelve Data** key. It is built to be called from servers and
+carries all nine NSE tickers under identical codes.
+
+1. Sign up at twelvedata.com (free tier: 800 API credits/day)
+2. Netlify -> **Site configuration -> Environment variables -> Add**
+3. Key `TWELVEDATA_API_KEY`, value your key
+4. **Deploys -> Trigger deploy**
+
+The function switches over automatically. A full trading day costs roughly 500 of
+the 800 free daily credits.
+
+**Without a key** the page falls back to the dated price snapshot baked into
+`assets/data.js` and says so at the top. Book value, P/B and P/E still work
+normally, because those come from filings rather than the live feed.
 
 ## What is live vs baked in
 
-- **Live on every load:** prices, day change, volume, market cap and the window
-  movement percentages.
+- **Live (with an API key):** prices, day change, volume, market cap and the
+  window movement percentages.
 - **Baked in:** book value per share and trailing earnings (used for P/B and P/E),
-  plus a dated fallback price snapshot so the page still shows real numbers if the
-  exchange feed is throttling. These come from company filings and only change when
-  a quarter is reported.
+  plus a dated fallback price snapshot. These come from company filings and change
+  only when a quarter is reported.
 
-To refresh the fundamentals later, regenerate `assets/data.js` from the main repo
-(`python market-dashboard/generate_data.py`) and rebuild this bundle with
-`python market-dashboard/make_bundle.py`.
+To refresh either, run these in the main repo and re-drag the folder:
+
+```
+python market-dashboard/bake_snapshot.py    # refresh the price snapshot
+python market-dashboard/generate_data.py    # refresh book value / earnings
+python market-dashboard/make_bundle.py      # rebuild this folder
+```
 
 ## Updating later
 
