@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+"""
+Generate assets/data.js for the mobile market dashboard.
+
+Reads the SAME source of truth as the main Streamlit dashboard
+(nbfc_data_cache.py) so the two can never drift, and bakes the
+valuation inputs into a static JS file:
+
+  * BVPS series (quarterly)      -> drives P/B
+  * TTM EPS series (derived)     -> drives P/E
+  * shares outstanding           -> converts PAT (Cr) into per-share EPS
+
+P/B and P/E are then computed IN THE BROWSER as:
+    daily NSE close / most-recently-reported quarterly BVPS (or TTM EPS)
+
+which is exactly the methodology make_pb_chart() uses in the main
+dashboard, so the numbers agree.
+
+Run:  python market-dashboard/generate_data.py
+"""
+
+import json
+import os
+import sys
+from datetime import date
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS  # noqa: E402
+
+# ── Registry — mirrors nbfc_dashboard_v1.py exactly ───────────────────────────
+NBFCS = {
+    'Poonawalla Fincorp':    'POONAWALLA.NS',
+    'Bajaj Finance':         'BAJFINANCE.NS',
+    'Shriram Finance':       'SHRIRAMFIN.NS',
+    'L&T Finance':           'LTF.NS',
+    'Cholamandalam Finance': 'CHOLAFIN.NS',
+    'Aditya Birla Capital':  'ABCAPITAL.NS',
+    'Piramal Finance':       'PIRAMALFIN.NS',
+    'Muthoot Finance':       'MUTHOOTFIN.NS',
+    'Mahindra Finance':      'M&MFIN.NS',
+}
+
+# nbfc_data_cache uses a slightly different key for Chola
+CACHE_KEY = {
+    'Poonawalla Fincorp':    'Poonawalla Fincorp',
+    'Bajaj Finance':         'Bajaj Finance',
+    'Shriram Finance':       'Shriram Finance',
+    'L&T Finance':           'L&T Finance',
+    'Cholamandalam Finance': 'Chola Finance',
+    'Aditya Birla Capital':  'Aditya Birla Capital',
+    'Piramal Finance':       'Piramal Finance',
+    'Muthoot Finance':       'Muthoot Finance',
+    'Mahindra Finance':      'Mahindra Finance',
+}
+
+# Same 9 hues as the main dashboard (validated: passes lightness band, chroma
+# floor, CVD separation and normal-vision floor; orange + green carry a
+# sub-3:1 contrast WARN, relieved by direct labels + the table view).
+COLORS = {
+    'Poonawalla Fincorp':    '#0284c7',
+    'Bajaj Finance':         '#f97316',
+    'Shriram Finance':       '#10b981',
+    'L&T Finance':           '#8b5cf6',
+    'Cholamandalam Finance': '#ef4444',
+    'Aditya Birla Capital':  '#0891b2',
+    'Piramal Finance':       '#be123c',
+    'Muthoot Finance':       '#65a30d',
+    'Mahindra Finance':      '#7c3aed',
+}
+
+# Dark-surface steps of the same nine hues — selected, not an automatic flip.
+# Validated against surface #1a1a19: lightness band, chroma floor, normal-vision
+# floor and 3:1 contrast all PASS. Worst adjacent CVD pair is Muthoot lime vs
+# Piramal crimson at ΔE 6.3 (deutan) — inside the 6–8 band, which is legal here
+# because every series also carries secondary encoding: named chips with dots,
+# direct value labels at the line ends, and a full table view.
+COLORS_DARK = {
+    'Poonawalla Fincorp':    '#0284c7',
+    'Bajaj Finance':         '#e0690c',
+    'Shriram Finance':       '#0d9e6e',
+    'L&T Finance':           '#8b5cf6',
+    'Cholamandalam Finance': '#ef4444',
+    'Aditya Birla Capital':  '#0891b2',
+    'Piramal Finance':       '#e11d48',
+    'Muthoot Finance':       '#65a30d',
+    'Mahindra Finance':      '#7c3aed',
+}
+
+SHORT = {
+    'Poonawalla Fincorp':    'Poonawalla',
+    'Bajaj Finance':         'Bajaj Fin',
+    'Shriram Finance':       'Shriram',
+    'L&T Finance':           'L&T Fin',
+    'Cholamandalam Finance': 'Chola',
+    'Aditya Birla Capital':  'AB Capital',
+    'Piramal Finance':       'Piramal',
+    'Muthoot Finance':       'Muthoot',
+    'Mahindra Finance':      'M&M Fin',
+}
+
+# Shares outstanding, from yfinance fast_info.shares (same source the main
+# dashboard uses for its market-cap trend). Refresh with --refresh-shares.
+SHARES_FALLBACK = {
+    'POONAWALLA.NS':  875_682_194,
+    'BAJFINANCE.NS':  6_217_876_336,
+    'SHRIRAMFIN.NS':  2_352_948_439,
+    'LTF.NS':         2_506_045_818,
+    'CHOLAFIN.NS':    854_013_036,
+    'ABCAPITAL.NS':   2_736_107_195,
+    'PIRAMALFIN.NS':  226_004_925,
+    'MUTHOOTFIN.NS':  401_468_476,
+    'M&MFIN.NS':      1_389_545_161,
+}
+
+# Quarter-end dates aligned to QUARTERS (Q4FY24 … Q4FY26). A ratio on any given
+# day uses the last quarter whose end date has passed — identical stepping to
+# make_pb_chart() in the main dashboard.
+QUARTER_END_DATES = [
+    '2024-03-31',  # Q4FY24
+    '2024-06-30',  # Q1FY25
+    '2024-09-30',  # Q2FY25
+    '2024-12-31',  # Q3FY25
+    '2025-03-31',  # Q4FY25
+    '2025-06-30',  # Q1FY26
+    '2025-09-30',  # Q2FY26
+    '2025-12-31',  # Q3FY26
+    '2026-03-31',  # Q4FY26
+]
+
+
+def ttm_eps_series(pat_cr, shares):
+    """Trailing-twelve-month EPS (₹/share) per quarter.
+
+    TTM PAT at quarter i = sum(PAT[i-3 .. i]); needs 4 consecutive quarters, so
+    the series starts at index 3. PAT is in ₹ Crore (1 Cr = 1e7).
+    """
+    out = [None] * len(pat_cr)
+    if not shares:
+        return out
+    for i in range(3, len(pat_cr)):
+        window = pat_cr[i - 3:i + 1]
+        if any(v is None for v in window):
+            continue
+        out[i] = round(sum(window) * 1e7 / shares, 4)
+    return out
+
+
+def refresh_shares():
+    """Re-pull shares outstanding from yfinance."""
+    import yfinance as yf
+    fresh = {}
+    for name, sym in NBFCS.items():
+        try:
+            s = yf.Ticker(sym).fast_info.shares
+            fresh[sym] = int(s) if s else SHARES_FALLBACK.get(sym)
+            print(f'  {name:24s} {sym:16s} {fresh[sym]:,}')
+        except Exception as exc:
+            fresh[sym] = SHARES_FALLBACK.get(sym)
+            print(f'  {name:24s} {sym:16s} FAILED ({type(exc).__name__}) — kept fallback')
+    return fresh
+
+
+def main():
+    shares_map = refresh_shares() if '--refresh-shares' in sys.argv else dict(SHARES_FALLBACK)
+
+    companies = []
+    for name, sym in NBFCS.items():
+        ck = CACHE_KEY[name]
+        series = NBFC_TIMESERIES.get(ck, {})
+        bvps = list(series.get('bvps_inr', [None] * len(QUARTERS)))
+        pat = list(series.get('pat_cr', [None] * len(QUARTERS)))
+        shares = shares_map.get(sym)
+
+        companies.append({
+            'name':   name,
+            'short':  SHORT[name],
+            'symbol': sym,
+            'ticker': sym.replace('.NS', ''),
+            'color':     COLORS[name],
+            'colorDark': COLORS_DARK[name],
+            'shares': shares,
+            'bvps':   bvps,
+            'eps':    ttm_eps_series(pat, shares),
+        })
+
+    payload = {
+        'generated':    date.today().isoformat(),
+        'quarters':     list(QUARTERS),
+        'quarterEnds':  QUARTER_END_DATES,
+        'companies':    companies,
+    }
+
+    out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, 'data.js')
+
+    with open(out_path, 'w', encoding='utf-8') as fh:
+        fh.write('// AUTO-GENERATED by generate_data.py — do not edit by hand.\n')
+        fh.write('// Source of truth: nbfc_data_cache.py (same as the Streamlit dashboard).\n')
+        fh.write('window.NBFC_DATA = ')
+        json.dump(payload, fh, indent=2, ensure_ascii=False)
+        fh.write(';\n')
+
+    # ── report ────────────────────────────────────────────────────────────────
+    print(f'\nWrote {out_path}')
+    print(f'{"Company":24s} {"BVPS":>6s} {"TTM EPS":>8s}   latest BVPS / EPS')
+    print('-' * 66)
+    for c in companies:
+        nb = sum(1 for v in c['bvps'] if v is not None)
+        ne = sum(1 for v in c['eps'] if v is not None)
+        lb = next((v for v in reversed(c['bvps']) if v is not None), None)
+        le = next((v for v in reversed(c['eps']) if v is not None), None)
+        print(f'{c["name"]:24s} {nb:>4d}/9 {ne:>6d}/9   '
+              f'₹{lb if lb else "—"} / ₹{le if le else "—"}')
+
+
+if __name__ == '__main__':
+    main()

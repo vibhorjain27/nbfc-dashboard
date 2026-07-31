@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)">
+<meta name="description" content="NBFC market prices, relative performance and valuation multiples — live NSE data.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>NBFC Market &amp; Valuation</title>
+<link rel="stylesheet" href="assets/styles.css?v=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230284c7'/><path d='M7 21l5-6 4 4 8-9' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-row">
+    <div>
+      <h1 class="hdr-title">NBFC Market &amp; Valuation</h1>
+      <div class="hdr-sub" id="stamp">Loading live NSE prices…</div>
+    </div>
+    <div class="hdr-actions">
+      <button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle light or dark theme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="refresh-btn" title="Refresh prices" aria-label="Refresh prices">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 11-2.6-6.4M21 3v6h-6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tab-prices"    aria-controls="panel-prices"    aria-selected="true">Prices</button>
+    <button class="tab" role="tab" id="tab-compare"   aria-controls="panel-compare"   aria-selected="false">Compare</button>
+    <button class="tab" role="tab" id="tab-valuation" aria-controls="panel-valuation" aria-selected="false">Valuation</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ── PRICES ─────────────────────────────────────────────────────────── -->
+  <section class="panel" id="panel-prices" role="tabpanel" aria-labelledby="tab-prices">
+    <div id="price-banner"></div>
+    <div class="sec-label">Live prices
+      <span class="sub">NSE · last traded price and change vs previous close</span>
+    </div>
+    <div class="tiles" id="tiles"><div class="skel">Fetching live prices…</div></div>
+
+    <div class="sec-label">Price history
+      <span class="sub">Tap a company below, then pick a window</span>
+    </div>
+    <div class="chips" id="hist-chips" role="group" aria-label="Choose a company"></div>
+    <div class="periods" id="hist-periods" role="group" aria-label="Choose a time window"></div>
+    <div class="chart-wrap" id="hist-chart"></div>
+
+    <div class="note">
+      Prices are delayed NSE quotes from Yahoo Finance — the same source the desk dashboard uses.
+      Tap ↻ in the header to refresh; quotes also refresh automatically when you return to the
+      page after a few minutes.
+    </div>
+  </section>
+
+  <!-- ── COMPARE ────────────────────────────────────────────────────────── -->
+  <section class="panel" id="panel-compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
+    <div class="sec-label">Relative performance — indexed to 100
+      <span class="sub">Every line starts at 100 on the first day of the window, so lines are directly comparable</span>
+    </div>
+
+    <div class="chips" id="cmp-chips" role="group" aria-label="Toggle companies"></div>
+    <div class="periods" id="cmp-periods" role="group" aria-label="Choose a time window"></div>
+
+    <div class="row-between" style="margin-top:6px;">
+      <span class="hdr-sub" id="cmp-range"></span>
+      <button class="linkish" id="cmp-reset">Reset selection</button>
+    </div>
+
+    <div class="chart-wrap" id="cmp-chart"></div>
+
+    <div class="sec-label">Returns over the window
+      <span class="sub">Same numbers as the chart — readable without hovering</span>
+    </div>
+    <div class="card tbl-wrap">
+      <table class="data" id="cmp-table">
+        <thead><tr><th>Company</th><th>Start ₹</th><th>Latest ₹</th><th>Return</th><th>Index</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      Indexed to 100 = (price ÷ price on the first day of the window) × 100. A line at 120 means the
+      stock is up 20% over the window. This strips out share-price levels so a ₹3,000 stock and a
+      ₹300 stock can be compared on one axis.
+    </div>
+  </section>
+
+  <!-- ── VALUATION ──────────────────────────────────────────────────────── -->
+  <section class="panel" id="panel-valuation" role="tabpanel" aria-labelledby="tab-valuation" hidden>
+    <div class="sec-label">Valuation multiples
+      <span class="sub">Daily NSE close over the latest reported book value / trailing earnings</span>
+    </div>
+
+    <div class="chips" id="val-chips" role="group" aria-label="Toggle companies"></div>
+    <div class="periods" id="val-periods" role="group" aria-label="Choose a time window"></div>
+
+    <div class="sec-label" style="margin-top:16px;">Price to Book (P/B)
+      <span class="sub">Close ÷ latest quarterly BVPS · dotted line = book value (1.0x)</span>
+    </div>
+    <div class="chart-wrap" id="pb-chart"></div>
+
+    <div class="sec-label">Price to Earnings (P/E)
+      <span class="sub">Close ÷ trailing-twelve-month EPS · <strong>log scale</strong> — these names span 12x to 200x</span>
+    </div>
+    <div class="chart-wrap" id="pe-chart"></div>
+
+    <div class="sec-label">Current multiples</div>
+    <div class="card tbl-wrap">
+      <table class="data" id="val-table">
+        <thead><tr><th>Company</th><th>Price ₹</th><th>BVPS ₹</th><th>P/B</th><th>TTM EPS ₹</th><th>P/E</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="note" id="val-note">
+      <strong>P/B</strong> = daily close ÷ most recently reported quarterly book value per share.
+      <strong>P/E</strong> = daily close ÷ trailing-twelve-month EPS, where TTM EPS is the last four
+      quarters of reported PAT divided by shares outstanding. Both step up or down on the day a
+      quarter closes, so a falling line means the price fell or the fundamentals improved.
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>Live prices &amp; history: Yahoo Finance (NSE). Book value and PAT: company filings &amp; investor decks.</div>
+  <div id="foot-stamp"></div>
+</footer>
+
+<script src="assets/data.js?v=1"></script>
+<script type="module" src="assets/app.js?v=1"></script>
+</body>
+</html>
