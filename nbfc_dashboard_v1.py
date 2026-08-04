@@ -14,7 +14,8 @@ import numpy as _np
 import yfinance as yf
 import pytz
 
-from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS, METRIC_LABELS
+from nbfc_data_cache import (NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS,
+                             METRIC_LABELS, QUARTER_ENDS)
 from nbfc_ai_data import NBFC_AI_INITIATIVES, FUNCTION_TAXONOMY
 from shareholding_data import SHAREHOLDING, SH_QUARTERS, CATEGORY_COLORS, ENTITY_CATEGORY_COLORS, ENTITY_BADGE_TEXT_COLORS
 from nbfc_annual_data import NBFC_ANNUAL, ANNUAL_YEARS
@@ -156,7 +157,11 @@ COLORS = {
 
 DISPLAY_NAMES = list(NBFCS.keys())
 DEFAULT_COMPARISON = ['Bajaj Finance', 'Shriram Finance', 'L&T Finance']
-Q_LABELS = CACHE_QUARTERS  # ["Q4FY24", "Q1FY25", ..., "Q4FY26"]
+Q_LABELS = CACHE_QUARTERS            # rolling window, oldest -> newest
+N_Q      = len(CACHE_QUARTERS)       # window size (8)
+Q_FIRST  = CACHE_QUARTERS[0]
+Q_LAST   = CACHE_QUARTERS[-1]
+Q_RANGE  = f"{Q_FIRST} – {Q_LAST}"   # e.g. "Q2FY25 – Q1FY27"
 
 # ── DATA HELPERS ───────────────────────────────────────────────────────────────
 def get_series(metric: str) -> dict:
@@ -209,7 +214,7 @@ def _fmt_val(v, fmt):
 
 
 def make_trend_chart(metric, selected, title, ylabel, fmt='pct', note=None, height=420, lower_is_better=False):
-    """Line chart for a single metric across selected NBFCs over 9 quarters."""
+    """Line chart for a single metric across selected NBFCs over """ + str(N_Q) + """ quarters."""
     data = get_series(metric)
 
     # Collect series and sort by last value descending
@@ -526,8 +531,10 @@ def make_bar_chart(metric, selected, title, ylabel, fmt='cr', height=380):
 def make_yoy_chart(metric, selected, title, height=310):
     """YoY growth line chart for last 4 quarters."""
     data = get_series(metric)
-    YOY_LABELS = ["Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26", "Q4FY26"]
-    YOY_PAIRS = [(4, 0), (5, 1), (6, 2), (7, 3), (8, 4)]
+    # YoY compares each quarter with the one 4 back; derived from the window
+    # so rolling forward never leaves a stale or out-of-range index.
+    YOY_PAIRS = [(i, i - 4) for i in range(4, N_Q)]
+    YOY_LABELS = [CACHE_QUARTERS[i] for i, _ in YOY_PAIRS]
 
     series_info = []
     for name in selected:
@@ -653,8 +660,8 @@ def make_yoy_chart(metric, selected, title, height=310):
 def make_qoq_chart(metric, selected, title, height=310):
     """QoQ growth line chart for Q1FY25 through Q4FY26."""
     data = get_series(metric)
-    QOQ_LABELS = ["Q1FY25", "Q2FY25", "Q3FY25", "Q4FY25", "Q1FY26", "Q2FY26", "Q3FY26", "Q4FY26"]
-    QOQ_PAIRS = [(1, 0), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7)]
+    QOQ_PAIRS = [(i, i - 1) for i in range(1, N_Q)]
+    QOQ_LABELS = [CACHE_QUARTERS[i] for i, _ in QOQ_PAIRS]
 
     series_info = []
     for name in selected:
@@ -779,17 +786,7 @@ def make_qoq_chart(metric, selected, title, height=310):
 
 def make_pb_chart(selected, height=520):
     """Daily P/B ratio chart over 2 years."""
-    QUARTER_ENDS = [
-        (_date(2024, 3, 31), 0),
-        (_date(2024, 6, 30), 1),
-        (_date(2024, 9, 30), 2),
-        (_date(2024, 12, 31), 3),
-        (_date(2025, 3, 31), 4),
-        (_date(2025, 6, 30), 5),
-        (_date(2025, 9, 30), 6),
-        (_date(2025, 12, 31), 7),
-        (_date(2026, 3, 31), 8),
-    ]
+    # QUARTER_ENDS is derived from QUARTERS in nbfc_data_cache — see import.
 
     fig = go.Figure()
     series_info = []
@@ -798,7 +795,7 @@ def make_pb_chart(selected, height=520):
     for name in selected:
         symbol = NBFCS[name]
         cache_name = CACHE_KEY[name]
-        bvps_series = NBFC_TIMESERIES[cache_name].get('bvps_inr', [None] * 9)
+        bvps_series = NBFC_TIMESERIES[cache_name].get('bvps_inr', [None] * len(CACHE_QUARTERS))
         hist = fetch_stock_data(symbol, period='2y')
         if hist is None or len(hist) == 0:
             continue
@@ -1131,7 +1128,7 @@ def build_rankings_table():
         cache = CACHE_KEY[name]
         row = []
         for metric, label, fmt, lib in METRICS:
-            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 9)
+            vals = NBFC_TIMESERIES[cache].get(metric, [None] * len(CACHE_QUARTERS))
             v = vals[Q_IDX] if Q_IDX < len(vals) else None
             row.append(_fmt_cell(v, fmt))
         rows[name] = row
@@ -1230,7 +1227,7 @@ def make_deep_dive(nbfc_disp):
         xref = 'x' if axis_num == 1 else f'x{axis_num}'
         yref = 'y' if axis_num == 1 else f'y{axis_num}'
 
-        vals = NBFC_TIMESERIES[cache_name].get(metric, [None] * 9)
+        vals = NBFC_TIMESERIES[cache_name].get(metric, [None] * len(CACHE_QUARTERS))
         has_data = any(v is not None for v in vals)
 
         if has_data:
@@ -1318,7 +1315,7 @@ def make_deep_dive(nbfc_disp):
             )
         })
 
-    title_text = f'<b style="color:#0a2540;font-size:16px;">{nbfc_disp} — All Metrics Q4FY24 → Q4FY26</b>'
+    title_text = f'<b style="color:#0a2540;font-size:16px;">{nbfc_disp} — All Metrics {Q_FIRST} → {Q_LAST}</b>'
     fig.update_layout(
         height=1020,
         showlegend=False,
@@ -1665,12 +1662,14 @@ def nbfc_selector(tab_key: str, default_on=None) -> list:
 
 
 # ── INSIGHT ENGINE ─────────────────────────────────────────────────────────────
-# Hard-coded to Q4FY26 as base quarter (index 8).  Update INSIGHT_BASE_Q each
-# quarter release to auto-shift all narratives forward.
+# Anchored to the newest quarter in the rolling window, so narratives shift
+# forward automatically when a quarter is rolled in.
 
-INSIGHT_BASE_Q = 8   # Q4FY26
-INSIGHT_PREV_Q = 7   # Q3FY26
-INSIGHT_YOY_Q  = 4   # Q4FY25
+INSIGHT_BASE_Q = N_Q - 1          # newest quarter
+INSIGHT_PREV_Q = N_Q - 2          # one quarter back
+INSIGHT_YOY_Q  = N_Q - 5          # same quarter last year
+Q_BASE_LBL     = CACHE_QUARTERS[INSIGHT_BASE_Q]
+Q_YOY_LBL      = CACHE_QUARTERS[INSIGHT_YOY_Q]
 POON_KEY = 'Poonawalla Fincorp'
 
 # (display_label, roa_norm_low, roa_norm_high, segment_context_note)
@@ -1849,7 +1848,7 @@ def generate_swot(nbfc_disp):
         if gnpa_yoy is not None:
             yoy_bps = (gnpa - gnpa_yoy) * 100
             if yoy_bps > 50:
-                T.append(f'GNPA up {yoy_bps:.0f} bps YoY (Q4FY25 to Q4FY26) — systemic pressure building')
+                T.append(f'GNPA up {yoy_bps:.0f} bps YoY ({Q_YOY_LBL} to {Q_BASE_LBL}) — systemic pressure building')
             elif yoy_bps < -50:
                 O.append(f'GNPA down {abs(yoy_bps):.0f} bps YoY — sustained asset-quality improvement')
 
@@ -1947,10 +1946,10 @@ def generate_swot(nbfc_disp):
         lst[:0] = prepend
 
     # Minimum content
-    if not S: S.append('No clear outperformance vs peers in Q4FY26 — watch next quarter')
-    if not W: W.append('No significant weaknesses flagged vs sector in Q4FY26')
+    if not S: S.append(f'No clear outperformance vs peers in {Q_BASE_LBL} — watch next quarter')
+    if not W: W.append(f'No significant weaknesses flagged vs sector in {Q_BASE_LBL}')
     if not O: O.append('Monitor AUM growth and margin trajectory into FY27')
-    if not T: T.append('No acute threats flagged in Q4FY26 data')
+    if not T: T.append(f'No acute threats flagged in {Q_BASE_LBL} data')
 
     return S[:5], W[:5], O[:5], T[:5]
 
@@ -2478,7 +2477,7 @@ with tab2:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Growth &amp; Scale</div>
-      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · AUM · PAT · NIM · 9 quarters · 9 NBFCs</div>
+      <div class="tab-intro-sub">""" + Q_RANGE + """ · AUM · PAT · NIM · """ + str(N_Q) + """ quarters · 9 NBFCs</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2520,7 +2519,7 @@ with tab3:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Asset Quality</div>
-      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · GNPA · NNPA · PCR</div>
+      <div class="tab-intro-sub">""" + Q_RANGE + """ · GNPA · NNPA · PCR</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2548,7 +2547,7 @@ with tab4:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Capital Structure &amp; Leverage</div>
-      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · CoB · D/E · CAR · Tier 1 · Tier 2</div>
+      <div class="tab-intro-sub">""" + Q_RANGE + """ · CoB · D/E · CAR · Tier 1 · Tier 2</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2586,7 +2585,7 @@ with tab5:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Profitability Ratios</div>
-      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · ROA · ROE · 9 quarters · 9 NBFCs</div>
+      <div class="tab-intro-sub">""" + Q_RANGE + """ · ROA · ROE · """ + str(N_Q) + """ quarters · 9 NBFCs</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2605,7 +2604,7 @@ with tab6:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Valuation Metrics</div>
-      <div class="tab-intro-sub">Q4FY24 – Q4FY26 · BVPS · P/B Ratio · Daily prices over quarterly book value</div>
+      <div class="tab-intro-sub">""" + Q_RANGE + """ · BVPS · P/B Ratio · Daily prices over quarterly book value</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2634,7 +2633,7 @@ with tab6:
     st.markdown("""
     <div class="metric-note">
       P/B = Daily NSE closing price ÷ most recently reported quarterly BVPS.
-      BVPS steps up at each quarter-end (Q4FY24–Q4FY26). Dotted line at P/B = 1 (book value floor).
+      BVPS steps up at each quarter-end (""" + Q_RANGE + """). Dotted line at P/B = 1 (book value floor).
       Lower P/B may indicate undervaluation relative to peers.
     </div>
     """, unsafe_allow_html=True)
@@ -2645,7 +2644,7 @@ with tab7:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Company Deep Dive</div>
-      <div class="tab-intro-sub">Select an NBFC to view all 14 metrics across 9 quarters</div>
+      <div class="tab-intro-sub">Select an NBFC to view all 14 metrics across """ + str(N_Q) + """ quarters</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2697,7 +2696,7 @@ with tab8:
         best_name, best_val = None, None
         for name in DISPLAY_NAMES:
             cache = CACHE_KEY[name]
-            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 9)
+            vals = NBFC_TIMESERIES[cache].get(metric, [None] * len(CACHE_QUARTERS))
             v = vals[Q_IDX] if Q_IDX < len(vals) else None
             if v is not None:
                 if best_val is None or v > best_val:
@@ -2709,7 +2708,7 @@ with tab8:
         best_name, best_val = None, None
         for name in DISPLAY_NAMES:
             cache = CACHE_KEY[name]
-            vals = NBFC_TIMESERIES[cache].get(metric, [None] * 9)
+            vals = NBFC_TIMESERIES[cache].get(metric, [None] * len(CACHE_QUARTERS))
             v = vals[Q_IDX] if Q_IDX < len(vals) else None
             if v is not None:
                 if best_val is None or v < best_val:
@@ -2843,7 +2842,7 @@ with tab10:
     st.markdown("""
     <div class="tab-intro">
       <div class="tab-intro-title">Shareholding Pattern</div>
-      <div class="tab-intro-sub">BSE quarterly filings · Q4FY24 – Q4FY26 (9 quarters) · Named shareholders ≥1%</div>
+      <div class="tab-intro-sub">BSE quarterly filings · """ + Q_RANGE + """ (""" + str(N_Q) + """ quarters) · Named shareholders ≥1%</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -3119,7 +3118,7 @@ with tab10:
         st.markdown(f"""
         <div class="section-label">≥1% Shareholders
           <span class="section-label-sub" style="margin-left:8px;">
-            {sh_sel} · Q4FY24 – Q4FY26 · green = building · red = reducing ·
+            {sh_sel} · """ + Q_RANGE + """ · green = building · red = reducing ·
             ● = new entry · ○ = exited · shaded rows = category totals
           </span>
         </div>
@@ -3439,7 +3438,7 @@ st.markdown("""
 <div style="font-size:10px;color:#94a3b8;font-family:'JetBrains Mono',monospace;
             border-top:1px solid #e2e8f0;padding-top:8px;margin-top:14px;">
     Data: Screener.in investor presentations · Yahoo Finance (market prices) ·
-    Q4FY24–Q4FY26 (9 quarters) · 9 NBFCs · Last refreshed: May 2026
+    Q4FY24–Q4FY26 (""" + str(N_Q) + """ quarters) · 9 NBFCs · Last refreshed: May 2026
 </div>
 """, unsafe_allow_html=True)
 

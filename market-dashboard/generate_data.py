@@ -26,7 +26,7 @@ from datetime import date
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS  # noqa: E402
+from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS, quarter_end_date  # noqa: E402
 
 # ── Registry — mirrors nbfc_dashboard_v1.py exactly ───────────────────────────
 NBFCS = {
@@ -113,20 +113,9 @@ SHARES_FALLBACK = {
     'M&MFIN.NS':      1_389_545_161,
 }
 
-# Quarter-end dates aligned to QUARTERS (Q4FY24 … Q4FY26). A ratio on any given
-# day uses the last quarter whose end date has passed — identical stepping to
-# make_pb_chart() in the main dashboard.
-QUARTER_END_DATES = [
-    '2024-03-31',  # Q4FY24
-    '2024-06-30',  # Q1FY25
-    '2024-09-30',  # Q2FY25
-    '2024-12-31',  # Q3FY25
-    '2025-03-31',  # Q4FY25
-    '2025-06-30',  # Q1FY26
-    '2025-09-30',  # Q2FY26
-    '2025-12-31',  # Q3FY26
-    '2026-03-31',  # Q4FY26
-]
+# Quarter-end dates aligned to QUARTERS, derived from the labels so the rolling
+# window never needs a code change here.
+QUARTER_END_DATES = [quarter_end_date(q).isoformat() for q in QUARTERS]
 
 
 def ttm_eps_series(pat_cr, shares):
