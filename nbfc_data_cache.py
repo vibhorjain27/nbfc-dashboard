@@ -40,6 +40,15 @@
 #     extreme for a lender; confirm before this goes in front of anyone.
 #     Q1FY27 is also the first quarter Muthoot discloses NNPA (1.99) and PCR
 #     (13.01) at all — the low PCR is normal for a fully-collateralised gold book.
+#   - Poonawalla Q1FY27: BVPS 149.12 is exact, not the deck's '~148' — audited
+#     Reg 52(4) net worth 13,060.07cr / 87.58cr shares (share capital 175.16cr
+#     at Rs2 face). QIP completed 13-Apr-2026: 6.743cr shares at Rs370.75 =
+#     Rs2,500cr, plus 0.025cr ESOP shares — share count 80.795 -> 87.58cr.
+#     WARNING: Q4FY26 BVPS 146.13 looks ~15% too high. Rolling the audited
+#     closing net worth back (13,060.07 - 2,500 QIP - 307.71 PAT + 7.38 OCI)
+#     gives opening equity ~10,260cr = BVPS ~127 on 80.795cr shares, which also
+#     matches the ~10,298cr Mar-26 equity in the Q4FY26 deck and sits smoothly
+#     after Q3FY26's 123.75. Needs the Q4FY26 net worth to confirm before fixing.
 #   - AB Capital Q1FY27: figures are the standalone NBFC-ICC entity (not the
 #     listed group) — the same basis the rest of this series uses, confirmed by
 #     NIM 6.08->6.07, ROA 2.31->2.39, CoB 6.57->6.52 all running continuously.
@@ -268,7 +277,7 @@ NBFC_TIMESERIES = {
         "car_pct":               [29.22, 25.89, 22.94, 20.55, 20.85, 18.17, 16.83, 19.46],
         "t1_pct":                [27.75, 24.46, 21.67, 19.02, 19.63, 17.15, 15.9,  18.37],
         "t2_pct":                [1.47,  1.43,  1.27,  1.53,  1.22,  1.02,  0.93,  1.09],  # derived: CAR − T1
-        "bvps_inr":              [103.74, 103.15, 105.12, 106.12, 121.66, 123.75, 146.13, 148],
+        "bvps_inr":              [103.74, 103.15, 105.12, 106.12, 121.66, 123.75, 146.13, 149.12],
     },
     "Bajaj Finance": {
         "aum_cr":                [373924, 398043, 416661, 441450, 462261, 485883, 509975, 546944],
@@ -332,7 +341,7 @@ NBFC_TIMESERIES = {
         "car_pct":               [16.48, 16.77, None,  18.11, 17.98, 17.34, 16.79, 18.82],
         "t1_pct":                [14.47, 14.43, None,  15.62, 15.39, 14.56, 13.82, 15.95],
         "t2_pct":                [2.01,  2.34,  None,  2.49,  2.59,  2.78,  2.97,  2.87],  # Q4FY26 = CAR − T1
-        "bvps_inr":              [None,  None,  96,    99,    103,   106,   109,   None],
+        "bvps_inr":              [None,  None,  96,    99,    103,   106,   109,   131],
     },
     "L&T Finance": {
         "aum_cr":                [93015,  95120,  97762,  102314, 107096, 114285, 121728, 129634],

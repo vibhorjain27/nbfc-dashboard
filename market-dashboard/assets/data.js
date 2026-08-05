@@ -40,7 +40,7 @@ window.NBFC_DATA = {
         121.66,
         123.75,
         146.13,
-        148
+        149.12
       ],
       "eps": [
         null,
@@ -190,7 +190,7 @@ window.NBFC_DATA = {
         103,
         106,
         109,
-        null
+        131
       ],
       "eps": [
         null,

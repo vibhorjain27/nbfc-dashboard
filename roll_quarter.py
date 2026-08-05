@@ -242,25 +242,31 @@ def main():
         print(f'{changed} metric lines rewritten '
               f'({len(COMPANIES)} companies x {len(METRICS)} metrics)')
 
+    # WRITE FIRST, REPORT SECOND. The report used to come first, and piping this
+    # command through `head` closed stdout mid-report — the resulting
+    # BrokenPipeError killed the process before the write, after it had already
+    # printed "N values written". It reported success and changed nothing.
+    if a.dry_run:
+        print('\n(dry run — file not written)')
+    else:
+        with open(CACHE, 'w', encoding='utf-8') as fh:
+            fh.write(new_text)
+        print(f'Wrote {CACHE}')
+
     filled = coverage(new_text, a.quarter)
 
     # Coverage is read back off the RESULT, not the input file — otherwise a
     # fill for one company looks like every other company just lost its data.
-    print(f'\n{a.quarter} coverage (whole file after this change):')
-    for c in COMPANIES:
-        n = filled[c]
-        flag = '' if n == len(METRICS) else ('  <- none yet' if n == 0 else '  <- partial')
-        print(f'  {c:24s} {n:>2d}/{len(METRICS)}{flag}')
-    total = sum(filled.values())
-    print(f'  {"":24s} {total:>2d}/{len(COMPANIES) * len(METRICS)} overall')
-
-    if a.dry_run:
-        print('\n(dry run — file not written)')
-        return 0
-
-    with open(CACHE, 'w', encoding='utf-8') as fh:
-        fh.write(new_text)
-    print(f'\nWrote {CACHE}')
+    try:
+        print(f'\n{a.quarter} coverage (whole file after this change):')
+        for c in COMPANIES:
+            n = filled[c]
+            flag = '' if n == len(METRICS) else ('  <- none yet' if n == 0 else '  <- partial')
+            print(f'  {c:24s} {n:>2d}/{len(METRICS)}{flag}')
+        total = sum(filled.values())
+        print(f'  {"":24s} {total:>2d}/{len(COMPANIES) * len(METRICS)} overall')
+    except BrokenPipeError:
+        pass          # output was piped to something that stopped reading
     return 0
 
 
