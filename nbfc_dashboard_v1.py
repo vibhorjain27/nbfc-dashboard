@@ -14,8 +14,21 @@ import numpy as _np
 import yfinance as yf
 import pytz
 
-from nbfc_data_cache import (NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS,
-                             METRIC_LABELS, QUARTER_ENDS)
+from nbfc_data_cache import NBFC_TIMESERIES, QUARTERS as CACHE_QUARTERS, METRIC_LABELS
+
+try:
+    from nbfc_data_cache import QUARTER_ENDS
+except ImportError:
+    # A deploy that picked up this file but an older nbfc_data_cache has no
+    # QUARTER_ENDS, and a hard import would take the whole app down over one
+    # name. Derive it locally instead so a partial rollout degrades to "still
+    # works" rather than a blank error page.
+    def _quarter_end_fallback(label):
+        q = int(label[1])
+        fy = 2000 + int(label[4:])
+        return {1: _date(fy - 1, 6, 30), 2: _date(fy - 1, 9, 30),
+                3: _date(fy - 1, 12, 31), 4: _date(fy, 3, 31)}[q]
+    QUARTER_ENDS = [(_quarter_end_fallback(q), i) for i, q in enumerate(CACHE_QUARTERS)]
 from nbfc_ai_data import NBFC_AI_INITIATIVES, FUNCTION_TAXONOMY
 from shareholding_data import SHAREHOLDING, SH_QUARTERS, CATEGORY_COLORS, ENTITY_CATEGORY_COLORS, ENTITY_BADGE_TEXT_COLORS
 from nbfc_annual_data import NBFC_ANNUAL, ANNUAL_YEARS
