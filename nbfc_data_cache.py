@@ -40,6 +40,14 @@
 #     extreme for a lender; confirm before this goes in front of anyone.
 #     Q1FY27 is also the first quarter Muthoot discloses NNPA (1.99) and PCR
 #     (13.01) at all — the low PCR is normal for a fully-collateralised gold book.
+#   - AB Capital Q1FY27: figures are the standalone NBFC-ICC entity (not the
+#     listed group) — the same basis the rest of this series uses, confirmed by
+#     NIM 6.08->6.07, ROA 2.31->2.39, CoB 6.57->6.52 all running continuously.
+#     BVPS left None: the deck gives NBFC net worth (33,700cr) but no share
+#     count, and dividing it by the LISTED GROUP's 273.6cr shares gives 123.2
+#     against 109 at Q4FY26 — a basis mismatch, not 13% one-quarter growth.
+#     NNPA 0.67 follows this series' standing convention GNPA x (1-PCR), which
+#     reproduces the stored value exactly in each of the last 5 quarters.
 
 NBFC_Q4FY26 = [
     {
@@ -311,19 +319,19 @@ NBFC_TIMESERIES = {
         "bvps_inr":              [252,   267,   280,   292,   306,   327,   357,   376],  # Q4FY26: equity ₹30,458 Cr ÷ 85.3 Cr shares (Screener)
     },
     "Aditya Birla Capital": {
-        "aum_cr":                [114710, 119437, 126351, 131227, 139585, 148182, 159916, None],
-        "gnpa_pct":              [2.5,   2.27,  2.24,  2.27,  1.68,  1.51,  1.33,  None],
-        "nnpa_pct":              [1.38,  1.25,  1.23,  1.34,  0.94,  0.84,  0.69,  None],  # Q4FY26 derived (GNPA × (1−PCR))
-        "pcr_pct":               [46,    45.6,  45,    41.2,  44.2,  44.3,  47.8,  None],
-        "pat_cr":                [629,   600,   652,   689,   714,   772,   825,   None],
-        "nim_pct":               [6.28,  6,     6.07,  5.97,  6.06,  6.12,  6.08,  None],
-        "roa_pct":               [2.34,  2.1,   2.25,  2.25,  2.2,   2.25,  2.31,  None],
-        "roe_pct":               [None,  None,  14.2,  14.4,  14.2,  15.2,  15.8,  None],
-        "cost_of_borrowing_pct": [6.85,  6.91,  6.83,  6.74,  6.62,  6.56,  6.57,  None],
-        "d_e_ratio":             [5.85,  5.85,  None,  4.4,   4.55,  4.59,  4.82,  None],
-        "car_pct":               [16.48, 16.77, None,  18.11, 17.98, 17.34, 16.79, None],
-        "t1_pct":                [14.47, 14.43, None,  15.62, 15.39, 14.56, 13.82, None],
-        "t2_pct":                [2.01,  2.34,  None,  2.49,  2.59,  2.78,  2.97,  None],  # Q4FY26 = CAR − T1
+        "aum_cr":                [114710, 119437, 126351, 131227, 139585, 148182, 159916, 167456],
+        "gnpa_pct":              [2.5,   2.27,  2.24,  2.27,  1.68,  1.51,  1.33,  1.3],
+        "nnpa_pct":              [1.38,  1.25,  1.23,  1.34,  0.94,  0.84,  0.69,  0.67],  # Q4FY26 derived (GNPA × (1−PCR))
+        "pcr_pct":               [46,    45.6,  45,    41.2,  44.2,  44.3,  47.8,  48.2],
+        "pat_cr":                [629,   600,   652,   689,   714,   772,   825,   927],
+        "nim_pct":               [6.28,  6,     6.07,  5.97,  6.06,  6.12,  6.08,  6.07],
+        "roa_pct":               [2.34,  2.1,   2.25,  2.25,  2.2,   2.25,  2.31,  2.39],
+        "roe_pct":               [None,  None,  14.2,  14.4,  14.2,  15.2,  15.8,  16.2],
+        "cost_of_borrowing_pct": [6.85,  6.91,  6.83,  6.74,  6.62,  6.56,  6.57,  6.52],
+        "d_e_ratio":             [5.85,  5.85,  None,  4.4,   4.55,  4.59,  4.82,  4.24],
+        "car_pct":               [16.48, 16.77, None,  18.11, 17.98, 17.34, 16.79, 18.82],
+        "t1_pct":                [14.47, 14.43, None,  15.62, 15.39, 14.56, 13.82, 15.95],
+        "t2_pct":                [2.01,  2.34,  None,  2.49,  2.59,  2.78,  2.97,  2.87],  # Q4FY26 = CAR − T1
         "bvps_inr":              [None,  None,  96,    99,    103,   106,   109,   None],
     },
     "L&T Finance": {
