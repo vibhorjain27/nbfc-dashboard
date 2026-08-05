@@ -40,6 +40,15 @@
 #     extreme for a lender; confirm before this goes in front of anyone.
 #     Q1FY27 is also the first quarter Muthoot discloses NNPA (1.99) and PCR
 #     (13.01) at all — the low PCR is normal for a fully-collateralised gold book.
+#   - Poonawalla Q1FY27: BVPS 149.12 is exact, not the deck's '~148' — audited
+#     Reg 52(4) net worth 13,060.07cr / 87.58cr shares (share capital 175.16cr
+#     at Rs2 face). QIP completed 13-Apr-2026: 6.743cr shares at Rs370.75 =
+#     Rs2,500cr, plus 0.025cr ESOP shares — share count 80.795 -> 87.58cr.
+#     WARNING: Q4FY26 BVPS 146.13 looks ~15% too high. Rolling the audited
+#     closing net worth back (13,060.07 - 2,500 QIP - 307.71 PAT + 7.38 OCI)
+#     gives opening equity ~10,260cr = BVPS ~127 on 80.795cr shares, which also
+#     matches the ~10,298cr Mar-26 equity in the Q4FY26 deck and sits smoothly
+#     after Q3FY26's 123.75. Needs the Q4FY26 net worth to confirm before fixing.
 #   - AB Capital Q1FY27: figures are the standalone NBFC-ICC entity (not the
 #     listed group) — the same basis the rest of this series uses, confirmed by
 #     NIM 6.08->6.07, ROA 2.31->2.39, CoB 6.57->6.52 all running continuously.
