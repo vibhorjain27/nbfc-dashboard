@@ -18,10 +18,15 @@
 #   - Shriram Q1FY27: standalone. The MUFG equity infusion (Apr-2026) is why
 #     CAR jumps 20.4->34.2, D/E falls 3.82->2.14, BVPS rises 349->462 and ROE
 #     dips 19.1->12.8 in one quarter — a capital raise, not a data error.
-#   - Bajaj Q1FY27: BVPS not disclosed in the Q1 deck -> left None. The rest of
-#     that series is an estimate (standalone equity/shares); refill from
-#     Screener balance sheet: (Equity Capital + Reserves) / shares outstanding.
-#     Bajaj Q1FY27 D/E is the deck's '4.9x leverage'; T2 = CAR - T1 (0.89).
+#   - Bajaj Q1FY27: BVPS 183 supplied separately (not in the Q1 deck). D/E 4.90
+#     is the deck's '4.9x leverage'; T2 0.89 = CAR - T1.
+#   - Chola Q1FY27: PCR 35.49 is the company-stated RBI-basis figure, on the same
+#     basis as the GNPA/NNPA recorded here (deriving 1-NNPA/GNPA would give
+#     34.44). BVPS 376 = networth 32,078cr / 85.32cr shares — the same share
+#     count implied by the Q4FY26 entry, so the series stays consistent.
+#     PAT 1,654 is standalone (consolidated 1,656 — immaterial difference).
+#   - Piramal Q1FY27: T2 is a real 0.0, not a gap — no Tier 2 capital
+#     outstanding, so CAR == T1 (18.85). First quarter with T1/T2 populated.
 
 NBFC_Q4FY26 = [
     {
@@ -258,7 +263,7 @@ NBFC_TIMESERIES = {
         "car_pct":               [21.69, 21.57, 21.93, 21.96, 21.23, 21.45, 21.6,  20.9],  # standalone
         "t1_pct":                [20.9,  20.79, 21.09, 21.19, 20.6,  20.6,  20.7,  20.01],  # standalone
         "t2_pct":                [0.79,  0.78,  0.84,  0.77,  0.63,  0.85,  0.9,   0.89],  # standalone
-        "bvps_inr":              [155,   158,   160,   162,   165,   170,   177,   None],  # estimate (standalone equity / shares)
+        "bvps_inr":              [155,   158,   160,   162,   165,   170,   177,   183],  # estimate (standalone equity / shares)
     },
     "Shriram Finance": {
         "aum_cr":                [243043, 254470, 263190, 272249, 281309, 291709, 302274, 313798],
@@ -277,20 +282,20 @@ NBFC_TIMESERIES = {
         "bvps_inr":              [277,    292,    299,    311,    321,    330,    349,    461.78],
     },
     "Chola Finance": {
-        "aum_cr":                [164642, 174567, 199876, 192148, 199159, 227770, 242630, None],
-        "gnpa_pct":              [3.78,  4,     3.97,  4.2,   4.57,  4.63,  4.36,  None],  # RBI IRACP norms throughout
-        "nnpa_pct":              [2.48,  2.66,  2.63,  2.8,   3.07,  3.13,  2.87,  None],  # RBI IRACP norms; Q1FY25/Q1FY26 interpolated (~)
-        "pcr_pct":               [34.4,  34.4,  34.6,  33.5,  33.9,  33.4,  34.2,  None],  # IRACP (RBI) PCR from Screener; Q1FY25/Q1FY26 interpolated (~); Q4FY26 kept (1−2.87/4.36)
-        "pat_cr":                [963,   1087,  1587,  1136,  1155,  1288,  1641,  None],
-        "nim_pct":               [7.5,   7.7,   7.7,   7.8,   7.9,   8,     8.4,   None],
-        "roa_pct":               [3,     3.2,   2.39,  3.1,   3,     3.2,   2.9,   None],
-        "roe_pct":               [18.2,  19.7,  19.8,  18.9,  18.1,  19.1,  23,    None],
-        "cost_of_borrowing_pct": [7.1,   7.1,   7.1,   7,     6.8,   6.7,   6.6,   None],
-        "d_e_ratio":             [7.4,   7.4,   7.7,   7.6,   7.4,   7.5,   6.9,   None],
-        "car_pct":               [19.5,  19.7,  19.75, 19.96, 20,    19.16, 19.21, None],
-        "t1_pct":                [14.5,  14.4,  14.41, 14.31, 14.59, 14.21, 14.73, None],
-        "t2_pct":                [5,     5.3,   5.34,  5.65,  5.41,  4.95,  4.48,  None],
-        "bvps_inr":              [252,   267,   280,   292,   306,   327,   357,   None],  # Q4FY26: equity ₹30,458 Cr ÷ 85.3 Cr shares (Screener)
+        "aum_cr":                [164642, 174567, 199876, 192148, 199159, 227770, 242630, 254392],
+        "gnpa_pct":              [3.78,  4,     3.97,  4.2,   4.57,  4.63,  4.36,  4.5],  # RBI IRACP norms throughout
+        "nnpa_pct":              [2.48,  2.66,  2.63,  2.8,   3.07,  3.13,  2.87,  2.95],  # RBI IRACP norms; Q1FY25/Q1FY26 interpolated (~)
+        "pcr_pct":               [34.4,  34.4,  34.6,  33.5,  33.9,  33.4,  34.2,  35.49],  # IRACP (RBI) PCR from Screener; Q1FY25/Q1FY26 interpolated (~); Q4FY26 kept (1−2.87/4.36)
+        "pat_cr":                [963,   1087,  1587,  1136,  1155,  1288,  1641,  1654],
+        "nim_pct":               [7.5,   7.7,   7.7,   7.8,   7.9,   8,     8.4,   8.2],
+        "roa_pct":               [3,     3.2,   2.39,  3.1,   3,     3.2,   2.9,   2.8],
+        "roe_pct":               [18.2,  19.7,  19.8,  18.9,  18.1,  19.1,  23,    21.2],
+        "cost_of_borrowing_pct": [7.1,   7.1,   7.1,   7,     6.8,   6.7,   6.6,   6.7],
+        "d_e_ratio":             [7.4,   7.4,   7.7,   7.6,   7.4,   7.5,   6.9,   6.87],
+        "car_pct":               [19.5,  19.7,  19.75, 19.96, 20,    19.16, 19.21, 19.81],
+        "t1_pct":                [14.5,  14.4,  14.41, 14.31, 14.59, 14.21, 14.73, 14.81],
+        "t2_pct":                [5,     5.3,   5.34,  5.65,  5.41,  4.95,  4.48,  5],
+        "bvps_inr":              [252,   267,   280,   292,   306,   327,   357,   376],  # Q4FY26: equity ₹30,458 Cr ÷ 85.3 Cr shares (Screener)
     },
     "Aditya Birla Capital": {
         "aum_cr":                [114710, 119437, 126351, 131227, 139585, 148182, 159916, None],
@@ -325,20 +330,20 @@ NBFC_TIMESERIES = {
         "bvps_inr":              [99.9,  99.9,  102.4, 105.4, 108.3, 108.3, 111.7, 112.6],
     },
     "Piramal Finance": {
-        "aum_cr":                [None,   None,   None,   None,   85756,  96690,  101230, None],
-        "gnpa_pct":              [None,  2.8,   2.8,   None,  2.8,   2.6,   2.3,   None],
-        "nnpa_pct":              [None,  None,  1.9,   None,  2,     1.9,   1.6,   None],
-        "pcr_pct":               [None,  None,  None,  None,  None,  27.9,  29.6,  None],  # Stage-3 PCR
-        "pat_cr":                [163,   39,    102,   276,   327,   401,   502,   None],
-        "nim_pct":               [5.1,   5.8,   5.8,   5.9,   6.1,   6.3,   6.5,   None],
-        "roa_pct":               [None,  None,  None,  None,  None,  1.9,   2.1,   None],  # RoAUM on growth book
-        "roe_pct":               [None,  None,  2,     None,  2,     None,  None,  None],
-        "cost_of_borrowing_pct": [9.12,  9.17,  9.13,  9.13,  8.95,  8.95,  8.84,  None],  # Q4FY26 investor deck (restated ex-currency); Q1-Q3FY26 restated figures per footnote
-        "d_e_ratio":             [None,  None,  None,  None,  None,  2.71,  2.8,   None],
-        "car_pct":               [23.3,  23.7,  23.6,  19.3,  20.7,  None,  19.8,  None],
-        "t1_pct":                [None,  None,  None,  None,  None,  None,  None,  None],  # not disclosed
-        "t2_pct":                [None,  None,  None,  None,  None,  None,  None,  None],  # not disclosed
-        "bvps_inr":              [None,  None,  None,  None,  None,  1232,  1247,  None],
+        "aum_cr":                [None,   None,   None,   None,   85756,  96690,  101230, 106940],
+        "gnpa_pct":              [None,  2.8,   2.8,   None,  2.8,   2.6,   2.3,   2.4],
+        "nnpa_pct":              [None,  None,  1.9,   None,  2,     1.9,   1.6,   1.6],
+        "pcr_pct":               [None,  None,  None,  None,  None,  27.9,  29.6,  31.5],  # Stage-3 PCR
+        "pat_cr":                [163,   39,    102,   276,   327,   401,   502,   461],
+        "nim_pct":               [5.1,   5.8,   5.8,   5.9,   6.1,   6.3,   6.5,   6.5],
+        "roa_pct":               [None,  None,  None,  None,  None,  1.9,   2.1,   1.9],  # RoAUM on growth book
+        "roe_pct":               [None,  None,  2,     None,  2,     None,  None,  6.5],
+        "cost_of_borrowing_pct": [9.12,  9.17,  9.13,  9.13,  8.95,  8.95,  8.84,  8.8],  # Q4FY26 investor deck (restated ex-currency); Q1-Q3FY26 restated figures per footnote
+        "d_e_ratio":             [None,  None,  None,  None,  None,  2.71,  2.8,   2.8],
+        "car_pct":               [23.3,  23.7,  23.6,  19.3,  20.7,  None,  19.8,  18.85],
+        "t1_pct":                [None,  None,  None,  None,  None,  None,  None,  18.85],  # not disclosed
+        "t2_pct":                [None,  None,  None,  None,  None,  None,  None,  0],  # not disclosed
+        "bvps_inr":              [None,  None,  None,  None,  None,  1232,  1247,  1271],
     },
     "Muthoot Finance": {
         # AUM: Q4FY25-Q4FY26 = standalone principal AUM from Q4FY26 investor deck
