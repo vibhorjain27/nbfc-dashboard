@@ -1,0 +1,110 @@
+{
+  "_readme": [
+    "THE BOOK VALUE STORE. This is the only file you edit to update the dashboard.",
+    "Change a 'bvps' number, set its 'asOf' to the quarter it came from, commit, push.",
+    "Netlify redeploys and the dashboard picks it up — no build step, no code change.",
+    "",
+    "bvps       ₹ per share. Book value per share as most recently reported.",
+    "asOf       The quarter that bvps came from, e.g. 'Q1FY27'. Shown on every row.",
+    "shares     Shares outstanding. Used ONLY for market cap in the expanded row.",
+    "sharesAsOf When that share count was last checked. Stale shares only skew market",
+    "           cap — never P/B, which uses bvps directly.",
+    "symbol     NSE code as Twelve Data expects it (no .NS suffix).",
+    "",
+    "Helper:  python pb-dashboard/tools/set_book_value.py CHOLAFIN 392 --as-of Q2FY27"
+  ],
+  "updated": "2026-08-05",
+  "source": "nbfc_data_cache.py — same figures as the Streamlit dashboard, Q1FY27",
+  "companies": [
+    {
+      "symbol": "POONAWALLA",
+      "name": "Poonawalla Fincorp",
+      "short": "Poonawalla",
+      "bvps": 149.12,
+      "asOf": "Q1FY27",
+      "shares": 875682194,
+      "sharesAsOf": "2026-05",
+      "note": "Audited Reg 52(4) net worth 13,060.07cr / 87.58cr shares, post-QIP."
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "name": "Bajaj Finance",
+      "short": "Bajaj Fin",
+      "bvps": 183,
+      "asOf": "Q1FY27",
+      "shares": 6217876336,
+      "sharesAsOf": "2026-05",
+      "note": "Supplied separately — not disclosed in the Q1FY27 deck."
+    },
+    {
+      "symbol": "SHRIRAMFIN",
+      "name": "Shriram Finance",
+      "short": "Shriram",
+      "bvps": 461.78,
+      "asOf": "Q1FY27",
+      "shares": 2352948439,
+      "sharesAsOf": "2026-02",
+      "note": "BVPS jumped 349 -> 462 on the Apr-2026 MUFG equity infusion. The share count here predates that raise, so market cap is understated until it is refreshed. P/B is unaffected."
+    },
+    {
+      "symbol": "LTF",
+      "name": "L&T Finance",
+      "short": "L&T Fin",
+      "bvps": 112.6,
+      "asOf": "Q1FY27",
+      "shares": 2506045818,
+      "sharesAsOf": "2026-05",
+      "note": ""
+    },
+    {
+      "symbol": "CHOLAFIN",
+      "name": "Cholamandalam Finance",
+      "short": "Chola",
+      "bvps": 376,
+      "asOf": "Q1FY27",
+      "shares": 854013036,
+      "sharesAsOf": "2026-05",
+      "note": "Net worth 32,078cr / 85.32cr shares."
+    },
+    {
+      "symbol": "ABCAPITAL",
+      "name": "Aditya Birla Capital",
+      "short": "AB Capital",
+      "bvps": 131,
+      "asOf": "Q1FY27",
+      "shares": 2736107195,
+      "sharesAsOf": "2026-05",
+      "note": "NBFC entity basis. The listed group's share count is used for market cap, so P/B and market cap are on different bases here."
+    },
+    {
+      "symbol": "PIRAMALFIN",
+      "name": "Piramal Finance",
+      "short": "Piramal",
+      "bvps": 1271,
+      "asOf": "Q1FY27",
+      "shares": 226004925,
+      "sharesAsOf": "2026-05",
+      "note": "Trades as PIRAMALFIN post the Piramal Enterprises merger."
+    },
+    {
+      "symbol": "MUTHOOTFIN",
+      "name": "Muthoot Finance",
+      "short": "Muthoot",
+      "bvps": 970.7,
+      "asOf": "Q1FY27",
+      "shares": 401468476,
+      "sharesAsOf": "2026-05",
+      "note": "Standalone tangible net worth basis."
+    },
+    {
+      "symbol": "M&MFIN",
+      "name": "Mahindra Finance",
+      "short": "M&M Fin",
+      "bvps": 184.7,
+      "asOf": "Q1FY27",
+      "shares": 1389545161,
+      "sharesAsOf": "2026-05",
+      "note": ""
+    }
+  ]
+}

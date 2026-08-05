@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)"/>
+<meta name="description" content="Live NSE prices and price-to-book ratios for nine listed Indian NBFCs."/>
+<meta name="robots" content="noindex"/>
+<title>NBFC P/B &amp; Prices</title>
+
+<!-- Standalone on an iPhone home screen -->
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="NBFC P/B"/>
+<link rel="apple-touch-icon" href="assets/icon.svg"/>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml"/>
+
+<link rel="stylesheet" href="assets/styles.css?v=1"/>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-row">
+    <div class="hdr-title">
+      <h1>P/B &amp; Prices</h1>
+      <p class="hdr-sub">9 listed NBFCs &middot; NSE</p>
+    </div>
+    <div class="hdr-acts">
+      <button type="button" id="refresh-btn" class="icon-btn" aria-label="Refresh prices">
+        <span aria-hidden="true">&#8635;</span>
+      </button>
+      <button type="button" id="theme-btn" class="icon-btn" aria-label="Toggle dark mode">
+        <span aria-hidden="true">&#9681;</span>
+      </button>
+    </div>
+  </div>
+  <p class="stamp" id="stamp" role="status">Loading&hellip;</p>
+</header>
+
+<main>
+  <div id="banner" aria-live="polite"></div>
+
+  <!-- The one hero figure on the page. -->
+  <section class="hero" aria-labelledby="hero-label">
+    <p class="hero-label" id="hero-label">Median P/B</p>
+    <p class="hero-value"><span id="hero-pb">&mdash;</span><span class="unit">x</span></p>
+    <p class="hero-meta" id="hero-meta"></p>
+  </section>
+
+  <section class="tiles" aria-label="Summary">
+    <div class="tile">
+      <span class="t-label">Cheapest</span>
+      <span class="t-value" id="t-cheap-v">&mdash;</span>
+      <span class="t-meta" id="t-cheap-m"></span>
+    </div>
+    <div class="tile">
+      <span class="t-label">Richest</span>
+      <span class="t-value" id="t-rich-v">&mdash;</span>
+      <span class="t-meta" id="t-rich-m"></span>
+    </div>
+    <div class="tile">
+      <span class="t-label">Median move</span>
+      <span class="t-value" id="t-day-v">&mdash;</span>
+      <span class="t-meta" id="t-day-m"></span>
+    </div>
+  </section>
+
+  <nav class="sorts" id="sorts" aria-label="Sort the list"></nav>
+
+  <ul class="list" id="list"></ul>
+
+  <p class="hint">Tap any company for the arithmetic, its 52-week range and market cap.</p>
+</main>
+
+<footer class="foot">
+  <p id="foot-book">&nbsp;</p>
+  <p>P/B = live NSE price &divide; book value per share as last reported.</p>
+  <p class="foot-dim">Delayed prices. For internal discussion, not investment advice.</p>
+</footer>
+
+<script src="assets/app.js?v=1"></script>
+</body>
+</html>

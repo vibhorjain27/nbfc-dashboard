@@ -1,0 +1,5 @@
+{
+  "_readme": "Dated fallback prices, so the dashboard never renders an empty page when the live feed is unreachable. Refresh with: python pb-dashboard/tools/refresh_snapshot.py",
+  "generated": null,
+  "companies": {}
+}

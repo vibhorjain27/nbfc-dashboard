@@ -1,0 +1,40 @@
+# Netlify config for the NBFC P/B & Prices dashboard.
+#
+# This is a SEPARATE Netlify site from the one at the repo root. Point a new site
+# at this repo and set  Base directory = pb-dashboard  — Netlify then reads this
+# file instead of the root one, and the two dashboards get their own URLs and
+# their own environment variables.
+
+[build]
+  base      = "pb-dashboard"
+  publish   = "."
+  functions = "netlify/functions"
+  command   = ""
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# The book-value store must never be served stale — editing it is the whole
+# update mechanism, so a cached copy would hide the change.
+[[headers]]
+  for = "/book-values.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/snapshot.json"
+  [headers.values]
+    Cache-Control = "public, max-age=60, must-revalidate"
+
+# Assets are busted by the ?v= query in index.html.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300, must-revalidate"
