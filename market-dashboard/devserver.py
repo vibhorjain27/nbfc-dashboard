@@ -1,78 +1,89 @@
 #!/usr/bin/env python3
 """
-Local preview server — serves market-dashboard/ and implements /api/yahoo
-with the same contract as netlify/functions/yahoo.mjs, so the dashboard can be
-exercised end-to-end without the Netlify CLI.
+Local preview server — serves market-dashboard/ and implements /api/market with
+the same contract as netlify/functions/market.mjs, so local behaviour matches
+production.
 
     python market-dashboard/devserver.py 8000
-    open http://localhost:8000
 """
 
 import json
 import os
+import random
 import sys
+import time
 import urllib.parse
 import urllib.request
-from concurrent.futures import ThreadPoolExecutor
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from time import time
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-HOSTS = ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com']
-UA = ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
-      '(KHTML, like Gecko) Chrome/124.0 Safari/537.36')
-ALLOWED = {
-    'POONAWALLA.NS', 'BAJFINANCE.NS', 'SHRIRAMFIN.NS', 'LTF.NS', 'CHOLAFIN.NS',
-    'ABCAPITAL.NS', 'PIRAMALFIN.NS', 'MUTHOOTFIN.NS', 'M&MFIN.NS',
-}
+sys.path.insert(0, ROOT)
+
+from generate_data import NBFCS, fetch_snapshot  # noqa: E402
+
+SYMBOLS = list(NBFCS.values())
+
+# Last good payload, mirroring the module-level snapshot in market.mjs.
+_snapshot = {'at': 0, 'companies': None, 'good': 0}
 
 
-def fetch_one(symbol, rng, interval):
-    qs = urllib.parse.urlencode({'range': rng, 'interval': interval, 'includePrePost': 'false'})
-    path = f'/v8/finance/chart/{urllib.parse.quote(symbol)}?{qs}'
-    last = 'unknown'
-    for host in HOSTS:
-        try:
-            req = urllib.request.Request(host + path, headers={'User-Agent': UA, 'Accept': 'application/json'})
-            data = json.load(urllib.request.urlopen(req, timeout=12))
-            res = (data.get('chart') or {}).get('result') or []
-            if not res:
-                last = 'empty result'
-                continue
-            r = res[0]
-            meta = r.get('meta') or {}
-            stamps = r.get('timestamp') or []
-            q = ((r.get('indicators') or {}).get('quote') or [{}])[0]
-            closes, vols = q.get('close') or [], q.get('volume') or []
+def mock_payload():
+    """Deterministic synthetic data for UI testing when upstream is throttled.
 
-            t, c, v = [], [], []
-            for i, ts in enumerate(stamps):
-                if i >= len(closes) or closes[i] is None:
-                    continue
-                t.append(ts)
-                c.append(round(float(closes[i]), 4))
-                v.append(vols[i] if i < len(vols) and vols[i] is not None else 0)
+    Enabled with `--mock`. Never used in production — market.mjs has no such path.
+    """
+    import hashlib
+    now = int(time.time() * 1000)
+    companies = {}
+    for sym in SYMBOLS:
+        seed = int(hashlib.md5(sym.encode()).hexdigest()[:8], 16)
+        price = 200 + (seed % 3000)
+        chg = ((seed % 900) / 100.0) - 4.5
+        prev = round(price / (1 + chg / 100), 2)
+        windows = {}
+        for k, days in (('1W', 7), ('1M', 30), ('3M', 91), ('6M', 182),
+                        ('1Y', 365), ('3Y', 1095), ('5Y', 1825)):
+            pct = (((seed >> (days % 17)) % 1600) / 10.0) - 45
+            windows[k] = {'from': round(price / (1 + pct / 100), 2),
+                          'at': now - days * 86400000, 'pct': round(pct, 2)}
+        companies[sym] = {
+            'price': float(price), 'prevClose': prev,
+            'changeAbs': round(price - prev, 2), 'changePct': round(chg, 2),
+            'volume': 10000 + seed % 9000000, 'windows': windows,
+        }
+    return {'ok': True, 'stale': False, 'fetchedAt': now,
+            'good': len(SYMBOLS), 'total': len(SYMBOLS), 'companies': companies}
 
-            return {
-                'meta': {
-                    'symbol': meta.get('symbol', symbol),
-                    'name': meta.get('longName') or meta.get('shortName') or symbol,
-                    'currency': meta.get('currency', 'INR'),
-                    'price': meta.get('regularMarketPrice'),
-                    'prevClose': meta.get('chartPreviousClose') or meta.get('previousClose'),
-                    'dayHigh': meta.get('regularMarketDayHigh'),
-                    'dayLow': meta.get('regularMarketDayLow'),
-                    'volume': meta.get('regularMarketVolume'),
-                    'fiftyTwoHigh': meta.get('fiftyTwoWeekHigh'),
-                    'fiftyTwoLow': meta.get('fiftyTwoWeekLow'),
-                    'marketTime': meta.get('regularMarketTime'),
-                    'exchange': meta.get('fullExchangeName', 'NSE'),
-                },
-                't': t, 'c': c, 'v': v,
-            }
-        except Exception as exc:
-            last = f'{type(exc).__name__}: {exc}'
-    return {'error': last}
+
+def build_payload():
+    if '--mock' in sys.argv:
+        return mock_payload()
+
+    companies = {}
+    good = 0
+    for i, sym in enumerate(SYMBOLS):
+        got = fetch_snapshot(sym)
+        if got:
+            companies[sym] = got
+            good += 1
+        else:
+            companies[sym] = {'error': 'upstream unavailable'}
+        if i < len(SYMBOLS) - 1:
+            time.sleep(0.18 + random.random() * 0.16)
+
+    now = int(time.time() * 1000)
+    if good:
+        _snapshot.update(at=now, companies=companies, good=good)
+        return {'ok': True, 'stale': False, 'fetchedAt': now,
+                'good': good, 'total': len(SYMBOLS), 'companies': companies}
+
+    if _snapshot['companies']:
+        return {'ok': True, 'stale': True, 'fetchedAt': _snapshot['at'],
+                'ageSec': round((now - _snapshot['at']) / 1000),
+                'good': _snapshot['good'], 'total': len(SYMBOLS),
+                'companies': _snapshot['companies']}
+
+    return {'ok': False, 'error': 'upstream unavailable', 'companies': companies}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -81,36 +92,13 @@ class Handler(SimpleHTTPRequestHandler):
 
     def log_message(self, fmt, *args):
         if '/api/' in (self.path or ''):
-            sys.stderr.write(f'  api  {self.path.split("?")[0]}  {args[1] if len(args) > 1 else ""}\n')
+            sys.stderr.write(f'  api  {self.path.split("?")[0]}\n')
 
     def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-        if parsed.path != '/api/yahoo':
+        if urllib.parse.urlparse(self.path).path != '/api/market':
             return super().do_GET()
 
-        qs = urllib.parse.parse_qs(parsed.query)
-        symbols = [s for s in (qs.get('symbols', [''])[0]).split(',') if s in ALLOWED][:12]
-        rng = (qs.get('range', ['1mo'])[0])
-        interval = (qs.get('interval', ['1d'])[0])
-
-        if not symbols:
-            body = json.dumps({'ok': False, 'error': 'no valid symbols'}).encode()
-            self.send_response(400)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-
-        with ThreadPoolExecutor(max_workers=min(9, len(symbols))) as ex:
-            results = list(ex.map(lambda s: fetch_one(s, rng, interval), symbols))
-
-        payload = {
-            'ok': any('error' not in r for r in results),
-            'fetchedAt': int(time() * 1000),
-            'series': dict(zip(symbols, results)),
-        }
-        body = json.dumps(payload).encode()
+        body = json.dumps(build_payload()).encode()
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.send_header('Cache-Control', 'no-store')
