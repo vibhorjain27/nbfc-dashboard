@@ -1,7 +1,7 @@
 # NBFC Peer Data Cache
-# Source: Investor presentations (Q4FY26); Screener.in for prior quarters
+# Source: Screener.in AI summaries of each company's investor presentation
 # Period: rolling last 8 quarters — latest is the final entry in QUARTERS
-# Last updated: May 2026
+# Last updated: Aug 2026 (Q1FY27 in progress — see coverage note below)
 # Notes:
 #   - Piramal ROA = RoAUM on Growth Business (not consolidated ROA)
 #   - Muthoot GNPA = Stage-3 proxy; NNPA not separately disclosed
@@ -15,6 +15,10 @@
 #   - Chola Finance Q4FY26: all metrics from Screener.in (Screener AI summary); BVPS verified via consolidated balance sheet
 #   - Piramal CAR = investor deck (consolidated); T1/T2 not disclosed; CoB = Q4FY26 investor deck (restated ex-currency, Q4FY26: 8.84%)
 #   - Piramal PCR = Stage-3 PCR (29.6%); total provisions/AUM higher
+#   - Shriram Q1FY27: standalone. The MUFG equity infusion (Apr-2026) is why
+#     CAR jumps 20.4->34.2, D/E falls 3.82->2.14, BVPS rises 349->462 and ROE
+#     dips 19.1->12.8 in one quarter — a capital raise, not a data error.
+#   - Q1FY27 so far: Poonawalla + Shriram only; others still None (gaps).
 
 NBFC_Q4FY26 = [
     {
@@ -254,20 +258,20 @@ NBFC_TIMESERIES = {
         "bvps_inr":              [155,   158,   160,   162,   165,   170,   177,   None],  # estimate (standalone equity / shares)
     },
     "Shriram Finance": {
-        "aum_cr":                [243043, 254470, 263190, 272249, 281309, 291709, 302274, None],
-        "gnpa_pct":              [5.32,  5.38,  4.55,  4.53,  4.57,  4.54,  4.58,  None],
-        "nnpa_pct":              [2.64,  2.68,  2.64,  2.57,  2.49,  2.38,  2.33,  None],
-        "pcr_pct":               [51.7,  51.64, 43.28, 44.31, 46.7,  48.77, 50.34, None],
-        "pat_cr":                [2071,  2080,  2348,  2156,  2307,  2522,  3014,  None],
-        "nim_pct":               [8.74,  8.48,  8.55,  8.11,  8.19,  8.58,  8.61,  None],
-        "roa_pct":               [3.06,  2.88,  2.98,  2.76,  2.89,  3.09,  3.63,  None],
-        "roe_pct":               [16,    15.41, 15.75, 15.07, 15.4,  16.33, 19.13, None],
-        "cost_of_borrowing_pct": [9.06,  9,     8.96,  8.87,  8.83,  8.69,  8.59,  None],
-        "d_e_ratio":             [3.99,  4.06,  4.16,  4.15,  3.88,  4.05,  3.82,  None],
-        "car_pct":               [20.16, 21,    20.66, 20.79, 20.68, 20.27, 20.4,  None],
-        "t1_pct":                [19.36, 20.34, 20.03, 20.16, 19.98, 19.66, 19.8,  None],
-        "t2_pct":                [0.8,   0.66,  0.63,  0.63,  0.7,   0.61,  0.6,   None],
-        "bvps_inr":              [277,   292,   299,   311,   321,   330,   349,   None],
+        "aum_cr":                [243043, 254470, 263190, 272249, 281309, 291709, 302274, 313798],
+        "gnpa_pct":              [5.32,  5.38,  4.55,  4.53,  4.57,  4.54,  4.58,  4.64],
+        "nnpa_pct":              [2.64,  2.68,  2.64,  2.57,  2.49,  2.38,  2.33,  2.33],
+        "pcr_pct":               [51.7,  51.64, 43.28, 44.31, 46.7,  48.77, 50.34, 50.99],
+        "pat_cr":                [2071,  2080,  2348,  2156,  2307,  2522,  3014,  3445],
+        "nim_pct":               [8.74,  8.48,  8.55,  8.11,  8.19,  8.58,  8.61,  9.04],
+        "roa_pct":               [3.06,  2.88,  2.98,  2.76,  2.89,  3.09,  3.63,  3.93],
+        "roe_pct":               [16,    15.41, 15.75, 15.07, 15.4,  16.33, 19.13, 12.76],
+        "cost_of_borrowing_pct": [9.06,  9,     8.96,  8.87,  8.83,  8.69,  8.59,  8.56],
+        "d_e_ratio":             [3.99,  4.06,  4.16,  4.15,  3.88,  4.05,  3.82,  2.14],
+        "car_pct":               [20.16, 21,    20.66, 20.79, 20.68, 20.27, 20.4,  34.17],
+        "t1_pct":                [19.36, 20.34, 20.03, 20.16, 19.98, 19.66, 19.8,  33.4],
+        "t2_pct":                [0.8,   0.66,  0.63,  0.63,  0.7,   0.61,  0.6,   0.77],
+        "bvps_inr":              [277,    292,    299,    311,    321,    330,    349,    461.78],
     },
     "Chola Finance": {
         "aum_cr":                [164642, 174567, 199876, 192148, 199159, 227770, 242630, None],

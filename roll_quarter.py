@@ -123,6 +123,83 @@ def roll(text, new_quarter, data, keep=KEEP):
     return '\n'.join(out), changed, report
 
 
+def fill(text, quarter, data):
+    """Write values into an EXISTING quarter column, leaving the window alone.
+
+    Companies report on different dates, so the usual flow is: roll the window
+    once when the first company reports, then fill the rest in as they arrive.
+    Only metrics present in `data` are touched — everything else keeps its
+    current value, so re-running is safe.
+    """
+    lines = text.split('\n')
+    out = []
+    company = None
+    in_series = False
+    touched = 0
+    idx = None
+
+    for line in lines:
+        if QUARTERS_RE.match(line):
+            quarters = ast.literal_eval(line.split('=', 1)[1].strip())
+            if quarter not in quarters:
+                raise SystemExit(
+                    f'{quarter} is not in the current window {quarters}.\n'
+                    f'Use the default roll mode to add it.')
+            idx = quarters.index(quarter)
+            out.append(line)
+            continue
+
+        if 'NBFC_TIMESERIES' in line and '=' in line:
+            in_series = True
+        if in_series:
+            m = COMPANY_RE.match(line)
+            if m:
+                company = m.group('name')
+
+        m = LINE_RE.match(line) if in_series else None
+        if m and company and m.group('metric') in METRICS and idx is not None:
+            metric = m.group('metric')
+            entry = data.get(company) or {}
+            if metric in entry:
+                values = ast.literal_eval('[' + m.group('values') + ']')
+                values[idx] = entry[metric]
+                rebuilt = render(values, m.group('indent'), metric, m.group('pad'))
+                out.append(rebuilt + m.group('comma') + (m.group('comment') or ''))
+                touched += 1
+                continue
+
+        out.append(line)
+
+    return '\n'.join(out), touched, idx
+
+
+def coverage(text, quarter):
+    """{company: count of non-None metrics} for `quarter`, read off file text."""
+    lines = text.split('\n')
+    counts = {c: 0 for c in COMPANIES}
+    company = None
+    in_series = False
+    idx = None
+
+    for line in lines:
+        if QUARTERS_RE.match(line):
+            quarters = ast.literal_eval(line.split('=', 1)[1].strip())
+            idx = quarters.index(quarter) if quarter in quarters else None
+            continue
+        if 'NBFC_TIMESERIES' in line and '=' in line:
+            in_series = True
+        if in_series:
+            m = COMPANY_RE.match(line)
+            if m:
+                company = m.group('name')
+            m2 = LINE_RE.match(line)
+            if m2 and company in counts and m2.group('metric') in METRICS and idx is not None:
+                values = ast.literal_eval('[' + m2.group('values') + ']')
+                if idx < len(values) and values[idx] is not None:
+                    counts[company] += 1
+    return counts
+
+
 def template():
     return json.dumps({c: {m: None for m in METRICS} for c in COMPANIES}, indent=2)
 
@@ -134,6 +211,8 @@ def main():
     ap.add_argument('--keep', type=int, default=KEEP)
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--template', action='store_true')
+    ap.add_argument('--fill', action='store_true',
+                    help='fill an existing quarter column instead of rolling a new one')
     a = ap.parse_args()
 
     if a.template:
@@ -152,18 +231,28 @@ def main():
     with open(CACHE, encoding='utf-8') as fh:
         text = fh.read()
 
-    new_text, changed, report = roll(text, a.quarter, data, a.keep)
+    if a.fill:
+        new_text, changed, idx = fill(text, a.quarter, data)
+        print(f'Filled {a.quarter} (column {idx}) — {changed} values written for '
+              f'{", ".join(sorted(data))}')
+    else:
+        new_text, changed, report = roll(text, a.quarter, data, a.keep)
+        for r in report:
+            print(r)
+        print(f'{changed} metric lines rewritten '
+              f'({len(COMPANIES)} companies x {len(METRICS)} metrics)')
 
-    for r in report:
-        print(r)
-    print(f'{changed} metric lines rewritten ({len(COMPANIES)} companies x {len(METRICS)} metrics)')
+    filled = coverage(new_text, a.quarter)
 
-    filled = {c: sum(1 for m in METRICS if (data.get(c) or {}).get(m) is not None) for c in COMPANIES}
-    print(f'\n{a.quarter} coverage:')
+    # Coverage is read back off the RESULT, not the input file — otherwise a
+    # fill for one company looks like every other company just lost its data.
+    print(f'\n{a.quarter} coverage (whole file after this change):')
     for c in COMPANIES:
         n = filled[c]
-        flag = '' if n == len(METRICS) else ('  <- all missing' if n == 0 else '  <- partial')
+        flag = '' if n == len(METRICS) else ('  <- none yet' if n == 0 else '  <- partial')
         print(f'  {c:24s} {n:>2d}/{len(METRICS)}{flag}')
+    total = sum(filled.values())
+    print(f'  {"":24s} {total:>2d}/{len(COMPANIES) * len(METRICS)} overall')
 
     if a.dry_run:
         print('\n(dry run — file not written)')
