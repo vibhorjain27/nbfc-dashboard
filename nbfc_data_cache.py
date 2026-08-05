@@ -18,7 +18,10 @@
 #   - Shriram Q1FY27: standalone. The MUFG equity infusion (Apr-2026) is why
 #     CAR jumps 20.4->34.2, D/E falls 3.82->2.14, BVPS rises 349->462 and ROE
 #     dips 19.1->12.8 in one quarter — a capital raise, not a data error.
-#   - Q1FY27 so far: Poonawalla + Shriram only; others still None (gaps).
+#   - Bajaj Q1FY27: BVPS not disclosed in the Q1 deck -> left None. The rest of
+#     that series is an estimate (standalone equity/shares); refill from
+#     Screener balance sheet: (Equity Capital + Reserves) / shares outstanding.
+#     Bajaj Q1FY27 D/E is the deck's '4.9x leverage'; T2 = CAR - T1 (0.89).
 
 NBFC_Q4FY26 = [
     {
@@ -242,19 +245,19 @@ NBFC_TIMESERIES = {
         "bvps_inr":              [103.74, 103.15, 105.12, 106.12, 121.66, 123.75, 146.13, 148],
     },
     "Bajaj Finance": {
-        "aum_cr":                [373924, 398043, 416661, 441450, 462261, 485883, 509975, None],
-        "gnpa_pct":              [1.06,  1.12,  0.96,  1.03,  1.24,  1.21,  1.01,  None],  # consolidated
-        "nnpa_pct":              [0.46,  0.48,  0.44,  0.5,   0.6,   0.47,  0.41,  None],  # consolidated
-        "pcr_pct":               [57,    57,    54,    52,    52,    61,    60,    None],  # consolidated
-        "pat_cr":                [4014,  4308,  4546,  4765,  4948,  5317,  5660,  None],  # consolidated, before one-time
-        "nim_pct":               [12.02, 12.1,  11.84, 11.76, 11.68, 11.71, 11.62, None],  # annualised Q4 NTI / avg AUM
-        "roa_pct":               [4.5,   4.5,   4.6,   4.5,   4.5,   4.6,   4.65,  None],  # Q4 annualized, before one-time
-        "roe_pct":               [19.1,  19.1,  19.1,  19,    19.1,  19.6,  20,    None],  # Q4 annualized, before one-time
-        "cost_of_borrowing_pct": [7.97,  7.96,  7.99,  7.79,  7.52,  7.45,  7.42,  None],  # consolidated annualized
-        "d_e_ratio":             [4.9,   4.9,   4.9,   4.7,   4.7,   4.75,  4.8,   None],  # consolidated leverage
-        "car_pct":               [21.69, 21.57, 21.93, 21.96, 21.23, 21.45, 21.6,  None],  # standalone
-        "t1_pct":                [20.9,  20.79, 21.09, 21.19, 20.6,  20.6,  20.7,  None],  # standalone
-        "t2_pct":                [0.79,  0.78,  0.84,  0.77,  0.63,  0.85,  0.9,   None],  # standalone
+        "aum_cr":                [373924, 398043, 416661, 441450, 462261, 485883, 509975, 546944],
+        "gnpa_pct":              [1.06,  1.12,  0.96,  1.03,  1.24,  1.21,  1.01,  0.96],  # consolidated
+        "nnpa_pct":              [0.46,  0.48,  0.44,  0.5,   0.6,   0.47,  0.41,  0.39],  # consolidated
+        "pcr_pct":               [57,    57,    54,    52,    52,    61,    60,    60],  # consolidated
+        "pat_cr":                [4014,  4308,  4546,  4765,  4948,  5317,  5660,  6081],  # consolidated, before one-time
+        "nim_pct":               [12.02, 12.1,  11.84, 11.76, 11.68, 11.71, 11.62, 11.8],  # annualised Q4 NTI / avg AUM
+        "roa_pct":               [4.5,   4.5,   4.6,   4.5,   4.5,   4.6,   4.65,  4.7],  # Q4 annualized, before one-time
+        "roe_pct":               [19.1,  19.1,  19.1,  19,    19.1,  19.6,  20,    20.4],  # Q4 annualized, before one-time
+        "cost_of_borrowing_pct": [7.97,  7.96,  7.99,  7.79,  7.52,  7.45,  7.42,  7.4],  # consolidated annualized
+        "d_e_ratio":             [4.9,   4.9,   4.9,   4.7,   4.7,   4.75,  4.8,   4.9],  # consolidated leverage
+        "car_pct":               [21.69, 21.57, 21.93, 21.96, 21.23, 21.45, 21.6,  20.9],  # standalone
+        "t1_pct":                [20.9,  20.79, 21.09, 21.19, 20.6,  20.6,  20.7,  20.01],  # standalone
+        "t2_pct":                [0.79,  0.78,  0.84,  0.77,  0.63,  0.85,  0.9,   0.89],  # standalone
         "bvps_inr":              [155,   158,   160,   162,   165,   170,   177,   None],  # estimate (standalone equity / shares)
     },
     "Shriram Finance": {
