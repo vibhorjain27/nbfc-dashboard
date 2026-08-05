@@ -1,0 +1,46 @@
+{
+  "company": "Piramal Finance",
+  "bse_code": "500302",
+  "nse_symbol": "PEL",
+  "face_value": 2,
+  "last_updated": "2026-02-21T18:03:21.647287",
+  "quarters": [
+    {
+      "aum_cr": 85756.0,
+      "roe_pct": 2.0,
+      "disbursements_cr": 73769.0,
+      "filing_date": "2025-09-15"
+    },
+    {
+      "aum_cr": 85756.0,
+      "gnpa_pct": 2.8,
+      "nnpa_pct": 2.0,
+      "car_pct": 19.3,
+      "nim_pct": 5.8,
+      "disbursements_cr": 1064.0,
+      "roe_pct": 2.0,
+      "filing_date": "2025-08-26"
+    },
+    {
+      "roe_pct": 2.0,
+      "disbursements_cr": 73769.0,
+      "filing_date": "2025-07-31"
+    },
+    {
+      "nim_pct": 5.8,
+      "disbursements_cr": 936.0,
+      "gnpa_pct": 2.8,
+      "nnpa_pct": 1.9,
+      "roe_pct": 2.0,
+      "filing_date": "2025-06-12"
+    },
+    {
+      "nim_pct": 5.8,
+      "disbursements_cr": 936.0,
+      "gnpa_pct": 2.8,
+      "nnpa_pct": 1.9,
+      "roe_pct": 2.0,
+      "filing_date": "2025-05-26"
+    }
+  ]
+}

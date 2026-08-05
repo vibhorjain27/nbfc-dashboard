@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NBFC Dashboard — Q4FY24–Q3FY26</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Plotly (must load before Alpine) -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="/static/style.css">
+
+  <script>
+    tailwind.config = { corePlugins: { preflight: false } };
+  </script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="navbar-logo">N</div>
+  <span class="navbar-title">NBFC Dashboard</span>
+  <span class="navbar-sub">Q4FY24 – Q3FY26 · 9 companies · Live NSE</span>
+  <span class="navbar-sub ml-auto" id="nav-updated"></span>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MAIN ALPINE COMPONENT
+══════════════════════════════════════════════════════════════════════════ -->
+<div x-data="dashboard()" x-init="init()" style="padding-top:52px;">
+
+  <!-- TAB BAR -->
+  <div class="tabbar">
+    <template x-for="t in TABS" :key="t.id">
+      <button class="tab-btn" :class="{ active: activeTab === t.id }"
+              @click="switchTab(t.id)" x-text="t.label"></button>
+    </template>
+  </div>
+
+  <div class="content">
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 1 · MARKET
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='market'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Market Prices &amp; Performance</div>
+        <div class="tab-intro-sub">Live NSE closing prices · Indexed performance comparison · Market capitalisation trend</div>
+      </div>
+
+      <!-- Ticker cards -->
+      <span class="section-label">Live Stock Prices
+        <span class="section-label-sub" x-text="pricesTs ? '· updated ' + pricesTs : '· loading…'"></span>
+      </span>
+      <div class="ticker-grid">
+        <template x-if="prices.length === 0">
+          <template x-for="i in 9" :key="i">
+            <div class="ticker-card">
+              <div class="ticker-loading" style="width:70%;height:16px;"></div>
+              <div class="ticker-loading" style="width:50%;height:28px;margin-top:8px;"></div>
+              <div class="ticker-loading" style="width:90%;height:12px;margin-top:8px;"></div>
+            </div>
+          </template>
+        </template>
+        <template x-for="p in prices" :key="p.symbol">
+          <div class="ticker-card" :style="`border-top-color:${COLORS[p.name]}`">
+            <div class="ticker-name" x-text="p.name"></div>
+            <div class="ticker-sym" x-text="p.symbol + '.NS'"></div>
+            <div class="ticker-price" x-text="'₹' + p.price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})"></div>
+            <span :class="p.change_pct >= 0 ? 'ticker-chg-pos' : 'ticker-chg-neg'"
+                  x-text="(p.change_pct >= 0 ? '▲ +' : '▼ ') + p.change_pct.toFixed(2) + '%'"></span>
+            <div class="ticker-meta">
+              <span x-text="'Vol: ' + fmtVol(p.volume)"></span>
+              <span x-show="p.market_cap" x-text="' · MCap ₹' + fmtMC(p.market_cap)"></span>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- NBFC selector for charts -->
+      <span class="section-label">Performance Comparison</span>
+      <div class="nbfc-selector">
+        <template x-for="n in NBFC_LIST" :key="n">
+          <div class="nbfc-check-item">
+            <input type="checkbox" :id="'mkt-'+n" :value="n"
+                   :checked="selectedNBFCs.includes(n)"
+                   :disabled="n === 'Poonawalla Fincorp'"
+                   @change="toggleNBFC(n, $event.target.checked, 'mkt')">
+            <label :for="'mkt-'+n" x-text="n" :style="`color:${COLORS[n]};font-weight:600`"></label>
+          </div>
+        </template>
+      </div>
+
+      <!-- Period buttons -->
+      <div class="period-bar">
+        <template x-for="p in PERIODS" :key="p">
+          <button class="period-btn" :class="{ active: period === p && !useCustom }"
+                  @click="period=p; useCustom=false; renderPerformance()" x-text="p"></button>
+        </template>
+        <button class="period-btn" :class="{ active: useCustom }"
+                @click="useCustom=!useCustom">Custom</button>
+        <template x-if="useCustom">
+          <span class="flex gap-2 items-center ml-2">
+            <input type="date" class="date-input" x-model="customStart" min="2021-01-01">
+            <span class="text-slate-400 text-sm">→</span>
+            <input type="date" class="date-input" x-model="customEnd">
+            <button class="period-btn active" @click="renderPerformance()">Go</button>
+          </span>
+        </template>
+      </div>
+      <div class="chart-card"><div id="chart-performance" style="height:440px;"></div></div>
+
+      <!-- Market cap trend -->
+      <span class="section-label">Market Capitalisation Trend
+        <span class="section-label-sub">· 1-year daily · ₹ Lakh Crore</span>
+      </span>
+      <div class="chart-card"><div id="chart-mktcap" style="height:440px;"></div></div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 2 · FINANCIALS
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='financials'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Financials — Growth &amp; Scale</div>
+        <div class="tab-intro-sub">AUM · PAT · NIM · 8 quarters · QoQ &amp; YoY growth rates</div>
+      </div>
+      <div class="nbfc-selector">
+        <template x-for="n in NBFC_LIST" :key="n">
+          <div class="nbfc-check-item">
+            <input type="checkbox" :id="'fin-'+n" :value="n"
+                   :checked="selectedNBFCs.includes(n)"
+                   :disabled="n === 'Poonawalla Fincorp'"
+                   @change="toggleNBFC(n, $event.target.checked, 'fin')">
+            <label :for="'fin-'+n" x-text="n" :style="`color:${COLORS[n]};font-weight:600`"></label>
+          </div>
+        </template>
+      </div>
+
+      <span class="section-label">AUM — Assets Under Management</span>
+      <div class="grid-2">
+        <div class="chart-card"><div id="chart-aum-bar" style="height:360px;"></div></div>
+        <div>
+          <div class="chart-card"><div id="chart-aum-qoq" style="height:175px;"></div></div>
+          <div class="chart-card"><div id="chart-aum-yoy" style="height:175px;"></div></div>
+        </div>
+      </div>
+
+      <span class="section-label">PAT — Profit After Tax</span>
+      <div class="grid-2">
+        <div class="chart-card"><div id="chart-pat-bar" style="height:360px;"></div></div>
+        <div>
+          <div class="chart-card"><div id="chart-pat-qoq" style="height:175px;"></div></div>
+          <div class="chart-card"><div id="chart-pat-yoy" style="height:175px;"></div></div>
+        </div>
+      </div>
+
+      <span class="section-label">NIM — Net Interest Margin</span>
+      <div class="chart-card"><div id="chart-nim" style="height:400px;"></div></div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 3 · ASSET QUALITY
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='assetquality'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Asset Quality</div>
+        <div class="tab-intro-sub">GNPA · NNPA · PCR — lower GNPA/NNPA is better · higher PCR is better</div>
+      </div>
+      <div class="nbfc-selector">
+        <template x-for="n in NBFC_LIST" :key="n">
+          <div class="nbfc-check-item">
+            <input type="checkbox" :id="'aq-'+n" :value="n"
+                   :checked="selectedNBFCs.includes(n)"
+                   :disabled="n === 'Poonawalla Fincorp'"
+                   @change="toggleNBFC(n, $event.target.checked, 'aq')">
+            <label :for="'aq-'+n" x-text="n" :style="`color:${COLORS[n]};font-weight:600`"></label>
+          </div>
+        </template>
+      </div>
+      <div class="metric-note">⚠ Chola Finance: Q1–Q2FY25 GNPA/NNPA not reported (INDas Stage-3 reclassification). Muthoot Finance: NNPA and PCR not separately disclosed.</div>
+      <span class="section-label">GNPA % <span class="section-label-sub">— Gross Non-Performing Assets · lower is better</span></span>
+      <div class="chart-card"><div id="chart-gnpa" style="height:400px;"></div></div>
+      <span class="section-label">NNPA % <span class="section-label-sub">— Net Non-Performing Assets · lower is better</span></span>
+      <div class="chart-card"><div id="chart-nnpa" style="height:400px;"></div></div>
+      <span class="section-label">PCR % <span class="section-label-sub">— Provision Coverage Ratio · higher is better</span></span>
+      <div class="chart-card"><div id="chart-pcr" style="height:400px;"></div></div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 4 · CAPITAL & LEVERAGE
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='capital'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Capital &amp; Leverage</div>
+        <div class="tab-intro-sub">Cost of Borrowing · D/E Ratio · CAR · Tier 1 · Tier 2</div>
+      </div>
+      <div class="nbfc-selector">
+        <template x-for="n in NBFC_LIST" :key="n">
+          <div class="nbfc-check-item">
+            <input type="checkbox" :id="'cap-'+n" :value="n"
+                   :checked="selectedNBFCs.includes(n)"
+                   :disabled="n === 'Poonawalla Fincorp'"
+                   @change="toggleNBFC(n, $event.target.checked, 'cap')">
+            <label :for="'cap-'+n" x-text="n" :style="`color:${COLORS[n]};font-weight:600`"></label>
+          </div>
+        </template>
+      </div>
+      <div class="metric-note">ℹ Muthoot Finance: CAR/Tier1/Tier2 not disclosed. Mahindra Finance: CAR not disclosed. Piramal Finance: Q3FY26 CAR pending. Tier 1/2 only disclosed by Chola, AB Capital, L&T Finance.</div>
+      <div class="grid-2">
+        <div>
+          <span class="section-label">Cost of Borrowing %</span>
+          <div class="chart-card"><div id="chart-cob" style="height:360px;"></div></div>
+        </div>
+        <div>
+          <span class="section-label">D/E Ratio ×</span>
+          <div class="chart-card"><div id="chart-de" style="height:360px;"></div></div>
+        </div>
+      </div>
+      <span class="section-label">CAR % — Capital Adequacy Ratio <span class="section-label-sub">· RBI minimum 15%</span></span>
+      <div class="chart-card"><div id="chart-car" style="height:400px;"></div></div>
+      <div class="grid-2">
+        <div>
+          <span class="section-label">Tier 1 Capital %</span>
+          <div class="chart-card"><div id="chart-t1" style="height:340px;"></div></div>
+        </div>
+        <div>
+          <span class="section-label">Tier 2 Capital %</span>
+          <div class="chart-card"><div id="chart-t2" style="height:340px;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 5 · PROFITABILITY
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='profitability'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Profitability Ratios</div>
+        <div class="tab-intro-sub">ROA · ROE — 8 quarters · annualised</div>
+      </div>
+      <div class="nbfc-selector">
+        <template x-for="n in NBFC_LIST" :key="n">
+          <div class="nbfc-check-item">
+            <input type="checkbox" :id="'prof-'+n" :value="n"
+                   :checked="selectedNBFCs.includes(n)"
+                   :disabled="n === 'Poonawalla Fincorp'"
+                   @change="toggleNBFC(n, $event.target.checked, 'prof')">
+            <label :for="'prof-'+n" x-text="n" :style="`color:${COLORS[n]};font-weight:600`"></label>
+          </div>
+        </template>
+      </div>
+      <div class="metric-note">ℹ Poonawalla Fincorp: ROE not reported. Aditya Birla Capital: ROE only from Q4FY25 onward. Mahindra Finance: Q2FY26 not reported.</div>
+      <span class="section-label">ROA % — Return on Assets</span>
+      <div class="chart-card"><div id="chart-roa" style="height:420px;"></div></div>
+      <span class="section-label">ROE % — Return on Equity</span>
+      <div class="chart-card"><div id="chart-roe" style="height:420px;"></div></div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 6 · VALUATION
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='valuation'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Valuation Metrics — P/B Ratio &amp; BVPS</div>
+        <div class="tab-intro-sub">Daily price ÷ quarterly Book Value Per Share · dotted line = P/B 1.0 (book value floor)</div>
+      </div>
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span class="section-label" style="margin:0">Select NBFCs:</span>
+        <div class="nbfc-selector" style="margin:0;flex:1">
+          <template x-for="n in NBFC_LIST" :key="n">
+            <div class="nbfc-check-item">
+              <input type="checkbox" :id="'val-'+n" :value="n"
+                     :checked="valNBFCs.includes(n)"
+                     @change="toggleValNBFC(n, $event.target.checked)">
+              <label :for="'val-'+n" x-text="n" :style="`color:${COLORS[n]};font-weight:600`"></label>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div class="chart-card" x-show="!pbLoading">
+        <div id="chart-pb" style="height:520px;"></div>
+      </div>
+      <div x-show="pbLoading" class="chart-card flex items-center justify-center" style="height:120px;">
+        <div class="spinner"></div>
+        <span class="text-slate-400 text-sm ml-3">Loading P/B data (2-year daily prices)…</span>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 7 · DEEP DIVE
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='deepdive'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Deep Dive — Full NBFC Profile</div>
+        <div class="tab-intro-sub">14 metrics × 8 quarters · colour intensity = relative performance within each metric</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <span class="section-label" style="margin:0">Select NBFC:</span>
+        <select class="select-nbfc" x-model="deepDiveNBFC" @change="renderDeepDive()">
+          <template x-for="n in NBFC_LIST" :key="n">
+            <option :value="n" x-text="n"></option>
+          </template>
+        </select>
+      </div>
+      <div class="heatmap-wrap">
+        <table class="heatmap-table deep-heatmap" id="table-deepdive">
+          <thead>
+            <tr>
+              <th style="text-align:left;">Metric</th>
+              <template x-for="q in QUARTERS" :key="q">
+                <th x-text="q"></th>
+              </template>
+            </tr>
+          </thead>
+          <tbody id="deep-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 8 · RANKINGS
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='rankings'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Rankings — Q3FY26 Peer Scorecard</div>
+        <div class="tab-intro-sub">9 NBFCs × 11 metrics · red = worst · green = best (per column) · — = not disclosed</div>
+      </div>
+
+      <!-- Highlight cards -->
+      <div class="highlight-grid" id="ranking-highlights"></div>
+
+      <!-- Heatmap table -->
+      <div class="heatmap-wrap">
+        <table class="heatmap-table" id="table-rankings">
+          <thead id="rankings-thead"></thead>
+          <tbody id="rankings-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 9 · AI BULLETIN
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='ai'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">AI Bulletin — NBFC Technology Initiatives</div>
+        <div class="tab-intro-sub">51 AI/GenAI initiatives across 9 NBFCs · Jan 2021 – Feb 2026 · compiled 23 Feb 2026</div>
+      </div>
+
+      <div class="ai-filters">
+        <span class="text-sm font-medium text-slate-600">Filter by NBFC:</span>
+        <select class="ai-filter-select" x-model="aiNBFC" @change="renderAI()">
+          <option value="all">All NBFCs</option>
+          <template x-for="n in aiNBFCList" :key="n">
+            <option :value="n" x-text="n"></option>
+          </template>
+        </select>
+        <span class="text-sm font-medium text-slate-600">Function:</span>
+        <select class="ai-filter-select" x-model="aiFunc" @change="renderAI()">
+          <option value="all">All Functions</option>
+          <template x-for="f in aiFunctions" :key="f">
+            <option :value="f" x-text="f"></option>
+          </template>
+        </select>
+        <span class="text-sm font-medium text-slate-600">Sort:</span>
+        <select class="ai-filter-select" x-model="aiSort" @change="renderAI()">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="nbfc">By NBFC</option>
+          <option value="title">By Title</option>
+        </select>
+        <div class="ai-stats ml-auto">
+          <div class="text-center">
+            <div class="ai-stat-num" id="ai-count">0</div>
+            <div class="ai-stat-label">Initiatives</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ai-cards-container"></div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+         TAB 10 · SHAREHOLDING
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div x-show="activeTab==='shareholding'">
+      <div class="tab-intro">
+        <div class="tab-intro-title">Shareholding Pattern</div>
+        <div class="tab-intro-sub">5 NBFCs · 8 quarters · named shareholders ≥1% · ▲▼●○→ trend indicators</div>
+      </div>
+
+      <!-- Section 1: Cross-NBFC heatmap -->
+      <span class="section-label">Q3FY26 Cross-NBFC Category Snapshot</span>
+      <div class="heatmap-wrap" style="margin-bottom:20px;">
+        <table class="heatmap-table" id="table-sh-snapshot">
+          <thead>
+            <tr>
+              <th style="text-align:left;">NBFC</th>
+              <th>Promoter %</th><th>FII %</th><th>DII %</th><th>Public %</th>
+            </tr>
+          </thead>
+          <tbody id="sh-snapshot-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Section 2: NBFC selector + summary cards -->
+      <span class="section-label">Select NBFC for detailed breakdown:</span>
+      <div class="radio-group mb-4">
+        <template x-for="n in shNBFCList" :key="n">
+          <button class="radio-btn" :class="{ active: shNBFC === n }"
+                  @click="shNBFC=n; renderShareholdingDetail()" x-text="n"></button>
+        </template>
+      </div>
+
+      <div class="sh-summary-grid" id="sh-summary-cards"></div>
+
+      <!-- Section 3: Named entities table -->
+      <span class="section-label">Named Shareholders ≥1%
+        <span class="section-label-sub">· ▲ growing · ▼ reducing · ● new entry · ○ exited · → flat</span>
+      </span>
+      <div class="heatmap-wrap">
+        <table class="heatmap-table" id="table-sh-detail">
+          <thead>
+            <tr>
+              <th style="text-align:left;min-width:180px;">Shareholder</th>
+              <th style="text-align:center;width:100px;">Category</th>
+              <template x-for="q in SH_QUARTERS" :key="q">
+                <th x-text="q"></th>
+              </template>
+            </tr>
+          </thead>
+          <tbody id="sh-detail-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /x-data -->
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════════════════════ -->
+<script>
+
+// ─── CHART UTILITIES ────────────────────────────────────────────────────────
+
+function staggerLabels(vals, yRange) {
+  const labels = vals.map(v => v);
+  const GAP = Math.max(yRange * 0.11, 0.2);
+  for (let i = 1; i < labels.length; i++)
+    if (labels[i-1] - labels[i] < GAP) labels[i] = labels[i-1] - GAP;
+  for (let i = labels.length - 2; i >= 0; i--)
+    if (labels[i] - labels[i+1] < GAP) labels[i] = labels[i+1] + GAP;
+  return labels;
+}
+
+function lastNonNull(arr) {
+  for (let i = arr.length - 1; i >= 0; i--)
+    if (arr[i] != null) return { v: arr[i], i };
+  return { v: null, i: -1 };
+}
+
+function baseLayout(title, ylabel, rightMargin = 220, height = 420) {
+  return {
+    title: { text: `<span style="color:#0a2540;font-weight:700;font-size:15px">${title}</span>`,
+             font: { family: 'Inter' }, x: 0, xref: 'paper' },
+    yaxis: { title: ylabel, showgrid: true, gridcolor: '#f1f5f9',
+             showline: true, linecolor: '#cbd5e1',
+             tickfont: { size: 11, color: '#475569' } },
+    xaxis: { showgrid: true, gridcolor: '#f1f5f9', showline: true,
+             linecolor: '#cbd5e1', tickfont: { size: 11, color: '#475569' } },
+    template: 'plotly_white', height, hovermode: 'x unified', showlegend: false,
+    plot_bgcolor: 'white', paper_bgcolor: 'rgba(0,0,0,0)',
+    margin: { l: 55, r: rightMargin, t: 55, b: 45 },
+    font: { family: 'Inter', color: '#1a3a52' },
+    hoverlabel: { bgcolor: 'white', bordercolor: '#cbd5e1',
+                  font: { family: 'Inter', size: 12 } },
+  };
+}
+
+const PLOTLY_CFG = { displayModeBar: false, responsive: true };
+
+function fmtVal(v, fmt) {
+  if (v == null) return '—';
+  if (fmt === 'cr')    return '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:0}) + ' Cr';
+  if (fmt === 'inr')   return '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:1});
+  if (fmt === 'ratio') return v.toFixed(2) + 'x';
+  return v.toFixed(2) + '%';
+}
+
+function makeTrendChart(finData, metric, selected, divId, title, ylabel, fmt = 'pct', height = 420, note = null) {
+  const { quarters, data, cache_key, colors } = finData;
+  let series = selected.map(name => {
+    const ck = cache_key[name] || name;
+    const vals = (data[ck] || {})[metric] || [];
+    const { v: last, i: li } = lastNonNull(vals);
+    if (last == null) return null;
+    return { name, vals, last, li, color: colors[name] };
+  }).filter(Boolean);
+  series.sort((a, b) => b.last - a.last);
+
+  const tmpl = fmt === 'cr'    ? (n) => `<b>${n}</b><br>%{x}<br>₹%{y:,.0f} Cr<extra></extra>`
+             : fmt === 'ratio' ? (n) => `<b>${n}</b><br>%{x}<br>%{y:.2f}x<extra></extra>`
+             : fmt === 'inr'   ? (n) => `<b>${n}</b><br>%{x}<br>₹%{y:,.1f}<extra></extra>`
+             :                   (n) => `<b>${n}</b><br>%{x}<br>%{y:.2f}%<extra></extra>`;
+
+  const traces = series.map(s => ({
+    x: quarters, y: s.vals, type: 'scatter', mode: 'lines+markers',
+    name: s.name, connectgaps: false,
+    line: { color: s.color, width: 2.5 }, marker: { size: 7, color: s.color },
+    hovertemplate: tmpl(s.name),
+  }));
+
+  const all = series.flatMap(s => s.vals.filter(v => v != null));
+  const yRange = all.length > 1 ? Math.max(...all) - Math.min(...all) : 1;
+  const labelY = staggerLabels(series.map(s => s.last), yRange);
+
+  const layout = baseLayout(title + (note ? `<br><span style="color:#94a3b8;font-size:10px">${note}</span>` : ''), ylabel, 230, height);
+  const annotations = [];
+  series.forEach((s, i) => {
+    annotations.push({
+      x: quarters[s.li], y: labelY[i], text: `<b>${s.name}</b>  ${fmtVal(s.last, fmt)}`,
+      showarrow: false, xanchor: 'left', xshift: 12,
+      font: { size: 10.5, color: s.color },
+      bgcolor: 'rgba(255,255,255,0.95)', bordercolor: s.color, borderwidth: 1, borderpad: 3,
+    });
+  });
+  layout.annotations = annotations;
+
+  Plotly.newPlot(divId, traces, layout, PLOTLY_CFG);
+}
+
+function makeBarChart(finData, metric, selected, divId, title, ylabel, fmt = 'cr', height = 360) {
+  const { quarters, data, cache_key, colors } = finData;
+  const traces = selected.map(name => {
+    const ck = cache_key[name] || name;
+    const vals = (data[ck] || {})[metric] || [];
+    return {
+      x: quarters, y: vals, type: 'bar', name,
+      marker: { color: colors[name], opacity: 0.85 },
+      hovertemplate: `<b>${name}</b><br>%{x}<br>${fmt === 'cr' ? '₹%{y:,.0f} Cr' : '%{y:.2f}'}<extra></extra>`,
+    };
+  });
+
+  const layout = {
+    ...baseLayout(title, ylabel, 20, height),
+    barmode: 'group', showlegend: true,
+    margin: { l: 55, r: 20, t: 55, b: 90 },
+    legend: { orientation: 'h', yanchor: 'top', y: -0.22, xanchor: 'center', x: 0.5, font: { size: 10.5 } },
+  };
+  layout.xaxis.range = [-0.5, quarters.length - 0.5];
+  Plotly.newPlot(divId, traces, layout, PLOTLY_CFG);
+}
+
+function makeGrowthChart(finData, metric, selected, divId, title, mode = 'qoq', height = 175) {
+  const { data, cache_key, colors } = finData;
+  const isQoQ = mode === 'qoq';
+  const LABELS = isQoQ
+    ? ["Q1FY25","Q2FY25","Q3FY25","Q4FY25","Q1FY26","Q2FY26","Q3FY26"]
+    : ["Q4FY25","Q1FY26","Q2FY26","Q3FY26"];
+  const PAIRS  = isQoQ
+    ? [[1,0],[2,1],[3,2],[4,3],[5,4],[6,5],[7,6]]
+    : [[4,0],[5,1],[6,2],[7,3]];
+
+  let series = selected.map(name => {
+    const ck = cache_key[name] || name;
+    const vals = (data[ck] || {})[metric] || [];
+    const growth = PAIRS.map(([ci, pi]) => {
+      const cur = vals[ci], pr = vals[pi];
+      if (cur == null || pr == null) return null;
+      if (pr <= 0) return 0;
+      return Math.round((cur - pr) / pr * 1000) / 10;
+    });
+    const last = [...growth].reverse().find(v => v != null);
+    if (last == null) return null;
+    return { name, growth, last, color: colors[name] };
+  }).filter(Boolean);
+  series.sort((a, b) => b.last - a.last);
+
+  const traces = series.map(s => ({
+    x: LABELS, y: s.growth, type: 'scatter', mode: 'lines+markers',
+    name: s.name, connectgaps: false,
+    line: { color: s.color, width: 2.5 }, marker: { size: 7, color: s.color },
+    hovertemplate: `<b>${s.name}</b><br>%{x}<br>${isQoQ ? 'QoQ' : 'YoY'}: %{y:+.1f}%<extra></extra>`,
+  }));
+
+  const all = series.flatMap(s => s.growth.filter(v => v != null));
+  const yRange = all.length > 1 ? Math.max(...all) - Math.min(...all) : 10;
+  const labelY = staggerLabels(series.map(s => s.last), yRange * 0.8);
+
+  const layout = {
+    ...baseLayout(`${title} — ${isQoQ ? 'QoQ' : 'YoY'} Growth`, `${isQoQ ? 'QoQ' : 'YoY'} Growth (%)`, 150, height),
+    shapes: [{ type: 'line', x0: 0, x1: 1, xref: 'paper', y0: 0, y1: 0,
+               line: { color: '#94a3b8', width: 1, dash: 'dot' } }],
+    margin: { l: 55, r: 150, t: 50, b: 45 },
+  };
+  layout.yaxis.ticksuffix = '%';
+
+  const annotations = series.map((s, i) => ({
+    x: LABELS[LABELS.length - 1], y: labelY[i],
+    text: `<b>${s.name}</b>  ${s.last >= 0 ? '+' : ''}${s.last.toFixed(1)}%`,
+    showarrow: false, xanchor: 'left', xshift: 12,
+    font: { size: 10.5, color: s.color },
+    bgcolor: 'rgba(255,255,255,0.95)', bordercolor: s.color, borderwidth: 1, borderpad: 3,
+  }));
+  layout.annotations = annotations;
+
+  Plotly.newPlot(divId, traces, layout, PLOTLY_CFG);
+}
+
+// ─── HEATMAP COLORING ────────────────────────────────────────────────────────
+
+function heatColor(t) {
+  // t in [0,1]: 0=red, 0.5=yellow, 1=green
+  t = Math.max(0, Math.min(1, t));
+  let r, g;
+  if (t < 0.5) { r = 220; g = Math.round(t * 2 * 200); }
+  else          { r = Math.round((1 - t) * 2 * 220); g = 200; }
+  return `rgba(${r},${g},40,0.18)`;
+}
+
+function columnHeatColors(values, lowerIsBetter = false) {
+  const nums = values.filter(v => v != null);
+  if (nums.length === 0) return values.map(() => '#f8fafc');
+  const mn = Math.min(...nums), mx = Math.max(...nums);
+  return values.map(v => {
+    if (v == null) return '#f8fafc';
+    let t = mx === mn ? 0.5 : (v - mn) / (mx - mn);
+    if (lowerIsBetter) t = 1 - t;
+    return heatColor(t);
+  });
+}
+
+// ─── ALPINE COMPONENT ────────────────────────────────────────────────────────
+
+function dashboard() {
+  return {
+
+    // ── Constants ──────────────────────────────────────────────────────────
+    TABS: [
+      { id: 'market',       label: '📈 Market' },
+      { id: 'financials',   label: '💰 Financials' },
+      { id: 'assetquality', label: '🏦 Asset Quality' },
+      { id: 'capital',      label: '📊 Capital & Leverage' },
+      { id: 'profitability',label: '💎 Profitability' },
+      { id: 'valuation',    label: '📉 Valuation' },
+      { id: 'deepdive',     label: '🔍 Deep Dive' },
+      { id: 'rankings',     label: '🏆 Rankings' },
+      { id: 'ai',           label: '🤖 AI Bulletin' },
+      { id: 'shareholding', label: '👥 Shareholding' },
+    ],
+    NBFC_LIST: [
+      'Poonawalla Fincorp','Bajaj Finance','Shriram Finance','L&T Finance',
+      'Cholamandalam Finance','Aditya Birla Capital','Piramal Finance',
+      'Muthoot Finance','Mahindra Finance',
+    ],
+    COLORS: {
+      'Poonawalla Fincorp':'#0284c7','Bajaj Finance':'#f97316',
+      'Shriram Finance':'#10b981','L&T Finance':'#8b5cf6',
+      'Cholamandalam Finance':'#ef4444','Aditya Birla Capital':'#0891b2',
+      'Piramal Finance':'#be123c','Muthoot Finance':'#65a30d',
+      'Mahindra Finance':'#7c3aed',
+    },
+    PERIODS: ['1W','1M','3M','6M','1Y','3Y','5Y'],
+    QUARTERS: ["Q4FY24","Q1FY25","Q2FY25","Q3FY25","Q4FY25","Q1FY26","Q2FY26","Q3FY26"],
+    SH_QUARTERS: ["Q4FY24","Q1FY25","Q2FY25","Q3FY25","Q4FY25","Q1FY26","Q2FY26","Q3FY26"],
+
+    // ── State ───────────────────────────────────────────────────────────────
+    activeTab: 'market',
+    selectedNBFCs: ['Poonawalla Fincorp','Bajaj Finance','Shriram Finance','L&T Finance'],
+    period: '6M',
+    useCustom: false,
+    customStart: '',
+    customEnd: '',
+
+    valNBFCs: ['Poonawalla Fincorp','Bajaj Finance'],
+    deepDiveNBFC: 'Bajaj Finance',
+    shNBFC: 'Shriram Finance',
+    shNBFCList: [],
+
+    aiNBFC: 'all',
+    aiFunc: 'all',
+    aiSort: 'newest',
+    aiNBFCList: [],
+    aiFunctions: [],
+
+    // ── Data ────────────────────────────────────────────────────────────────
+    finData: null,
+    aiData: null,
+    shData: null,
+    prices: [],
+    pricesTs: '',
+    pbLoading: false,
+
+    // ── Init ────────────────────────────────────────────────────────────────
+    async init() {
+      // Load static data in parallel
+      const [fin, ai, sh] = await Promise.all([
+        fetch('/api/financials').then(r => r.json()),
+        fetch('/api/ai').then(r => r.json()),
+        fetch('/api/shareholding').then(r => r.json()),
+      ]);
+      this.finData  = fin;
+      this.aiData   = ai;
+      this.shData   = sh;
+      this.aiNBFCList  = ai.nbfc_list;
+      this.aiFunctions = ai.functions;
+      this.shNBFCList  = Object.keys(sh.data);
+      if (this.shNBFCList.length) this.shNBFC = this.shNBFCList[0];
+
+      // Initial tab render
+      await this.$nextTick();
+      this.renderPerformance();
+      this.renderMktCap();
+      this.loadPrices();
+    },
+
+    // ── Tab switching ────────────────────────────────────────────────────────
+    async switchTab(id) {
+      this.activeTab = id;
+      await this.$nextTick();
+      this.renderTabCharts(id);
+    },
+
+    renderTabCharts(id) {
+      if (!this.finData) return;
+      switch (id) {
+        case 'market':        this.renderPerformance(); this.renderMktCap(); break;
+        case 'financials':    this.renderFinancials(); break;
+        case 'assetquality':  this.renderAssetQuality(); break;
+        case 'capital':       this.renderCapital(); break;
+        case 'profitability': this.renderProfitability(); break;
+        case 'valuation':     this.renderPB(); break;
+        case 'deepdive':      this.renderDeepDive(); break;
+        case 'rankings':      this.renderRankings(); break;
+        case 'ai':            this.renderAI(); break;
+        case 'shareholding':  this.renderShareholding(); break;
+      }
+    },
+
+    // ── NBFC toggle ──────────────────────────────────────────────────────────
+    toggleNBFC(name, checked) {
+      if (name === 'Poonawalla Fincorp') return; // always selected
+      if (checked && !this.selectedNBFCs.includes(name))
+        this.selectedNBFCs = [...this.selectedNBFCs, name];
+      else if (!checked)
+        this.selectedNBFCs = this.selectedNBFCs.filter(n => n !== name);
+      this.renderTabCharts(this.activeTab);
+    },
+    toggleValNBFC(name, checked) {
+      if (checked && !this.valNBFCs.includes(name))
+        this.valNBFCs = [...this.valNBFCs, name];
+      else if (!checked)
+        this.valNBFCs = this.valNBFCs.filter(n => n !== name);
+      this.renderPB();
+    },
+
+    // ── Format helpers ───────────────────────────────────────────────────────
+    fmtVol(v) {
+      if (!v) return '—';
+      if (v >= 1e7) return (v/1e7).toFixed(2) + ' Cr';
+      if (v >= 1e5) return (v/1e5).toFixed(2) + ' L';
+      return (v/1000).toFixed(1) + 'K';
+    },
+    fmtMC(v) {
+      if (!v) return '—';
+      return (v / 1e12).toFixed(2) + ' L.Cr';
+    },
+
+    // ── LIVE PRICES ──────────────────────────────────────────────────────────
+    async loadPrices() {
+      try {
+        const data = await fetch('/api/prices').then(r => r.json());
+        this.prices = data;
+        const now = new Date();
+        this.pricesTs = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('nav-updated').textContent =
+          'prices · ' + this.pricesTs;
+      } catch(e) {}
+    },
+
+    // ── PERFORMANCE CHART ────────────────────────────────────────────────────
+    async renderPerformance() {
+      const sel = this.selectedNBFCs.join(',');
+      let url = `/api/performance?period=${this.period}&tickers=${encodeURIComponent(sel)}`;
+      if (this.useCustom && this.customStart && this.customEnd)
+        url = `/api/performance?start_date=${this.customStart}&end_date=${this.customEnd}&tickers=${encodeURIComponent(sel)}`;
+
+      const data = await fetch(url).then(r => r.json());
+      const traces = Object.entries(data).map(([name, s]) => ({
+        x: s.dates, y: s.values, type: 'scatter', mode: 'lines',
+        name, line: { color: s.color, width: 2.5 },
+        hovertemplate: `<b>${name}</b><br>%{x}<br>%{y:.1f} (base=100)<extra></extra>`,
+      }));
+
+      const layout = {
+        ...baseLayout('Performance Comparison — Indexed to 100', 'Index (base=100)', 220, 440),
+        showlegend: true,
+        legend: { orientation: 'h', yanchor: 'top', y: -0.12, xanchor: 'center', x: 0.5, font: { size: 10.5 } },
+        margin: { l: 55, r: 20, t: 55, b: 70 },
+      };
+      Plotly.newPlot('chart-performance', traces, layout, PLOTLY_CFG);
+    },
+
+    // ── MKTCAP CHART ─────────────────────────────────────────────────────────
+    async renderMktCap() {
+      const sel = this.selectedNBFCs.join(',');
+      const data = await fetch(`/api/mktcap?tickers=${encodeURIComponent(sel)}`).then(r => r.json());
+      let series = Object.entries(data).map(([name, s]) => ({ name, ...s, last: s.values.at(-1) }));
+      series.sort((a, b) => b.last - a.last);
+
+      const traces = series.map(s => ({
+        x: s.dates, y: s.values, type: 'scatter', mode: 'lines',
+        name: s.name, line: { color: s.color, width: 2.5 },
+        hovertemplate: `<b>${s.name}</b><br>%{x}<br>₹%{y:.2f} L.Cr<extra></extra>`,
+      }));
+
+      const all = series.flatMap(s => s.values);
+      const yRange = all.length > 1 ? Math.max(...all) - Math.min(...all) : 1;
+      const labelY = staggerLabels(series.map(s => s.last), yRange);
+
+      const layout = {
+        ...baseLayout('Market Capitalisation — 1Y Daily (₹ Lakh Crore)', '₹ Lakh Crore', 230, 440),
+        margin: { l: 60, r: 230, t: 55, b: 40 },
+      };
+      layout.yaxis.ticksuffix = ' L.Cr';
+
+      layout.annotations = series.map((s, i) => ({
+        x: s.dates.at(-1), y: labelY[i],
+        text: `<b>${s.name}</b>  ₹${s.last.toFixed(2)} L.Cr`,
+        showarrow: false, xanchor: 'left', xshift: 12,
+        font: { size: 10.5, color: s.color },
+        bgcolor: 'rgba(255,255,255,0.9)', bordercolor: s.color, borderwidth: 1, borderpad: 3,
+      }));
+
+      Plotly.newPlot('chart-mktcap', traces, layout, PLOTLY_CFG);
+    },
+
+    // ── FINANCIALS ───────────────────────────────────────────────────────────
+    renderFinancials() {
+      const sel = this.selectedNBFCs, fd = this.finData;
+      makeBarChart(fd, 'aum_cr',  sel, 'chart-aum-bar', 'AUM', '₹ Crore', 'cr', 360);
+      makeGrowthChart(fd, 'aum_cr', sel, 'chart-aum-qoq', 'AUM', 'qoq', 175);
+      makeGrowthChart(fd, 'aum_cr', sel, 'chart-aum-yoy', 'AUM', 'yoy', 175);
+      makeBarChart(fd, 'pat_cr',  sel, 'chart-pat-bar', 'PAT', '₹ Crore', 'cr', 360);
+      makeGrowthChart(fd, 'pat_cr', sel, 'chart-pat-qoq', 'PAT', 'qoq', 175);
+      makeGrowthChart(fd, 'pat_cr', sel, 'chart-pat-yoy', 'PAT', 'yoy', 175);
+      makeTrendChart(fd, 'nim_pct', sel, 'chart-nim', 'NIM — Net Interest Margin', '%', 'pct', 400);
+    },
+
+    // ── ASSET QUALITY ────────────────────────────────────────────────────────
+    renderAssetQuality() {
+      const sel = this.selectedNBFCs, fd = this.finData;
+      makeTrendChart(fd,'gnpa_pct',sel,'chart-gnpa','GNPA %','%','pct',400);
+      makeTrendChart(fd,'nnpa_pct',sel,'chart-nnpa','NNPA %','%','pct',400);
+      makeTrendChart(fd,'pcr_pct', sel,'chart-pcr', 'PCR % — Provision Coverage','%','pct',400);
+    },
+
+    // ── CAPITAL & LEVERAGE ───────────────────────────────────────────────────
+    renderCapital() {
+      const sel = this.selectedNBFCs, fd = this.finData;
+      makeTrendChart(fd,'cost_of_borrowing_pct',sel,'chart-cob','Cost of Borrowing','%','pct',360);
+      makeTrendChart(fd,'d_e_ratio',sel,'chart-de','D/E Ratio','×','ratio',360);
+      makeTrendChart(fd,'car_pct',  sel,'chart-car','CAR — Capital Adequacy Ratio','%','pct',400);
+      makeTrendChart(fd,'t1_pct',   sel,'chart-t1', 'Tier 1 Capital','%','pct',340);
+      makeTrendChart(fd,'t2_pct',   sel,'chart-t2', 'Tier 2 Capital','%','pct',340);
+    },
+
+    // ── PROFITABILITY ────────────────────────────────────────────────────────
+    renderProfitability() {
+      const sel = this.selectedNBFCs, fd = this.finData;
+      makeTrendChart(fd,'roa_pct',sel,'chart-roa','ROA % — Return on Assets','%','pct',420);
+      makeTrendChart(fd,'roe_pct',sel,'chart-roe','ROE % — Return on Equity','%','pct',420);
+    },
+
+    // ── P/B CHART ────────────────────────────────────────────────────────────
+    async renderPB() {
+      this.pbLoading = true;
+      await this.$nextTick();
+      try {
+        const sel = this.valNBFCs.join(',');
+        const data = await fetch(`/api/pb?tickers=${encodeURIComponent(sel)}`).then(r => r.json());
+        let series = Object.entries(data).map(([name, s]) => ({
+          name, ...s, last: s.pb.at(-1),
+        }));
+        series.sort((a, b) => b.last - a.last);
+
+        const traces = series.map(s => ({
+          x: s.dates, y: s.pb, type: 'scatter', mode: 'lines',
+          name: s.name, line: { color: s.color, width: 2 },
+          customdata: s.dates.map((_, i) => [s.prices[i], s.bvps[i]]),
+          hovertemplate: `<b>${s.name}</b><br>%{x}<br>P/B: %{y:.2f}x  ·  Price: ₹%{customdata[0]:,.0f}  ·  BVPS: ₹%{customdata[1]:,.0f}<extra></extra>`,
+        }));
+
+        const all = series.flatMap(s => s.pb);
+        const yRange = all.length > 1 ? Math.max(...all) - Math.min(...all) : 1;
+        const labelY = staggerLabels(series.map(s => s.last), yRange);
+
+        const layout = {
+          ...baseLayout('Price-to-Book (P/B) Ratio — 2Y Daily', 'P/B Ratio (×)', 210, 520),
+          shapes: [{ type: 'line', x0: 0, x1: 1, xref: 'paper', y0: 1, y1: 1,
+                     line: { color: '#94a3b8', width: 1.5, dash: 'dot' } }],
+        };
+        layout.yaxis.ticksuffix = 'x';
+        layout.annotations = series.map((s, i) => ({
+          x: s.dates.at(-1), y: labelY[i],
+          text: `<b>${s.name}</b>  ${s.last.toFixed(2)}x`,
+          showarrow: false, xanchor: 'left', xshift: 12,
+          font: { size: 10.5, color: s.color },
+          bgcolor: 'rgba(255,255,255,0.95)', bordercolor: s.color, borderwidth: 1, borderpad: 3,
+        }));
+
+        Plotly.newPlot('chart-pb', traces, layout, PLOTLY_CFG);
+      } finally {
+        this.pbLoading = false;
+      }
+    },
+
+    // ── DEEP DIVE ────────────────────────────────────────────────────────────
+    renderDeepDive() {
+      if (!this.finData) return;
+      const fd = this.finData;
+      const name = this.deepDiveNBFC;
+      const ck   = fd.cache_key[name] || name;
+      const ts   = fd.data[ck] || {};
+
+      const METRICS = [
+        ['aum_cr','AUM','cr'],['pat_cr','PAT','cr'],['nim_pct','NIM','pct'],
+        ['roa_pct','ROA','pct'],['roe_pct','ROE','pct'],
+        ['gnpa_pct','GNPA','pct'],['nnpa_pct','NNPA','pct'],['pcr_pct','PCR','pct'],
+        ['cost_of_borrowing_pct','Cost of Borrowing','pct'],['d_e_ratio','D/E Ratio','ratio'],
+        ['car_pct','CAR','pct'],['t1_pct','Tier 1','pct'],['t2_pct','Tier 2','pct'],
+        ['bvps_inr','BVPS','inr'],
+      ];
+      const LOWER_IS_BETTER = new Set(['gnpa_pct','nnpa_pct','cost_of_borrowing_pct','d_e_ratio']);
+
+      const tbody = document.getElementById('deep-tbody');
+      tbody.innerHTML = '';
+
+      METRICS.forEach(([key, label, fmt]) => {
+        const vals = ts[key] || Array(8).fill(null);
+        const colors = columnHeatColors(vals, LOWER_IS_BETTER.has(key));
+        const tr = document.createElement('tr');
+        let html = `<td>${label}</td>`;
+        vals.forEach((v, i) => {
+          const bg = colors[i];
+          const txt = v == null ? '—' : fmt === 'cr' ? '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:0})
+                                      : fmt === 'inr' ? '₹' + v.toFixed(1)
+                                      : fmt === 'ratio' ? v.toFixed(2) + 'x'
+                                      : v.toFixed(2) + '%';
+          html += `<td style="background:${bg}">${txt}</td>`;
+        });
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+      });
+    },
+
+    // ── RANKINGS ─────────────────────────────────────────────────────────────
+    renderRankings() {
+      if (!this.finData) return;
+      const fd = this.finData;
+      const latest = fd.latest;
+
+      const METRICS = [
+        { key: 'aum_cr',             label: 'AUM (₹ Cr)',      fmt: 'cr',    lib: false },
+        { key: 'pat_cr',             label: 'PAT (₹ Cr)',      fmt: 'cr',    lib: false },
+        { key: 'nim_pct',            label: 'NIM (%)',          fmt: 'pct',   lib: false },
+        { key: 'roa_pct',            label: 'ROA (%)',          fmt: 'pct',   lib: false },
+        { key: 'roe_pct',            label: 'ROE (%)',          fmt: 'pct',   lib: false },
+        { key: 'gnpa_pct',           label: 'GNPA (%)',         fmt: 'pct',   lib: true  },
+        { key: 'nnpa_pct',           label: 'NNPA (%)',         fmt: 'pct',   lib: true  },
+        { key: 'cost_of_borrowing_pct',label:'CoB (%)',          fmt: 'pct',   lib: true  },
+        { key: 'd_e_ratio',          label: 'D/E (×)',          fmt: 'ratio', lib: true  },
+        { key: 'car_pct',            label: 'CAR (%)',          fmt: 'pct',   lib: false },
+        { key: 'bvps_inr',           label: 'BVPS (₹)',        fmt: 'inr',   lib: false },
+      ];
+
+      const NBFC_ORDER = this.NBFC_LIST;
+
+      // Build per-column color arrays
+      const colColors = {};
+      METRICS.forEach(m => {
+        const vals = NBFC_ORDER.map(n => (latest[n] || {})[m.key] ?? null);
+        colColors[m.key] = columnHeatColors(vals, m.lib);
+      });
+
+      // Header
+      const thead = document.getElementById('rankings-thead');
+      thead.innerHTML = `<tr><th style="text-align:left;min-width:160px;">NBFC</th>` +
+        METRICS.map(m => `<th>${m.label}</th>`).join('') + '</tr>';
+
+      // Body
+      const tbody = document.getElementById('rankings-tbody');
+      tbody.innerHTML = '';
+      NBFC_ORDER.forEach((name, ri) => {
+        const row = latest[name] || {};
+        const tr  = document.createElement('tr');
+        let html  = `<td>${name}</td>`;
+        METRICS.forEach((m, ci) => {
+          const v = row[m.key] ?? null;
+          const bg = colColors[m.key][ri];
+          const txt = v == null ? '—'
+            : m.fmt === 'cr'    ? '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:0})
+            : m.fmt === 'inr'   ? '₹' + v.toFixed(1)
+            : m.fmt === 'ratio' ? v.toFixed(2) + 'x'
+            :                     v.toFixed(2) + '%';
+          html += `<td style="background:${bg}">${txt}</td>`;
+        });
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+      });
+
+      // Highlight cards
+      const findBest = (key, lower=false) => {
+        let best = null, bestVal = lower ? Infinity : -Infinity, bestName = '—';
+        NBFC_ORDER.forEach(n => {
+          const v = (latest[n] || {})[key];
+          if (v == null) return;
+          if (lower ? v < bestVal : v > bestVal) { bestVal = v; bestName = n; best = v; }
+        });
+        return { name: bestName, val: best };
+      };
+      const cards = [
+        { label:'Largest AUM',   ...findBest('aum_cr'),    fmt:'cr'  },
+        { label:'Highest PAT',   ...findBest('pat_cr'),    fmt:'cr'  },
+        { label:'Best ROA',      ...findBest('roa_pct'),   fmt:'pct' },
+        { label:'Cleanest Book', ...findBest('gnpa_pct', true), fmt:'pct' },
+      ];
+      const hl = document.getElementById('ranking-highlights');
+      hl.innerHTML = cards.map(c => {
+        const disp = c.val == null ? '—'
+          : c.fmt === 'cr'  ? '₹' + c.val.toLocaleString('en-IN',{maximumFractionDigits:0}) + ' Cr'
+          : c.fmt === 'inr' ? '₹' + c.val.toFixed(1)
+          :                   c.val.toFixed(2) + '%';
+        return `<div class="highlight-card">
+          <div class="highlight-label">${c.label}</div>
+          <div class="highlight-num">${disp}</div>
+          <div class="highlight-company">${c.name}</div>
+        </div>`;
+      }).join('');
+    },
+
+    // ── AI BULLETIN ──────────────────────────────────────────────────────────
+    renderAI() {
+      if (!this.aiData) return;
+      const all = this.aiData.initiatives;
+
+      // Flatten to list
+      let list = [];
+      Object.entries(all).forEach(([nbfc, items]) => {
+        items.forEach(item => list.push({ ...item, nbfc }));
+      });
+
+      // Filter
+      if (this.aiNBFC !== 'all')   list = list.filter(i => i.nbfc === this.aiNBFC);
+      if (this.aiFunc !== 'all')   list = list.filter(i => i.functions && i.functions.includes(this.aiFunc));
+
+      // Sort
+      const parseDate = s => { try { return new Date(s); } catch { return new Date(0); } };
+      if      (this.aiSort === 'newest') list.sort((a,b) => parseDate(b.date) - parseDate(a.date));
+      else if (this.aiSort === 'oldest') list.sort((a,b) => parseDate(a.date) - parseDate(b.date));
+      else if (this.aiSort === 'nbfc')   list.sort((a,b) => a.nbfc.localeCompare(b.nbfc));
+      else if (this.aiSort === 'title')  list.sort((a,b) => a.title.localeCompare(b.title));
+
+      document.getElementById('ai-count').textContent = list.length;
+
+      const color = n => this.COLORS[n] || '#0284c7';
+      const container = document.getElementById('ai-cards-container');
+      container.innerHTML = list.map(item => `
+        <div class="ai-card" style="border-left-color:${color(item.nbfc)}">
+          <div class="ai-card-header">
+            <span class="ai-nbfc-badge" style="background:${color(item.nbfc)}">${item.nbfc}</span>
+            <span class="ai-card-title">${item.title}</span>
+          </div>
+          ${item.impact ? `<div class="ai-impact">📊 ${item.impact}</div>` : ''}
+          <div class="ai-desc">${item.description}</div>
+          <div class="ai-meta">
+            ${(item.functions||[]).map(f => `<span class="ai-tag">${f}</span>`).join('')}
+            <span class="ml-auto flex gap-2 items-center flex-wrap">
+              ${item.date ? `<span class="ai-date-badge">${item.date}</span>` : ''}
+              ${item.source_url ? `<a href="${item.source_url}" target="_blank" rel="noopener" class="text-sky-600 text-xs hover:underline">${item.source_name || 'Source'} ↗</a>` : ''}
+            </span>
+          </div>
+        </div>`).join('');
+    },
+
+    // ── SHAREHOLDING ─────────────────────────────────────────────────────────
+    renderShareholding() {
+      this.renderShSnapshot();
+      this.renderShareholdingDetail();
+    },
+
+    renderShSnapshot() {
+      if (!this.shData) return;
+      const d = this.shData.data;
+      const cats = ['Promoter','FII','DII','Public'];
+      const catColors = this.shData.category_colors || {};
+
+      // Sort by Promoter desc
+      const nbfcs = Object.keys(d).sort((a,b) =>
+        ((d[b].category_pct['Promoter']||[0]).at(-1)||0) -
+        ((d[a].category_pct['Promoter']||[0]).at(-1)||0)
+      );
+
+      // Per-column color
+      const colVals = {};
+      cats.forEach(c => {
+        colVals[c] = nbfcs.map(n => (d[n].category_pct[c]||[]).at(-1) ?? null);
+      });
+      const colColors = {};
+      cats.forEach(c => { colColors[c] = columnHeatColors(colVals[c]); });
+
+      const tbody = document.getElementById('sh-snapshot-tbody');
+      tbody.innerHTML = nbfcs.map((name, ri) => {
+        let html = `<td style="text-align:left;font-family:'Inter';font-weight:600;color:#0a2540;">${name}</td>`;
+        cats.forEach((cat, ci) => {
+          const v = (d[name].category_pct[cat]||[]).at(-1);
+          const bg = colColors[cat][ri];
+          const color = catColors[cat] || '#64748b';
+          html += `<td style="background:${bg};color:${color};font-weight:600">` +
+                  (v != null ? v.toFixed(2) + '%' : '—') + '</td>';
+        });
+        return `<tr>${html}</tr>`;
+      }).join('');
+    },
+
+    renderShareholdingDetail() {
+      if (!this.shData) return;
+      const nbfc = this.shNBFC;
+      const d = this.shData.data[nbfc];
+      if (!d) return;
+      const catPct = d.category_pct;
+      const entities = d.named_entities || [];
+      const ecColors = this.shData.entity_category_colors || {};
+      const txtColors = this.shData.entity_badge_text || {};
+      const cats = ['Promoter','FII','DII','Public'];
+      const catColors = this.shData.category_colors || {};
+      const N = 8;
+
+      // Summary cards
+      const cardsEl = document.getElementById('sh-summary-cards');
+      cardsEl.innerHTML = cats.map(cat => {
+        const vals = catPct[cat] || [];
+        const cur  = vals.at(-1) ?? null;
+        const base = vals[0]     ?? null;
+        const delta = (cur != null && base != null) ? cur - base : null;
+        const color = catColors[cat] || '#0284c7';
+        const dsp   = delta == null ? '' :
+          `<div class="${delta >= 0 ? 'sh-delta-pos' : 'sh-delta-neg'}">` +
+          (delta >= 0 ? '▲ +' : '▼ ') + Math.abs(delta).toFixed(2) + '% vs Q4FY24</div>';
+        return `<div class="sh-summary-card" style="border-top-color:${color}">
+          <div class="sh-summary-num" style="color:${color}">${cur != null ? cur.toFixed(2) + '%' : '—'}</div>
+          <div class="sh-summary-label">${cat}</div>${dsp}</div>`;
+      }).join('');
+
+      // Named entities table
+      const tbody = document.getElementById('sh-detail-tbody');
+      tbody.innerHTML = '';
+
+      // Group by category
+      const grouped = {};
+      entities.forEach(e => {
+        const cat = e.category;
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(e);
+      });
+
+      const allCats = [...new Set(entities.map(e => e.category))];
+
+      allCats.forEach(cat => {
+        const rows = grouped[cat] || [];
+        // Category total row
+        const catTotals = catPct[cat.split(' – ')[0]] || catPct[cat] || Array(N).fill(null);
+
+        rows.forEach(entity => {
+          const pct  = entity.pct || Array(N).fill(null);
+          const tr   = document.createElement('tr');
+          const bgColor = ecColors[cat] || (catColors[cat.split(' – ')[0]] || '#64748b');
+          const txColor = txtColors[cat] || 'white';
+          let html = `<td style="text-align:left;font-family:'Inter';">${entity.name}</td>`;
+          html += `<td style="text-align:center;"><span class="sh-cat-badge" style="background:${bgColor};color:${txColor}">${cat}</span></td>`;
+
+          pct.forEach((v, i) => {
+            if (v == null) { html += `<td class="sh-trend-flat">—</td>`; return; }
+            const prev = pct[i - 1];
+            const next = pct[i + 1];
+            let indicator = '';
+            if (i > 0 && prev != null) {
+              if (v > prev + 0.05) indicator = `<span class="sh-trend-up"> ▲</span>`;
+              else if (v < prev - 0.05) indicator = `<span class="sh-trend-dn"> ▼</span>`;
+              else indicator = `<span class="sh-trend-flat"> →</span>`;
+            }
+            // New entry (first non-null after nulls)
+            if (i > 0 && prev == null && v != null)
+              indicator += `<span class="sh-trend-new">●</span>`;
+            // Exit (this is last non-null, next is null)
+            if (next == null && i < N - 1 && v != null)
+              indicator += `<span class="sh-trend-exit">○</span>`;
+
+            html += `<td>${v.toFixed(2)}%${indicator}</td>`;
+          });
+
+          tr.innerHTML = html;
+          tbody.appendChild(tr);
+        });
+      });
+    },
+
+  }; // end dashboard()
+}
+</script>
+
+</body>
+</html>

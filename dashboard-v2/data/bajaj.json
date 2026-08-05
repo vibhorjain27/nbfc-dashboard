@@ -1,0 +1,51 @@
+{
+  "company": "Bajaj Finance",
+  "bse_code": "500034",
+  "nse_symbol": "BAJFINANCE",
+  "face_value": 2,
+  "last_updated": "2026-02-21T18:02:13.127170",
+  "quarters": [
+    {
+      "aum_cr": 485883.0,
+      "nnpa_pct": 0.47,
+      "nii_cr": 11317.0,
+      "pat_cr": 4066.0,
+      "gnpa_pct": 1.21,
+      "car_pct": 21.9,
+      "disbursements_cr": 4600.0,
+      "filing_date": "2026-02-03"
+    },
+    {
+      "aum_cr": 16340.0,
+      "disbursements_cr": 4600.0,
+      "car_pct": 21.9,
+      "gnpa_pct": 1.2,
+      "nnpa_pct": 0.4,
+      "filing_date": "2025-12-05"
+    },
+    {
+      "aum_cr": 462261.0,
+      "nnpa_pct": 0.6,
+      "nii_cr": 10785.0,
+      "gnpa_pct": 1.24,
+      "car_pct": 21.9,
+      "filing_date": "2025-11-10"
+    },
+    {
+      "aum_cr": 441450.0,
+      "nnpa_pct": 0.5,
+      "nii_cr": 10227.0,
+      "gnpa_pct": 1.03,
+      "car_pct": 21.9,
+      "filing_date": "2025-07-24"
+    },
+    {
+      "aum_cr": 416661.0,
+      "nnpa_pct": 0.44,
+      "nii_cr": 9807.0,
+      "gnpa_pct": 0.96,
+      "car_pct": 21.9,
+      "filing_date": "2025-04-29"
+    }
+  ]
+}

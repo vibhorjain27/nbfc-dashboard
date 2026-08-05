@@ -1,0 +1,73 @@
+{
+  "company": "Poonawalla Fincorp",
+  "bse_code": "524000",
+  "nse_symbol": "POONAWALLA",
+  "face_value": 2,
+  "last_updated": "2026-02-21T18:02:03.095354",
+  "quarters": [
+    {
+      "aum_cr": 55017.0,
+      "nii_cr": 528.0,
+      "gnpa_pct": 1.51,
+      "nnpa_pct": 0.8,
+      "pat_cr": 150.0,
+      "share_capital_cr": 162.0,
+      "reserves_cr": 9834.0,
+      "net_worth_cr": 9996.0,
+      "shares_outstanding": 810000000,
+      "book_value_per_share": 123.41,
+      "filing_date": "2026-01-18"
+    },
+    {
+      "aum_cr": 47701.0,
+      "nii_cr": 905.0,
+      "gnpa_pct": 1.59,
+      "nnpa_pct": 0.81,
+      "pat_cr": 74.0,
+      "share_capital_cr": 161.0,
+      "reserves_cr": 9661.0,
+      "net_worth_cr": 9822.0,
+      "shares_outstanding": 805000000,
+      "book_value_per_share": 122.01,
+      "filing_date": "2025-10-17"
+    },
+    {
+      "aum_cr": 41273.0,
+      "nii_cr": 768.0,
+      "gnpa_pct": 1.84,
+      "nnpa_pct": 0.85,
+      "pat_cr": 63.0,
+      "share_capital_cr": 155.0,
+      "reserves_cr": 8058.0,
+      "net_worth_cr": 8213.0,
+      "shares_outstanding": 775000000,
+      "book_value_per_share": 105.97,
+      "filing_date": "2025-07-25"
+    },
+    {
+      "aum_cr": 35631.0,
+      "nii_cr": 666.0,
+      "gnpa_pct": 1.84,
+      "nnpa_pct": 0.85,
+      "share_capital_cr": 155.0,
+      "reserves_cr": 7969.0,
+      "net_worth_cr": 8124.0,
+      "shares_outstanding": 775000000,
+      "book_value_per_share": 104.83,
+      "filing_date": "2025-04-25"
+    },
+    {
+      "aum_cr": 30984.0,
+      "nii_cr": 672.0,
+      "gnpa_pct": 2.1,
+      "nnpa_pct": 0.81,
+      "pat_cr": 19.0,
+      "share_capital_cr": 155.0,
+      "reserves_cr": 7901.0,
+      "net_worth_cr": 8056.0,
+      "shares_outstanding": 775000000,
+      "book_value_per_share": 103.95,
+      "filing_date": "2025-01-31"
+    }
+  ]
+}

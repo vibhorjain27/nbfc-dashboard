@@ -1,0 +1,54 @@
+{
+  "company": "Shriram Finance",
+  "bse_code": "511218",
+  "nse_symbol": "SHRIRAMFIN",
+  "face_value": 10,
+  "last_updated": "2026-02-21T18:02:35.160422",
+  "quarters": [
+    {
+      "nii_cr": 6764.09,
+      "aum_cr": 291709.03,
+      "gnpa_pct": 2.96,
+      "gnpa_note": "Stage 3 ratio",
+      "nim_pct": 8.55,
+      "car_pct": 20.66,
+      "filing_date": "2026-01-23"
+    },
+    {
+      "aum_cr": 281309.46,
+      "nii_cr": 6266.84,
+      "gnpa_pct": 0.22,
+      "gnpa_note": "Stage 3 ratio",
+      "nim_pct": 8.55,
+      "car_pct": 20.66,
+      "filing_date": "2025-10-31"
+    },
+    {
+      "aum_cr": 272249.01,
+      "nii_cr": 6026.43,
+      "gnpa_pct": 1.68,
+      "gnpa_note": "Stage 3 ratio",
+      "nim_pct": 8.55,
+      "car_pct": 20.66,
+      "filing_date": "2025-07-25"
+    },
+    {
+      "roa_pct": 1.03,
+      "nii_cr": 6051.19,
+      "gnpa_pct": 5.38,
+      "gnpa_note": "Stage 3 ratio",
+      "nim_pct": 3.28,
+      "car_pct": 20.3,
+      "filing_date": "2025-04-25"
+    },
+    {
+      "nii_cr": 5822.69,
+      "aum_cr": 254469.69,
+      "gnpa_pct": 13.13,
+      "gnpa_note": "Stage 3 ratio",
+      "nim_pct": 8.84,
+      "car_pct": 20.3,
+      "filing_date": "2025-01-24"
+    }
+  ]
+}
