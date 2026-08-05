@@ -27,6 +27,19 @@
 #     PAT 1,654 is standalone (consolidated 1,656 — immaterial difference).
 #   - Piramal Q1FY27: T2 is a real 0.0, not a gap — no Tier 2 capital
 #     outstanding, so CAR == T1 (18.85). First quarter with T1/T2 populated.
+#   - Mahindra Q4FY26: backfilled from the Q1FY27 deck's comparatives. ROE is
+#     deliberately left None — the only figure available was FY26 full-year
+#     RONW (~12.5%), and putting an annual number in a quarterly series would
+#     misstate the trend. Q4FY26 also gives Mahindra its first-ever CAR/T1/T2.
+#   - Muthoot Q1FY27: VERIFY AGAINST THE DECK. CoB jumps 8.58 -> 10.68 (+210bp)
+#     after 7 quarters in an 8.58-9.01 band that was drifting DOWN. Recorded as
+#     reported because the quarter is internally coherent — that cost spike
+#     lines up with NIM 13.38->10.65, ROA 7.95->6.09, ROE 34.2->26.6 and PAT
+#     -17% QoQ despite AUM +5.7%. A parsing error would corrupt one metric, not
+#     six in a mutually consistent direction. Still, +210bp in a quarter is
+#     extreme for a lender; confirm before this goes in front of anyone.
+#     Q1FY27 is also the first quarter Muthoot discloses NNPA (1.99) and PCR
+#     (13.01) at all — the low PCR is normal for a fully-collateralised gold book.
 
 NBFC_Q4FY26 = [
     {
@@ -351,36 +364,36 @@ NBFC_TIMESERIES = {
         # PAT: Q4FY25-Q4FY26 = standalone from Q4FY26 investor deck
         #       Q4FY24-Q3FY25 = from Screener.in (may include consolidated figures)
         # ROA / NIM = PAT or NII on Avg Loan Assets (Muthoot-disclosed; higher than standard PAT/Avg Total Assets)
-        "aum_cr":                [104149, 111308, 108648, 120031, 132305, 147552, 162826, None],
-        "gnpa_pct":              [4.3,   4.22,  3.41,  2.58,  2.25,  1.58,  2.35,  None],  # Stage-3 proxy
-        "nnpa_pct":              [None,  None,  None,  None,  None,  None,  None,  None],  # not disclosed
-        "pcr_pct":               [None,  None,  None,  None,  None,  None,  None,  None],  # not disclosed
-        "pat_cr":                [1321,  1392,  1508,  2046,  2345,  2656,  3086,  None],
-        "nim_pct":               [11.54, 11.6,  11.27, 12.15, 12.66, 12.77, 13.38, None],  # NII / Avg Loan Assets
-        "roa_pct":               [5.74,  5.81,  5.85,  7.16,  7.44,  7.59,  7.95,  None],  # PAT / Avg Loan Assets
-        "roe_pct":               [19.99, 20.7,  21.76, 28.28, 30.61, 32.03, 34.17, None],
-        "cost_of_borrowing_pct": [9.01,  8.81,  8.99,  8.88,  8.78,  8.84,  8.58,  None],  # interest exp / avg borrowings; Q1-Q4FY26 from investor deck
-        "d_e_ratio":             [2.66,  2.75,  2.95,  3.18,  3.27,  3.4,   3.46,  None],  # capital gearing (net debt / tangible networth)
-        "car_pct":               [None,  None,  None,  None,  None,  None,  20.75, None],  # Q4FY26 from investor deck; prior quarters not reported
-        "t1_pct":                [None,  None,  None,  None,  None,  None,  19.84, None],
-        "t2_pct":                [None,  None,  None,  None,  None,  None,  0.91,  None],
-        "bvps_inr":              [639.67, 672.47, 708.26, 733.64, 793.09, 859.33, 940.05, None],
+        "aum_cr":                [104149, 111308, 108648, 120031, 132305, 147552, 162826, 172053],
+        "gnpa_pct":              [4.3,   4.22,  3.41,  2.58,  2.25,  1.58,  2.35,  2.28],  # Stage-3 proxy
+        "nnpa_pct":              [None,  None,  None,  None,  None,  None,  None,  1.99],  # not disclosed
+        "pcr_pct":               [None,  None,  None,  None,  None,  None,  None,  13.01],  # not disclosed
+        "pat_cr":                [1321,  1392,  1508,  2046,  2345,  2656,  3086,  2550],
+        "nim_pct":               [11.54, 11.6,  11.27, 12.15, 12.66, 12.77, 13.38, 10.65],  # NII / Avg Loan Assets
+        "roa_pct":               [5.74,  5.81,  5.85,  7.16,  7.44,  7.59,  7.95,  6.09],  # PAT / Avg Loan Assets
+        "roe_pct":               [19.99, 20.7,  21.76, 28.28, 30.61, 32.03, 34.17, 26.6],
+        "cost_of_borrowing_pct": [9.01,  8.81,  8.99,  8.88,  8.78,  8.84,  8.58,  10.68],  # interest exp / avg borrowings; Q1-Q4FY26 from investor deck
+        "d_e_ratio":             [2.66,  2.75,  2.95,  3.18,  3.27,  3.4,   3.46,  3.83],  # capital gearing (net debt / tangible networth)
+        "car_pct":               [None,  None,  None,  None,  None,  None,  20.75, 20.3],  # Q4FY26 from investor deck; prior quarters not reported
+        "t1_pct":                [None,  None,  None,  None,  None,  None,  19.84, 19.39],
+        "t2_pct":                [None,  None,  None,  None,  None,  None,  0.91,  0.91],
+        "bvps_inr":              [639.67, 672.47, 708.26, 733.64, 793.09, 859.33, 940.05, 970.7],
     },
     "Mahindra Finance": {
-        "aum_cr":                [112454, 115126, 119673, 122008, 127246, 128965, None,   None],  # Q4FY26 pending
-        "gnpa_pct":              [3.83,  3.93,  3.69,  3.85,  3.94,  3.8,   None,  None],
-        "nnpa_pct":              [1.59,  2,     1.84,  1.91,  1.89,  1.82,  None,  None],
-        "pcr_pct":               [59.5,  50.1,  51.2,  51.4,  53,    53,    None,  None],
-        "pat_cr":                [369,   899,   563,   530,   569,   810,   None,  None],
-        "nim_pct":               [6.5,   6.6,   6.5,   6.7,   7,     7.5,   None,  None],
-        "roa_pct":               [1.5,   2,     1.9,   1.6,   None,  1.9,   None,  None],
-        "roe_pct":               [9.7,   12.7,  12.4,  9.8,   None,  11.8,  None,  None],
-        "cost_of_borrowing_pct": [6.3,   6.4,   6.3,   6.3,   6,     6,     None,  None],
-        "d_e_ratio":             [5.65,  5.44,  5.7,   4.75,  None,  4.87,  None,  None],
-        "car_pct":               [None,  None,  None,  None,  None,  None,  None,  None],  # not disclosed
-        "t1_pct":                [None,  None,  None,  None,  None,  None,  None,  None],  # not disclosed
-        "t2_pct":                [None,  None,  None,  None,  None,  None,  None,  None],  # not disclosed
-        "bvps_inr":              [148,   155.6, 160.4, 168,   None,  171.4, None,  None],
+        "aum_cr":                [112454, 115126, 119673, 122008, 127246, 128965, 134096, 137449],  # Q4FY26 pending
+        "gnpa_pct":              [3.83,  3.93,  3.69,  3.85,  3.94,  3.8,   3.41,  3.5],
+        "nnpa_pct":              [1.59,  2,     1.84,  1.91,  1.89,  1.82,  1.44,  1.48],
+        "pcr_pct":               [59.5,  50.1,  51.2,  51.4,  53,    53,    58.6,  58.1],
+        "pat_cr":                [369,   899,   563,   530,   569,   810,   873,   899],
+        "nim_pct":               [6.5,   6.6,   6.5,   6.7,   7,     7.5,   7.5,   7.3],
+        "roa_pct":               [1.5,   2,     1.9,   1.6,   None,  1.9,   2.4,   2.4],
+        "roe_pct":               [9.7,   12.7,  12.4,  9.8,   None,  11.8,  None,  14.3],
+        "cost_of_borrowing_pct": [6.3,   6.4,   6.3,   6.3,   6,     6,     5.7,   5.8],
+        "d_e_ratio":             [5.65,  5.44,  5.7,   4.75,  None,  4.87,  4.86,  5],
+        "car_pct":               [None,  None,  None,  None,  None,  None,  18.8,  18.5],  # not disclosed
+        "t1_pct":                [None,  None,  None,  None,  None,  None,  16.7,  16.5],  # not disclosed
+        "t2_pct":                [None,  None,  None,  None,  None,  None,  2.2,   2.1],  # not disclosed
+        "bvps_inr":              [148,   155.6, 160.4, 168,   None,  171.4, 178.1, 184.7],
     },
 }
 
